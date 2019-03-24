@@ -1,0 +1,30 @@
+numtag: 133
+data length (tag+data) : 1468 bytes
+
+machine 192.168.0.79 (core 2 duo E7300 2.66 GHz, memory 3 GB)
+compiler option : -Wall -ggdb3 -D_LE_
+tps (5 tries)
+  (tree and linked list) 9453,9430,10256,14117,10651
+  (tree and binary tree) 10888,9995,9554,10526,10164
+
+6914, 7170, 6993, 7073, 6614
+7579,7187,7015,7318,7214
+
+machine aix
+compiler option
+-Wall -ggdb3 -D_BE_
+tps (5 tries)
+  (tree and linked list) 955,954,954,954,954
+  (tree and binary tree) 883,883,885,882,884
+
+953, 953, 953, 952, 953
+979, 979, 979, 980, 978, 
+
+machine 192.168.0.250 (builder, memory 10 GB)
+ -Wall -ggdb3 -D_LE_
+tps (5 tries)
+  (tree and linked list) :  13210, 13226, 13211, 13222, 13260
+  (tree and binary tree) :  14518, 14519, 14321, 14532, 14481
+  
+10273, 10185, 10262, 10269, 10304
+10212, 10358, 10371, 10298, 10372
