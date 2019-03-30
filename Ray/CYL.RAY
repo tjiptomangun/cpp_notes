@@ -1,0 +1,22 @@
+Antialiasing()
+Resolution(400,400)
+From(0,0,-10)
+At(1,0,100)
+Up(0,1,0)
+Background(0,0,0)
+MaxLevel(2)
+DMin(0)
+DMax(1)
+LMin(0)
+LMax(1)
+NumFrames(1)
+SaveTo(Un.Tif) /Don't set to empty/
+
+Cylinder(Loc(0,-2,0), Radius(4), V1(2,3,1),Ambient(.5), Diffuse(.5), Specular(.1), SpecSpread(1), Transparency(0), Color(0,0,0),Color2(1,1,1),Checker(4,4))
+
+
+
+Light(Loc(100,100,100), Color(1,1,1), Directed(), SpreadPower(1), LightDir(50,50,50))
+
+
+

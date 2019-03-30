@@ -1,0 +1,22 @@
+Antialiasing()
+Resolution(640,480)
+From(0,0,-20)
+At(,0,10)
+Up(1,0,1)
+Background(0,0,0)
+MaxLevel(2)
+DMin(0)
+DMax(1)
+LMin(0)
+LMax(1)
+NumFrames(1)
+SaveTo(Un.Tif) /Don't set to empty/
+
+
+Light(Loc(100,100,100), Color(1,1,1), Directed(), SpreadPower(2), LightDir(50,50,50))
+
+
+
+Ellipsoid(Loc(-1,0,0),V1(4,1,1), V2(4,0,0), Ambient(.5), Diffuse(.5), Specular(.6), SpecSpread(3), Transparency(0), Color(0,0,0), Color2(1,1,1), /*Map(?.tif)*/, Checker(1,1), Blend(.25))
+
+

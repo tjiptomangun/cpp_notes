@@ -1,0 +1,13 @@
+Antialiasing()
+Resolution(600,600)
+From(0,4,-15)
+At(0,0,0)
+Up(0,1,0)
+Background(0,0,0)
+MaxLevel(1)
+SaveTo(Un.Tif) /Don't set to empty/
+
+Rectangle(Loc(-5,0,0),V1(15,0,0),V2(0,0,-15), Ambient(.9), Diffuse(.8), Specular(.9), SpecSpread(3), Transparency(0), Color(1,1,1), Color2(0,0,1),Cloud(.1,.5))
+
+
+

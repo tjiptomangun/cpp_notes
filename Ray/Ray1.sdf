@@ -1,0 +1,27 @@
+Antialiasing()
+Resolution(400,400)
+From(0,0,0)
+At(10,10,10)
+Up(0,0,1)
+Background(0,0,0)
+DMin(0)
+DMax(1)
+LMin(0)
+LMax(1)
+NumFrames(0)
+SaveTo(Un.Tif) /Don't set to empty/
+
+Rectangle(Loc(0,0,0),V1(0,0,15),V2(15,0,0), Ambient(.5), Diffuse(.5), Specular(.6), SpecSpread(3), Transparency(0), Color(0,0,0), Color2(1,1,1), Map(?.tif)), Chacker(1,1), Marble(), Blend(.25))
+
+Triangle(Loc(0,0,0),V1(0,0,15),V2(15,0,0), Ambient(.5), Diffuse(.5), Specular(.6), SpecSpread(3), Transparency(0), Color(0,0,0), Color2(1,1,1), Map(?.tif)), Chacker(1,1), Marble(), Blend(.25))
+
+Sphere(Loc(0,0,0), Radius(4), Ambient(.5), Diffuse(.5), Specular(.6), SpecSpread(3), Transparency(0), Color(0,0,0), Color2(1,1,1), Map(?.tif)), Chacker(1,1), Marble(), Blend(.25))
+
+Ellipsoid(Loc(0,0,0), Radius(4), V1(1,1,1), V2(5,5,5), Ambient(.5), Diffuse(.5), Specular(.6), SpecSpread(3), Transparency(0), Color(0,0,0), Color2(1,1,1), Map(?.tif)), Chacker(1,1), Marble(), Blend(.25))
+
+Cylinder(Loc(0,0,0), Radius(4), V1(0,0,1),Ambient(.5), Diffuse(.5), Specular(.6), SpecSpread(3), Transparency(0), Color(0,0,0), Color2(1,1,1), Map(?.tif)), Chacker(1,1), Marble(), Blend(.25))
+
+Light(Loc(100,100,100),Point(),Color(1,1,1))
+Light(Loc(100,100,100), Color(1,1,1), Directed(), SpreadPower(2), LightDir(50,50,50))
+Light(Loc(100,100,100), Color(1,1,1), Cone(), SpreadPower(2), SpreadAngle(.25),LightDir(50,50,50))
+
