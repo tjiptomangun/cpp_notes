@@ -1,0 +1,8 @@
+19:44:56.016      0  ./shredlog3  B
+19:45:00.026     64  Mark.
+4 secs 
+
+awk 'NF>6{print $0}' shredlog3.log |wc
+      0       0       0
+
+Should we remove the flush and count on \n for the automatic flush action

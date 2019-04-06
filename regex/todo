@@ -1,0 +1,24 @@
+make regex for start pattern as start
+make regex for end of file
+make regex for end of start of unqualified hour
+make regex for end of start of unqualified minute
+
+make regex for file date to match
+     if it is match then store filename in buffer
+     convert time to xlink log time string format
+     make regex for start of file
+     make regex for first match hour
+     make regex for first match minute
+     find the first match line.
+          store the match line number
+     find the end of file
+     find the first unmatch hours
+     find the first unmatch minute
+
+
+make regex for start pattern as start
+make regex for end of file
+make regex for end of start of unqualified hour
+make regex for end of start of unqualified minute
+
+

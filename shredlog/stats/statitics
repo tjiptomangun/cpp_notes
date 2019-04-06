@@ -1,0 +1,79 @@
+./shredlog 20 100000
+./shredlog3 10 100000
+
+
+
+shredlog3.1 (no flush)
+13:30:27.736
+13:32:14.464
+usleep(1000);
+
+shredlog3.2 (flush)
+13:37:58.818
+13:39:52.625
+usleep(1000);
+
+
+shredlog3.4 (no flush)
+13:48:08.364
+13:48:11.519
+no sleep
+
+shredlog3.3 (flush)
+13:42:51.484
+13:43:02.400
+no sleep
+
+
+shredlog3.log.5
+./shredlog3 200 100000 10 1
+./shredlog 400 100000 10 1
+16:10:41.711      0  ./sh####og3  B
+16:10:59.809
+awk 'NF>6{print $0}' shredlog3.log  | wc
+      0       0       0
+
+shredlog3.log.6
+./shredlog3 200 100000 10 0
+./shredlog 400 100000 10 0
+16:15:40.356      0  ./sh####og3  B
+16:15:47.872     64
+awk 'NF>6{print $0}' shredlog3.log.6  | wc
+   2074   15352  832919
+
+
+./shredlog 400 100000 16 1
+./shredlog3 200 100000 16 1
+shredlog3.log.7
+16:18:44.810      0  ./sh####og3  B
+16:19:00.723     64
+awk 'NF>6{print $0}' shredlog3.log  | wc
+      0       0       0
+
+
+./shredlog3 200 100000 16 0
+./shredlog 400 100000 16 0
+shredlog3.log.8
+16:25:18.369      0  ./sh####og3  B
+16:25:26.326     64
+awk 'NF>6{print $0}' shredlog3.log.9  | wc
+   1110    8237  448372
+
+
+./shredlog3 200 100000 8 0
+./shredlog 400 100000 8 0
+16:38:46.831      0  ./sh####og3  B
+16:38:55.105     64
+
+awk 'NF>6{print $0}' shredlog3.log.6  | wc
+   2074   15352  832919
+
+
+./shredlog3 200 100000 8 1
+./shredlog 400 100000 8 1
+16:43:21.952      0  ./sh####og3  B
+16:43:37.204     64
+awk 'NF>6{print $0}' shredlog3.log.10  | wc
+      0       0       0
+
+

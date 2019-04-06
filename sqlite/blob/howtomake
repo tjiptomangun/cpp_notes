@@ -1,0 +1,3 @@
+$CC eatblob.c  -L/home/henky/from9dot73/from9dot37/ZXInxt/database/sqlite/sqlcipher-sqlcipher-ceee996/.libs -lsqlite3
+$CC pukeblob.c -lsqlite3 -L/home/henky/from9dot73/from9dot37/ZXInxt/database/sqlite/sqlcipher-sqlcipher-ceee996/.libs/ -Wall -ggdb3 -lpthread -o pukeblob
+$CC pukeblob.c -lsqlite3 -L/home/henky/from9dot73/from9dot37/ZXInxt/database/sqlite/sqlcipher-sqlcipher-ceee996/.libs/ -Wall -ggdb3 -lpthread -o pukeblob

@@ -1,0 +1,187 @@
+./shredlog3 200 100000 10 0
+18:44:17.641      0  ./sh####og3  B
+18:44:28.888     64
+11 secs
+
+
+./shredlog 400 100000 10 0
+18:45:16.426      0  ./sh####og  A
+18:45:27.994     64 
+11 secs
+
+ ./shredlog3 200 100000 10 2
+19:28:44.270      0    B
+19:28:54.498     64  Mark
+10 secs
+shredlog3.log.5
+
+
+./shredlog3 200 100000 10 3
+19:35:47.386      0    B
+19:35:52.187     64
+5 secs
+log shredlog3.log.6
+
+./shredlog3 200 100000 10 1
+19:40:03.588      0  ./shredlog3  B
+19:40:07.410     64  Mark
+4 secs
+shredlog3.log.7
+
+
+The calculation add 1 secs
+the other 6 secs is because of the flush
+
+
+19:52:35.347      0  ./sh####og3  B
+19:52:41.878     64
+6 secs
+shredlog3.log.8
+we reclaim the flush penalty
+
+
+tracestrpar with no flush
+19:58:11.642      0  ./sh####og3  B
+19:58:16.318     64
+shredlog3.log.9
+
+./shredlog3 200 100000 10 0
+./shredlog 400 100000 10 0
+20:01:09.744      0  ./sh####og3  B
+20:01:15.643     64
+6 minutes?
+awk 'NF>6{print $0}' shredlog3.log |wc
+   1786   13182  881026
+hell
+shredlog3.log.10
+
+tracestrpar with flush
+./shredlog3 200 100000 10 0
+./shredlog 400 100000 10 0
+20:03:42.917      0  ./sh####og3  B
+20:03:49.085     64
+awk 'NF>6{print $0}' shredlog3.log |wc
+      0       0       0
+6-7 secs
+what happen to tracestrpar?
+shredlog3.log.11
+
+
+
+./shredlog3 200 100000 10 0
+./shredlog 400 100000 10 0
+10:55:17.296      0  ./sh####og3  B
+10:55:30.376     64  Mark
+awk 'NF>6{print $0}' shredlog3.log| wc
+      0       0       0
+13 secs
+
+
+./shredlog3 200 100000 10 1
+./shredlog 400 100000 10 1
+10:58:46.545      0  ./shredlog3  B
+10:58:58.132     64  Mark.0000001cd
+awk 'NF>6{print $0}' shredlog3.log| wc
+      0       0       0
+12 secs
+
+
+with strlen
+./shredlog 8500 100000 10 0
+shredlog3.log.101
+17:08:55.126      0  ./sh####og  A
+17:09:20.079      0  ./sh####og  A
+shredlog3.log.101
+25 secs
+
+./shredlog 8500 100000 20 0
+17:10:18.524      0  ./sh####og  A
+17:10:49.074      0  ./sh####og  A
+shredlog3.log.102
+31 secs
+
+
+./shredlog 8500 100000 11 0
+17:13:57.807      0  ./sh####og  A
+17:14:25.607      0  ./sh####og  A
+shredlog3.log.103
+28 secs
+
+./shredlog 8500 100000 9 0
+17:20:37.321      0  ./sh####og  A
+17:21:06.180      0  ./sh####og  A
+shredlog3.log.104
+29 secs
+
+./shredlog 8500 100000 11 1
+17:27:54.293      0  ./shredlog  A
+17:28:15.320      0  ./shredlog  A
+21 secs
+shredlog3.log.105
+
+
+./shredlog 8500 100000 10 1
+17:34:34.789      0  ./shredlog  A
+17:34:54.785      0  ./shredlog  A
+20 secs
+shredlog3.log.106
+
+./shredlog 8500 100000 10 0
+./shredlog3 8500 100000 10 0
+awk 'NF>6{print $0}' shredlog3.log |wc
+   4939   37006 21154584
+
+./shredlog 1023 100000 10 0
+./shredlog3 1023 100000 10 0
+awk 'NF>6{print $0}' shredlog3.log | wc
+      0       0       0
+
+./shredlog 2047 100000 11 0
+./shredlog3 2047 100000 11 0
+awk 'NF>6{print $0}' shredlog3.log | wc
+      0       0       0
+
+./shredlog 4095 100000 12 0
+./shredlog3 4095 100000 12 0
+awk 'NF>6{print $0}' shredlog3.log | wc
+  15212  113826 63581075
+
+./shredlog 2047 100000 11 0
+./shredlog3 2047 100000 11 0
+mv shredlog3.log shredlog3.log.110
+awk 'NF>6{print $0}' shredlog3.log | wc
+      0       0       0
+
+./shredlog 4000 100000 12 0
+./shredlog3 3000 100000 12 0
+awk 'NF>6{print $0}' shredlog3.log | wc
+      0       0       0
+18:51:41.319      0  ./sh####og  A
+18:52:05.510      0  ./sh####og3  B
+24 secs
+
+
+./shredlog 4000 100000 12 0
+./shredlog3 4000 100000 12 0
+awk 'NF>6{print $0}' shredlog3.log | wc
+      0       0       0
+18:59:32.504      0  ./sh####og  A
+18:59:54.800      0  ./sh####og3  B
+22 secs
+shredlog3.log.112
+
+little modification
+./shredlog 4000 100000 12 0
+./shredlog3 4000 100000 12 0
+awk 'NF>6{print $0}' shredlog3.log | wc
+      0       0       0
+19:02:58.640      0  ./sh####og  A
+19:03:20.892      0  End  B
+22 secs
+
+
+
+
+
+
+

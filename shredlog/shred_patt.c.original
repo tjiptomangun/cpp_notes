@@ -1,0 +1,136 @@
+#include <regex.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+//Read pattern and string to match
+//Returns the match indexes
+
+int printRegCompErr(int reti)
+{
+	switch(reti)
+	{
+		case REG_BADBR:
+			printf("Invalid use of back reference operator.\n");
+			break;
+		case REG_BADPAT:
+			printf("Invalid use of pattern operators such as group or list.\n");
+			break;
+		case REG_BADRPT:
+			printf(" Invalid use of repetition operators such as using '*' as the first character.\n");
+			break;
+		case REG_EBRACE:
+			printf("Un-matched brace interval operators.\n");
+			break;
+		case REG_EBRACK:
+			printf("Un-matched bracket list operators.\n");
+			break;
+		case REG_ECOLLATE:
+			printf("Invalid collating element.\n");
+			break;
+		case REG_ECTYPE:
+			printf("Unknown character class name.\n");
+			break;
+		case REG_EEND:
+			printf("Non specific error.  This is not defined by POSIX.2.\n");
+			break;
+		case REG_EESCAPE:
+			printf("Trailing backslash.\n");
+			break;
+		case REG_EPAREN:
+			printf("Un-matched parenthesis group operators.\n");
+			break;
+		case REG_ERANGE:
+			printf("Invalid  use  of  the range operator, e.g., the ending point of the range \n");
+			printf("occurs prior to the starting point.\n");
+			break;
+		case REG_ESIZE:
+			printf("Compiled regular expression requires a pattern buffer larger than 64Kb.\n");
+			break;
+		case REG_ESPACE:
+			printf("The regex routines ran out of memory.\n");
+			break;
+		case REG_ESUBREG:
+			printf("Invalid back reference to a subexpression.\n");
+			break;
+
+	}
+	return 0;
+
+}
+
+int hashWithPatt(char *sPatt, char *toMatch, int nMaskMatch)
+{
+   int reti;
+   int x=0;
+   int nDx=0;
+   regex_t regex_fpatt;
+   regmatch_t pm[1];
+   char *buff;
+   char temp[100];
+   printf("sPatt =%s  toMatch = %s \n",sPatt,toMatch);
+   reti = regcomp(&regex_fpatt,sPatt,REG_EXTENDED);
+   if(reti)
+   {
+      return 1;
+   }
+   buff = toMatch;
+   reti = regexec(&regex_fpatt,buff,1,&pm[0],0);
+   while (reti == 0)
+   {
+       //printf("match %d  %d ",nDx+pm[0].rm_so,nDx+pm[0].rm_eo);
+       memset(temp,0,100);
+       if(!nMaskMatch)
+       {
+         memset(temp,'*',pm[0].rm_so);
+         memcpy(temp+pm[0].rm_so,buff+pm[0].rm_so,pm[0].rm_eo-pm[0].rm_so);
+       }
+       else//mask the match
+       {//write the unmatch
+         memcpy(temp,buff,pm[0].rm_so);
+         memset(temp+pm[0].rm_so,'*',pm[0].rm_eo-pm[0].rm_so);
+       }
+       printf("%s",temp);
+       buff+=pm[0].rm_eo;
+       nDx+=pm[0].rm_eo;
+       reti = regexec(&regex_fpatt,buff,1,&pm[0],0);
+
+       x++;
+   }
+   if(strlen(buff))
+   {
+       if(!nMaskMatch)
+       {
+          memset(temp,0,100);
+          memset(temp,'#',strlen(buff));
+          printf("%s",temp);
+       }
+       else
+       {
+          printf("%s",buff);
+       }
+   }
+   printf("\n");
+   return 0;
+
+}
+int main (int argc, char **argv)
+{
+   char *patt;
+   int nMaskMatch=0;
+   if(argc < 3)
+   {
+      printf("usage: %s pattern string_to_match\n",argv[0]);
+      exit(0);
+   }
+   if(argc > 3)
+   {
+      if(argv[3][0]=='U' || argv[3][0]=='u')
+            nMaskMatch=1;
+   }
+   patt = argv[1];
+   if(hashWithPatt(patt, argv[2],nMaskMatch))
+   {
+      printf("Cannot Compile Pattern\n");
+   }
+   return 0;
+}

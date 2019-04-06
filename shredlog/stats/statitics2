@@ -1,0 +1,51 @@
+1.
+./shredlog3 200 100000 10 0
+./shredlog 400 100000 10 0
+
+17:16:10.644      0  ./sh####og3  B
+17:16:24.044     64  Mark#
+14 secs
+awk 'NF>6{print $0}' shredlog3.log |wc
+      0       0       0
+shredlog3.log.1
+
+
+-using assignment instead of memcpy
+18:31:34.890      0  ./sh####og3  B
+18:31:48.855     64
+
+
+2.
+./shredlog3 200 100000 10 1 
+./shredlog 400 100000 10 1
+awk 'NF>6{print $0}' shredlog3.log |wc
+      0       0       0
+shredlog3.log.2
+17:54:57.702      0  ./shredlog3  B
+17:55:01.957     64  Mark
+4 secs
+
+3.
+./shredlog3 200 100000 20 0
+./shredlog 400 100000 20 0
+awk 'NF>6{print $0}' shredlog3.log |wc
+      0       0       0
+17:57:37.920      0  ./sh####og3  B
+17:57:53.642     64  Mark
+16 secs
+
+4.
+./shredlog3 200 100000 20 1
+./shredlog 400 100000 20 1
+awk 'NF>6{print $0}' shredlog3.log |wc
+      0       0       0
+18:00:40.528      0  ./shredlog3  B
+18:00:44.671     64  Mark.0000001cd
+4 secs
+
+
+------------------------------------------
+using assignment instead of memcpy
+------------------------------------------
+
+
