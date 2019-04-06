@@ -1,0 +1,142 @@
+// FILE: table.tem
+// TEMPLATE CLASS IMPLEMENTED: Table (see table.h for documentation)
+// INVARIANT for the Table ADT:
+//   1. The number of records in the Table is in the member variable used.
+//   2. The actual records of the table are stored in the array data, with
+//      a maximum of CAPACITY entries. Each used spot in the array has a 
+//      non-negative key. Any unused record in the array has a key field of
+//      NEVER_USED (if it has never been used) or PREVIOUSLY_USED (if it once
+//      was used, but is  now vacant).
+
+#include <assert.h> // Provides assert
+#include <stdlib.h> // Provides size_t
+
+template <class RecordType>
+Table<RecordType>::Table( )
+// Library facilities used: stdlib.h
+{
+    size_t i;
+
+    used = 0;
+    for (i = 0; i < CAPACITY; i++)
+        data[i].key = NEVER_USED;  // Indicates a spot that's never been used
+}
+
+template <class RecordType>
+void Table<RecordType>::insert(const RecordType& entry)
+// Library facilities used: assert.h
+{
+    bool already_present;   // True if entry.key is already in the table
+    size_t index;           // data[index] is location for the new entry
+
+    assert(entry.key >= 0);
+
+    // Set index so that data[index] is the spot to place the new entry
+    find_index(entry.key, already_present, index);
+
+    // If the key wasn't already there, then find the location for the new entry
+    if (!already_present)
+    {
+        assert(size( ) < CAPACITY);
+        index = hash(entry.key);
+        while (data[index].key >= 0)
+// Fill in - replace call to next index() to an appropriate call to next_index2()
+            index = next_index(index);
+            
+        used++;
+    }
+
+    data[index] = entry;
+}
+
+template <class RecordType>
+void Table<RecordType>::remove(int key)
+// Library facilities used: assert.h
+{
+    bool found;     // True if key occurs somewhere in the table
+    size_t index;   // Spot where data[index].key == key
+
+    assert(key >= 0);
+
+    find_index(key, found, index);
+    if (found)
+    {   // The key was found, so remove this record and reduce used by one
+        data[index].key = PREVIOUSLY_USED;  // A spot that's no longer in use
+        used--;
+    }
+}
+
+template <class RecordType>
+bool Table<RecordType>::is_present(int key) const
+// Library facilities used: assert.h, stdlib.h
+{
+    bool found;
+    size_t index;
+
+    assert(key >= 0);
+
+    find_index(key, found, index);
+    return found;
+}
+
+template <class RecordType>
+size_t Table<RecordType>::find(int key, bool& found, RecordType& result) const
+// Library facilities used: stdlib.h
+{
+    size_t index, count;
+
+    count = find_index(key, found, index);
+    if (found)
+        result = data[index]; 
+    return count;
+}
+
+template <class RecordType>
+size_t Table<RecordType>::hash(int key) const
+// Library facilities used: stdlib.h
+{
+    return (key % CAPACITY);
+}
+
+template <class RecordType>
+size_t Table<RecordType>::hash2(int key) const
+// Library facilities used: stdlib.h
+{
+    // Fill in - return 1 plus the remainder of key divided by CAPACITY-2      
+    return 1; // remove this line
+}
+
+template <class RecordType>
+size_t Table<RecordType>::next_index(size_t index) const
+// Library facilities used: stdlib.h
+{
+    return ((index+1) % CAPACITY);
+}
+
+template <class RecordType>
+size_t Table<RecordType>::next_index2(size_t index, int key) const
+// Library facilities used: stdlib.h
+{
+    // Fill in - for double hashing increment index not by 1, but by hash2(key)
+    return 1; // remove this line 
+}
+
+template <class RecordType>
+size_t Table<RecordType>::find_index(int key, bool& found, size_t& i) const
+// Library facilities used: stdlib.h
+{
+    size_t count; // Number of entries that have been examined
+
+    count = 1;
+    i = hash(key);
+    while((count < CAPACITY) && (data[i].key != NEVER_USED) && (data[i].key != key))
+    {
+        count++;
+// Fill in - replace call to next index() to an appropriate call to next_index2()
+        i = next_index(i);
+        
+    }
+    found = (data[i].key == key);
+    return count;
+}
+

@@ -1,0 +1,402 @@
+--2013-04-17 17:32:34--  http://alandix.com/academic/tutorials/tcpip/sample-code/
+Resolving alandix.com... 77.73.2.194
+Connecting to alandix.com|77.73.2.194|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 623 [text/html]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/index.html'
+
+     0K                                                       100% 42.2M=0s
+
+2013-04-17 17:32:35 (42.2 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/index.html' saved [623/623]
+
+Loading robots.txt; please ignore errors.
+--2013-04-17 17:32:35--  http://alandix.com/robots.txt
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 106 [text/plain]
+Saving to: `alandix.com/robots.txt'
+
+     0K                                                       100% 12.6M=0s
+
+2013-04-17 17:32:35 (12.6 MB/s) - `alandix.com/robots.txt' saved [106/106]
+
+--2013-04-17 17:32:35--  http://alandix.com/academic/tutorials/tcpip/sample-code/include
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 301 Moved Permanently
+Location: http://alandix.com/academic/tutorials/tcpip/sample-code/include/ [following]
+--2013-04-17 17:32:39--  http://alandix.com/academic/tutorials/tcpip/sample-code/include/
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 1235 (1.2K) [text/html]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/include/index.html'
+
+     0K .                                                     100%  136M=0s
+
+2013-04-17 17:32:39 (136 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/include/index.html' saved [1235/1235]
+
+--2013-04-17 17:32:39--  http://alandix.com/academic/tutorials/tcpip/sample-code/lib
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 301 Moved Permanently
+Location: http://alandix.com/academic/tutorials/tcpip/sample-code/lib/ [following]
+--2013-04-17 17:32:40--  http://alandix.com/academic/tutorials/tcpip/sample-code/lib/
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 1143 (1.1K) [text/html]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/lib/index.html'
+
+     0K .                                                     100%  170M=0s
+
+2013-04-17 17:32:40 (170 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/lib/index.html' saved [1143/1143]
+
+--2013-04-17 17:32:40--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-2
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 301 Moved Permanently
+Location: http://alandix.com/academic/tutorials/tcpip/sample-code/session-2/ [following]
+--2013-04-17 17:32:40--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-2/
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 627 [text/html]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-2/index.html'
+
+     0K                                                       100% 77.0M=0s
+
+2013-04-17 17:32:41 (77.0 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-2/index.html' saved [627/627]
+
+--2013-04-17 17:32:41--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-3
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 301 Moved Permanently
+Location: http://alandix.com/academic/tutorials/tcpip/sample-code/session-3/ [following]
+--2013-04-17 17:32:41--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-3/
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 623 [text/html]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-3/index.html'
+
+     0K                                                       100% 54.4M=0s
+
+2013-04-17 17:32:42 (54.4 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-3/index.html' saved [623/623]
+
+--2013-04-17 17:32:42--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-4
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 301 Moved Permanently
+Location: http://alandix.com/academic/tutorials/tcpip/sample-code/session-4/ [following]
+--2013-04-17 17:32:42--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-4/
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 703 [text/html]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-4/index.html'
+
+     0K                                                       100% 91.2M=0s
+
+2013-04-17 17:32:42 (91.2 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-4/index.html' saved [703/703]
+
+--2013-04-17 17:32:42--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-6
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 301 Moved Permanently
+Location: http://alandix.com/academic/tutorials/tcpip/sample-code/session-6/ [following]
+--2013-04-17 17:32:43--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-6/
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 926 [text/html]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-6/index.html'
+
+     0K                                                       100%  115M=0s
+
+2013-04-17 17:32:43 (115 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-6/index.html' saved [926/926]
+
+--2013-04-17 17:32:43--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-7
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 301 Moved Permanently
+Location: http://alandix.com/academic/tutorials/tcpip/sample-code/session-7/ [following]
+--2013-04-17 17:32:43--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-7/
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 492 [text/html]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-7/index.html'
+
+     0K                                                       100% 61.0M=0s
+
+2013-04-17 17:32:44 (61.0 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-7/index.html' saved [492/492]
+
+--2013-04-17 17:32:44--  http://alandix.com/academic/tutorials/tcpip/sample-code/include/fd.h
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 2007 (2.0K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/include/fd.h'
+
+     0K .                                                     100% 19.7K=0.1s
+
+2013-04-17 17:32:44 (19.7 KB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/include/fd.h' saved [2007/2007]
+
+--2013-04-17 17:32:44--  http://alandix.com/academic/tutorials/tcpip/sample-code/include/inform.h
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 2425 (2.4K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/include/inform.h'
+
+     0K ..                                                    100% 23.8K=0.1s
+
+2013-04-17 17:32:45 (23.8 KB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/include/inform.h' saved [2425/2425]
+
+--2013-04-17 17:32:45--  http://alandix.com/academic/tutorials/tcpip/sample-code/include/line_by_line.h
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 957 [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/include/line_by_line.h'
+
+     0K                                                       100%  163M=0s
+
+2013-04-17 17:32:45 (163 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/include/line_by_line.h' saved [957/957]
+
+--2013-04-17 17:32:45--  http://alandix.com/academic/tutorials/tcpip/sample-code/include/mail-helper.h
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 867 [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/include/mail-helper.h'
+
+     0K                                                       100%  150M=0s
+
+2013-04-17 17:32:46 (150 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/include/mail-helper.h' saved [867/867]
+
+--2013-04-17 17:32:46--  http://alandix.com/academic/tutorials/tcpip/sample-code/include/mess.h
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 619 [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/include/mess.h'
+
+     0K                                                       100%  109M=0s
+
+2013-04-17 17:32:46 (109 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/include/mess.h' saved [619/619]
+
+--2013-04-17 17:32:46--  http://alandix.com/academic/tutorials/tcpip/sample-code/include/monitor.h
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 840 [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/include/monitor.h'
+
+     0K                                                       100%  144M=0s
+
+2013-04-17 17:32:46 (144 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/include/monitor.h' saved [840/840]
+
+--2013-04-17 17:32:46--  http://alandix.com/academic/tutorials/tcpip/sample-code/include/protocol.h
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 814 [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/include/protocol.h'
+
+     0K                                                       100%  132M=0s
+
+2013-04-17 17:32:47 (132 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/include/protocol.h' saved [814/814]
+
+--2013-04-17 17:32:47--  http://alandix.com/academic/tutorials/tcpip/sample-code/include/sock.h
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 895 [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/include/sock.h'
+
+     0K                                                       100%  157M=0s
+
+2013-04-17 17:32:47 (157 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/include/sock.h' saved [895/895]
+
+--2013-04-17 17:32:47--  http://alandix.com/academic/tutorials/tcpip/sample-code/lib/inform.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 7610 (7.4K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/lib/inform.c'
+
+     0K .......                                               100% 73.4K=0.1s
+
+2013-04-17 17:32:48 (73.4 KB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/lib/inform.c' saved [7610/7610]
+
+--2013-04-17 17:32:48--  http://alandix.com/academic/tutorials/tcpip/sample-code/lib/line_by_line.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 2395 (2.3K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/lib/line_by_line.c'
+
+     0K ..                                                    100% 29.2M=0s
+
+2013-04-17 17:32:48 (29.2 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/lib/line_by_line.c' saved [2395/2395]
+
+--2013-04-17 17:32:48--  http://alandix.com/academic/tutorials/tcpip/sample-code/lib/mail-helper.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 5684 (5.6K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/lib/mail-helper.c'
+
+     0K .....                                                 100%  272M=0s
+
+2013-04-17 17:32:48 (272 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/lib/mail-helper.c' saved [5684/5684]
+
+--2013-04-17 17:32:48--  http://alandix.com/academic/tutorials/tcpip/sample-code/lib/mess.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 916 [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/lib/mess.c'
+
+     0K                                                       100%  158M=0s
+
+2013-04-17 17:32:48 (158 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/lib/mess.c' saved [916/916]
+
+--2013-04-17 17:32:48--  http://alandix.com/academic/tutorials/tcpip/sample-code/lib/monitor.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 1401 (1.4K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/lib/monitor.c'
+
+     0K .                                                     100%  144M=0s
+
+2013-04-17 17:32:48 (144 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/lib/monitor.c' saved [1401/1401]
+
+--2013-04-17 17:32:48--  http://alandix.com/academic/tutorials/tcpip/sample-code/lib/protocol.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 2751 (2.7K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/lib/protocol.c'
+
+     0K ..                                                    100% 16.9M=0s
+
+2013-04-17 17:32:48 (16.9 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/lib/protocol.c' saved [2751/2751]
+
+--2013-04-17 17:32:48--  http://alandix.com/academic/tutorials/tcpip/sample-code/lib/sock.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 3196 (3.1K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/lib/sock.c'
+
+     0K ...                                                   100% 31.4K=0.1s
+
+2013-04-17 17:32:49 (31.4 KB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/lib/sock.c' saved [3196/3196]
+
+--2013-04-17 17:32:49--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-2/simple-client.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 2090 (2.0K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-2/simple-client.c'
+
+     0K ..                                                    100%  163K=0.01s
+
+2013-04-17 17:32:49 (163 KB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-2/simple-client.c' saved [2090/2090]
+
+--2013-04-17 17:32:49--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-2/simple-server.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 2151 (2.1K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-2/simple-server.c'
+
+     0K ..                                                    100%  617K=0.003s
+
+2013-04-17 17:32:49 (617 KB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-2/simple-server.c' saved [2151/2151]
+
+--2013-04-17 17:32:49--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-3/mail-client.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 2220 (2.2K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-3/mail-client.c'
+
+     0K ..                                                    100% 1.51M=0.001s
+
+2013-04-17 17:32:50 (1.51 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-3/mail-client.c' saved [2220/2220]
+
+--2013-04-17 17:32:50--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-3/mail-one-line.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 2329 (2.3K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-3/mail-one-line.c'
+
+     0K ..                                                    100% 8.96M=0s
+
+2013-04-17 17:32:50 (8.96 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-3/mail-one-line.c' saved [2329/2329]
+
+--2013-04-17 17:32:50--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-4/client.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 1311 (1.3K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-4/client.c'
+
+     0K .                                                     100% 12.4K=0.1s
+
+2013-04-17 17:32:51 (12.4 KB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-4/client.c' saved [1311/1311]
+
+--2013-04-17 17:32:51--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-4/makefile
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 312 [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-4/makefile'
+
+     0K                                                       100% 87.0M=0s
+
+2013-04-17 17:32:51 (87.0 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-4/makefile' saved [312/312]
+
+--2013-04-17 17:32:51--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-4/server.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 2615 (2.6K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-4/server.c'
+
+     0K ..                                                    100% 1.27M=0.002s
+
+2013-04-17 17:32:51 (1.27 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-4/server.c' saved [2615/2615]
+
+--2013-04-17 17:32:51--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-6/echo-all.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 3178 (3.1K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-6/echo-all.c'
+
+     0K ...                                                   100% 4.53M=0.001s
+
+2013-04-17 17:32:52 (4.53 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-6/echo-all.c' saved [3178/3178]
+
+--2013-04-17 17:32:52--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-6/fork-test.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 1064 (1.0K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-6/fork-test.c'
+
+     0K .                                                     100%  131M=0s
+
+2013-04-17 17:32:52 (131 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-6/fork-test.c' saved [1064/1064]
+
+--2013-04-17 17:32:52--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-6/knife-old.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 3238 (3.2K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-6/knife-old.c'
+
+     0K ...                                                   100% 23.9K=0.1s
+
+2013-04-17 17:32:53 (23.9 KB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-6/knife-old.c' saved [3238/3238]
+
+--2013-04-17 17:32:53--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-6/knife.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 3238 (3.2K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-6/knife.c'
+
+     0K ...                                                   100% 4.09M=0.001s
+
+2013-04-17 17:32:53 (4.09 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-6/knife.c' saved [3238/3238]
+
+--2013-04-17 17:32:53--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-6/spoon.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 2325 (2.3K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-6/spoon.c'
+
+     0K ..                                                    100%  283M=0s
+
+2013-04-17 17:32:54 (283 MB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-6/spoon.c' saved [2325/2325]
+
+--2013-04-17 17:32:54--  http://alandix.com/academic/tutorials/tcpip/sample-code/session-7/proxy.c
+Reusing existing connection to alandix.com:80.
+HTTP request sent, awaiting response... 200 OK
+Length: 5241 (5.1K) [text/plain]
+Saving to: `alandix.com/academic/tutorials/tcpip/sample-code/session-7/proxy.c'
+
+     0K .....                                                 100% 54.4K=0.09s
+
+2013-04-17 17:32:54 (54.4 KB/s) - `alandix.com/academic/tutorials/tcpip/sample-code/session-7/proxy.c' saved [5241/5241]
+
+FINISHED --2013-04-17 17:32:54--
+Downloaded: 37 files, 69K in 0.8s (92.6 KB/s)

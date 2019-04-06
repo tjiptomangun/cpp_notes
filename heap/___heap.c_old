@@ -1,0 +1,78 @@
+#include <stdio.h>
+#define HEAP_OUTOFMEMORY -1
+
+int depth = 0;
+int numnode = 0;
+
+typedef struct hnode
+{
+	int value;
+	int index;
+	int level;
+	struct *hnode parent;
+	struct *hnode left;
+	struct *hnode right;
+}HNODE, *PHNODE;
+
+PHNODE newhnode (int value)
+{
+	PHNODE ret = (PHNODE)  calloc (1, sizeof (HNODE));
+	if (!ret)
+		return ret;
+	ret->value = value;
+	return ret;		
+}
+/**
+ * Name		: upheap
+ * Description	: compare to parent, if > then switch position with parent
+ * Input
+ * Output
+ * Returns
+ **/
+
+
+
+/**
+ * Name		: addhnode
+ * Description	: add new node and arrange.
+ * 		  returns new parent
+ */
+
+PHNODE addhnode (PHNODE parent, PHNODE new)
+{
+	if (!parent)
+	{
+		new->index = 0;
+		depth++;
+		numnode++;
+		return new;
+	}
+	if (!parent->left)
+	{
+		if (parent->value < new->value)
+		{
+			parent->left = new->value;
+			new->value->parent = parent;
+		}
+		else
+		{
+			new->left = parent->left;
+			new->right = parent->right; 
+			parent->left = parent->right = NULL;
+		}
+	}
+	else if (!parent->right)
+	{
+		if (parent->value < new->value)
+		{
+			
+		}
+	}
+	return parent;
+
+}
+
+int main (int argc, char **argv)
+{
+	
+}

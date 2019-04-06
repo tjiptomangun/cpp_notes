@@ -1,0 +1,1 @@
+gcc system-all.c sock.c -Wall -ggdb3 -o systemsvr  

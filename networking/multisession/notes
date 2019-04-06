@@ -1,0 +1,11 @@
+
+xshellsvr  port  = 1101
+echosvr port  = 6789
+
+
+The valid module name is XLAdmAgent and XLAdmClient
+The names of the source code and binaries respectively follows those names.
+
+pids=`ps ax|sed -e '/ EchoSvr /!d;/grep/d;s/^ *\([0-9]*\) *.*/\1/g'`; for pid in $pids  ;do echo $pid  ; done;
+pids=`ps ax|sed -e '/ EchoSvr /!d;/grep/d;s/^ *\([0-9]*\) *.*/\1/g'`; for pid in $pids  ;do kill -9 $pid  ; done;
+

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+for i; do
+	echo $i
+done
+`ps aux| grep EchoSvr|sed -e '/grep/d'| awk '{print " kill -9 " $2}'`
