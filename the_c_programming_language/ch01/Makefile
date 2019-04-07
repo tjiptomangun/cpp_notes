@@ -3,7 +3,7 @@ LDDIR=-L src/lib
 INCDIR=-I src/inc
 
 all: wc onewordperline longestline_revised morethan blanks copies trimmer \
-	entab detab value_of_EOF fold_line remove_comments
+	entab detab value_of_EOF fold_line remove_comments check_csyntax
 
 wc: wc.o 
 	gcc -o target/wc target/wc.o
@@ -77,6 +77,12 @@ remove_comments: remove_comments.o
 remove_comments.o: src/bin/remove_comments.c
 	gcc $(LDFLAGS) -c src/bin/remove_comments.c -o target/remove_comments.o
 
+check_csyntax: check_csyntax.o 
+	gcc $(LDFLAGS) -o target/check_csyntax target/check_csyntax.o
+
+check_csyntax.o: src/bin/check_csyntax.c
+	gcc $(LDFLAGS) -c src/bin/check_csyntax.c -o target/check_csyntax.o
+
 clean:
 	rm target/wc.o target/wc target/onewordperline.o target/onewordperline \
 		target/longestline_revised.o target/longestline_revised\
@@ -88,7 +94,8 @@ clean:
 		target/detab.o target/detab \
 		target/value_of_EOF.o target/value_of_EOF \
 		target/fold_line.o target/fold_line \
-		target/remove_comments.o target/remove_comments 
+		target/remove_comments.o target/remove_comments \
+		target/check_csyntax.o target/check_csyntax 
 
 .PHONY: wc wc.o onewordperline.o onewordperline \
 	longestline_revised.o longestline_revised \
@@ -96,4 +103,5 @@ clean:
 	trimmer.o trimmer entab.o entab detab.o detab \
 	value_of_EOF.o value_of_EOF \
 	fold_line.o fold_line \
-	remove_comments.o remove_comments
+	remove_comments.o remove_comments \
+	check_csyntax.o check_csyntax 
