@@ -37,8 +37,9 @@ int main (int argc, char **argv){
 
 	while ((ch = getchar()) != EOF) {
 		if (ch == '\n'){
-			if (inchar){
+			if (inchar){ 
 				inchar --;
+				printf("inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);
 			}
 			if (inescape){
 				inescape = 0;
@@ -64,22 +65,43 @@ int main (int argc, char **argv){
 		}
 		else if (ch == '"'){
 			if (!incomment){
-				if (!instring)
-					instring ++;	
-				else if (instring)
-					instring  --;
+				if(!inchar){
+					if (!instring)
+						instring ++;	
+					else if (instring)
+						instring  --;
+				}
 			}
 		} 
 		else if (!instring && !incomment)
 		{
 			if (ch == '\''){
-				if (prevchar == '\''){
+				if (prevchar == '\'' && !inescape){
 					printf("empty character literal on line %d:%d\n", linenumber + 1, charnumber + 1); 
 				}
-				else if (inchar)
-					inchar--;
-				else
+				else if(prevchar == '\'' && inescape) { /*handle '\'' case but break on '\\' case */
+					inescape --;
+					inchar --;
+					printf("inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);
+					printf("*inescape -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inescape);
+				}
+				else if (inchar){
+					if (inescape==2 && prevchar == '\\'){ /* break on '\'' */
+						inescape = 0; 
+						printf("inescape = 0 on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inescape);
+						inchar--;
+						printf("**inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);
+					}
+					else if(!(inescape == 1 && prevchar == '\\')){
+						inchar --;
+						printf("***inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);
+					}
+					
+				}
+				else{
 					inchar ++;
+					printf("inchar ++ on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);
+				}
 			}
 			else if (!inchar)
 			{ 
@@ -116,29 +138,26 @@ int main (int argc, char **argv){
 				}
 			}
 			else if (ch == '\\') {
-				if (inchar){
-					inescape ++;
-					if (inescape > 2){
-						printf("invalid escape sequence on line %d:%d\n", linenumber + 1, charnumber + 1);
-					}
+				inescape ++;
+				printf("inescape ++ on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inescape);
+				if (inescape > 2){
+					printf("invalid escape sequence on line %d:%d\n", linenumber + 1, charnumber + 1);
 				}
 			}
 			else if (ch == ' '){
-				if (inchar){
-					if (prevchar == '\'' || prevchar == '\\' ){
-						printf("premature character literal on line %d:%d\n", linenumber + 1, charnumber + 1);
-					}
+				if (prevchar != '\'' && prevchar != '\\' ){
+					printf("premature character literal on line %d:%d\n", linenumber + 1, charnumber + 1);
 				}
 			}
+/*
 			else {
-				if (inchar){
-					if (!inescape){
-						if (prevchar != '\''){
-							printf("invalid string literal on line %d:%d\n", linenumber + 1, charnumber + 1);
-						}	
-					}
+				if (!inescape){
+					if (prevchar != '\''){
+						printf("invalid string literal on line %d:%d\n", linenumber + 1, charnumber + 1);
+					}	
 				}
 			}
+*/
 
 		}/*instring incomment*/
 		prevchar = ch; 
