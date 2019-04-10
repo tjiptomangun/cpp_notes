@@ -2,7 +2,7 @@
 
 int main (int argc, char **argv) {
 	printf("Hello World!"); 
-	int ch = 't';
+	int ch = 't;
 	if (ch == '"'){
 		if (false){
 			return 0;
@@ -10,7 +10,9 @@ int main (int argc, char **argv) {
 		else {
 			return 1;
 		}
-	}/*else*/
+		
+	}
+	/*else*/
 	else if(ch == '\''){
 		return 0;
 	}

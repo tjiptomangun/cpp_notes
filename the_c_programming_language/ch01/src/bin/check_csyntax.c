@@ -19,13 +19,15 @@
 
 
 
-int main (int argc, char **argv){
+int main (int argc, char **argv){ /*1*/
 	int parenthese = 0;
 	int bracket = 0;
 	int brace = 0;
 	int paren_last = -1;
 	int bracket_last = -1;
 	int brace_last = -1;
+	int comment_last = -1;
+	int string_last = -1;
 	int linenumber = 0;
 	int charnumber = 0;
 	int ch = 0;
@@ -35,74 +37,85 @@ int main (int argc, char **argv){
 	int prevchar = 0;
 	int inescape = 0;
 
-	while ((ch = getchar()) != EOF) {
-		if (ch == '\n'){
-			if (inchar){ 
-				inchar --;
-				printf("inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);
-			}
-			if (inescape){
-				inescape = 0;
-			}
+	while ((ch = getchar()) != EOF) {/*2*/
+		if (ch == '\n'){/*3*/
 			linenumber ++;
 			charnumber = 0;
-		}	
-		else if (ch == '*' && prevchar == '/'){
-			if (!instring){
+		}/*2*/
+		else if (ch == '*' && prevchar == '/'){/*3*/
+			if (!instring){/*4*/
 				incomment ++;
-				if (incomment > 1){
-					printf("starting another comment on active comemnt on line %d:%d\n", linenumber + 1, charnumber + 1);
-				}
-			}
-		}
-		else if (ch == '/' && prevchar == '*' && incomment){
-			if (!instring){
-				incomment  --;
-				if (incomment < 0){
+				comment_last = linenumber;
+				/* printf("incomment ++ on line %d:%d:%d\n", linenumber + 1, charnumber + 1, incomment); */
+				if (incomment > 1){/*5*/
+					printf("starting another comment on active comment on line %d:%d\n", linenumber + 1, charnumber + 1);
+				}/*4*/
+			}/*3*/
+		}/*2*/
+		/*else if (ch == '/' && prevchar == '*' && incomment){*/
+		else if (ch == '/' && prevchar == '*'){/*3*/
+			if (!instring){/*4*/
+				incomment --;
+				/* printf("incomment -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, incomment); */
+				if (incomment < 0){/*5*/
 					printf("invalid comment on line %d:%d\n", linenumber + 1, charnumber + 1);
-				}
+				}/*4*/
 			}
-		}
-		else if (ch == '"'){
-			if (!incomment){
-				if(!inchar){
-					if (!instring)
+		}/*2*/
+		else if (ch == '"'){/*3*/
+			if (!incomment){/*4*/
+				if(!inchar){/*5*/
+					if (!instring){/*6*/
 						instring ++;	
-					else if (instring)
+						string_last = linenumber;
+					}
+					else if (instring){
 						instring  --;
+					}
 				}
 			}
-		} 
+		}/*2*/ 
 		else if (!instring && !incomment)
-		{
-			if (ch == '\''){
-				if (prevchar == '\'' && !inescape){
+		{/*3*/
+			if (ch == '\''){/*4*/
+				if (prevchar == '\'' && !inescape){/*5*/
 					printf("empty character literal on line %d:%d\n", linenumber + 1, charnumber + 1); 
 				}
 				else if(prevchar == '\'' && inescape) { /*handle '\'' case but break on '\\' case */
 					inescape --;
 					inchar --;
+					/*	
 					printf("inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);
 					printf("*inescape -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inescape);
+					*/
+					
 				}
 				else if (inchar){
-					if (inescape==2 && prevchar == '\\'){ /* break on '\'' */
+					if (inescape==2 && prevchar == '\\'){ /* case '\\' */
 						inescape = 0; 
-						printf("inescape = 0 on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inescape);
 						inchar--;
-						printf("**inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);
+						/*
+						printf("inescape = 0 on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inescape); 
+						printf("**inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar); */
 					}
-					else if(!(inescape == 1 && prevchar == '\\')){
+					/*@TODO: simplify these 2 else if below*/
+					else if (inescape && prevchar != '\\') { /*--- case '\n' , '\b' etc*/
 						inchar --;
-						printf("***inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);
-					}
+						inescape --;
+						/* printf("****inescape -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inescape);
+						printf("****inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar); */
+					} 
+					else if(!(inescape == 1 && prevchar == '\\')){ /*--- case '\'' */
+						inchar --;
+						/*printf("***inchar -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);*/
+					} 
 					
 				}
 				else{
 					inchar ++;
-					printf("inchar ++ on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);
+					/*printf("inchar ++ on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inchar);*/
 				}
-			}
+			}/*3*/
 			else if (!inchar)
 			{ 
 				if (ch == CLOSE_PAREN){
@@ -118,12 +131,14 @@ int main (int argc, char **argv){
 				}
 				else if (ch == CLOSE_BRACE){
 					brace --;		
+					/*printf("brace -- on line %d:%d:%d\n", linenumber + 1, charnumber + 1, brace);*/
 					if (brace < 0){
 						printf("unmatch close brace on line %d:%d\n", linenumber + 1, charnumber + 1);
 					}
 				}
 				else if (ch == OPEN_BRACE) {
 					brace ++;
+					/*printf("brace ++ on line %d:%d:%d\n", linenumber + 1, charnumber + 1, brace);*/
 					brace_last = linenumber;
 				}
 				else if (ch == CLOSE_BRACKET){
@@ -139,7 +154,7 @@ int main (int argc, char **argv){
 			}
 			else if (ch == '\\') {
 				inescape ++;
-				printf("inescape ++ on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inescape);
+				/*printf("inescape ++ on line %d:%d:%d\n", linenumber + 1, charnumber + 1, inescape);*/
 				if (inescape > 2){
 					printf("invalid escape sequence on line %d:%d\n", linenumber + 1, charnumber + 1);
 				}
@@ -172,6 +187,12 @@ int main (int argc, char **argv){
 	}
 	if (brace > 0){
 		printf("unclosed brace on line %d\n", brace_last + 1);
+	}
+	if (incomment > 0){
+		printf("unclosed comment on line %d\n", comment_last + 1);
+	}
+	if (instring > 0){
+		printf("unclosed string on line %d\n", string_last + 1);
 	}
 
 	return 0;	
