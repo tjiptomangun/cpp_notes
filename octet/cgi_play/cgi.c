@@ -57,6 +57,7 @@ int cgi(unsigned int version, char *in, char *out)  {
     outptr[0] = '-';
     outptr ++;
   }
+/*
   memcpy(temp, inptr, 4);
   temp[4] = 0;
   ret = strtol(temp, &endptr, 16); 
@@ -72,6 +73,43 @@ int cgi(unsigned int version, char *in, char *out)  {
   snprintf(outptr, 6, "%d", ret); 
   ret = strlen(outptr); 
   return (outptr - &out[0]) + ret;
+*/
+  if (inptr[0] >= 'a' && inptr[0] < 'f'){
+    ret |= (inptr[0] - 'a') + 10;
+    inptr ++;
+  }
+  else {
+    ret |= (inptr[0] - '0');
+    inptr ++;
+  }
+  ret <<= 4;
+  if (inptr[0] >= 'a' && inptr[0] < 'f'){
+    ret |= (inptr[0] - 'a') + 10;
+    inptr ++;
+  }
+  else {
+    ret |= (inptr[0] - '0');
+    inptr ++;
+  }
+  ret <<= 4;
+  if (inptr[0] >= 'a' && inptr[0] < 'f'){
+    ret |= (inptr[0] - 'a') + 10;
+    inptr ++;
+  }
+  else {
+    ret |= (inptr[0] - '0');
+    inptr ++;
+  }
+  ret <<= 4;
+  if (inptr[0] >= 'a' && inptr[0] < 'f'){
+    ret |= (inptr[0] - 'a') + 10;
+    inptr ++;
+  }
+  else {
+    ret |= (inptr[0] - '0');
+    inptr ++;
+  }
+
 }
 #ifdef UNIT_TEST
 int main (int argc, char **argv) {
