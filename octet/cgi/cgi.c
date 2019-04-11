@@ -165,7 +165,7 @@ int cgi(unsigned int version, unsigned char *in, char *out, size_t inlength, siz
   
   return outlength - remain;
 }
-#ifdef TEST
+#ifdef UNIT_TEST
 int main (int argc, char **argv) {
   unsigned char test[] = {0x25, 0xf5, 0x23, 0x1a, 0xd2, 0x86, 0x8d, 0};
   char out[18]; 
@@ -184,6 +184,28 @@ int main (int argc, char **argv) {
   char out2[14]; 
   ret = cgi(2, test, out2, 7, 14);
   assert(ret < 0); 
+
+}
+#endif
+
+#ifdef PERF_TEST
+#include <time.h>
+#include <unistd.h>
+#define BILLION 1000000000.0
+
+int main (int argc, char **argv) {
+  unsigned char test[] = {0x25, 0xf5, 0x23, 0x1a, 0xd2, 0x86, 0x8d, 0};
+  struct timespec start, end;
+  char out[18]; 
+  int ret;
+
+  clock_gettime(CLOCK_REALTIME, &start);
+  cgi(2, test, out, 7, 18); 
+  clock_gettime(CLOCK_REALTIME, &end);
+
+  double time_spent = (end.tv_nsec - start.tv_nsec);
+
+  printf ("Time elapsed is %f secs\n", time_spent/BILLION);
 
 }
 #endif
