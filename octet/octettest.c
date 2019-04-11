@@ -5,26 +5,55 @@
 #include <stdio.h>
 #include <memory.h>
 #include <stdlib.h>
+#include "octettest.h"
 
 /**
- * convert bcd bytes to common hex bytes
- * returns length of copied bytes
+ * NAME		: bcd_to_hex
+ * DESCRIPTION	: Convert bcd bytes to common hex bytes.
+ * INPUT 
+ * 	inchar 	: bytes to convert, should not overlap outchar
+ * 	outchar	: converted bytes, should not overlap inchar
+ * 	inbytes : number of bytes to convert
+ * 	outbytes: output buffer size in bytes
+ *
+ * RETURNS
+ * 	Success	: number of bytes copied
+ * 	-1	: invalid format
+ * 	-2 	: insufficient outbytes size
+ *
+ * 
  */
-size_t  bcd_to_hex(char *inchar, char *outchar, size_t inbytes, size_t outbytes) {
+size_t  bcd_to_hex(unsigned char *inchar, char *outchar, size_t inbytes, size_t outbytes) {
 	int i = 0, j = 0;
+	int remain = outbytes;
 	for (i = 0, j = 0; i < inbytes; i++){
-		if ((inchar[i] & 0xF0) != 0xF0)
-			outchar[j++] = inchar[i] & 0x0F;
-		else
-			break;
+		if ((inchar[i] & 0x0F) < 0x09){
+			if (remain > 0){
+				outchar[j++] = inchar[i] & 0x0F;
+				remain --;
+			}
+			else{
+				return -2;
+			}
+		}
+		else 
+			return ERROR_ONE; 
 
-
-		if (j + 1 > outbytes)
-			break;
-		else if ((inchar[i] & 0xF0) != 0xF0)
-			outchar[j++] = inchar[i]>>4 & 0x0F;
-		else
-			break;
+		
+		if ((inchar[i] & 0xF0) ==  0xF0)
+			break; 
+		else if ((inchar[i] >>4 & 0x0F) < 0x09){
+			if (remain > 0){
+				outchar[j++] = inchar[i]>>4 & 0x0F;
+				remain --;
+			}
+			else {
+				return -2;
+			}
+		}
+		else{
+			return -1;
+		}
 	}
 	return j;
 	
@@ -41,11 +70,11 @@ void bytes_to_string(char *inchar, size_t charlength) {
 	}
 }
 
-int cgi(unsigned int version, char *in, char *out, size_t inlength, size_t outlength)  {
+int cgi(unsigned int version, unsigned char *in, char *out, size_t inlength, size_t outlength)  {
 	int len = 0;
 	int converted = 0;
 	char *outptr = out;
-	char *inptr = in;
+	unsigned char *inptr = in;
 	unsigned int lac = 0;
 	unsigned int ci = 0;
 	size_t remain = outlength;
@@ -80,7 +109,7 @@ int cgi(unsigned int version, char *in, char *out, size_t inlength, size_t outle
 		outptr ++;
 		remain --;
 	} 
-	lac = (unsigned char)inptr[0] << 8 | (unsigned char)inptr[1];
+	lac = inptr[0] << 8 | inptr[1];
 	inptr += 2;
 	/*LAC*/
 	snprintf(outptr, remain, "%d", lac);
@@ -92,7 +121,7 @@ int cgi(unsigned int version, char *in, char *out, size_t inlength, size_t outle
 	remain --;
 
 	/*CI*/
-	ci = (unsigned char)inptr[0] << 8 | (unsigned char)inptr[1];
+	ci = inptr[0] << 8 | inptr[1];
 
 	snprintf(outptr, remain, "%d", ci); 
 	len = strlen(outptr);
@@ -103,14 +132,13 @@ int cgi(unsigned int version, char *in, char *out, size_t inlength, size_t outle
 }
 
 int main (int argc, char **argv) {
-	char test[] = {0x25, 0xf5, 0x23, 0x1a, 0xd2, 0x86, 0x8d, 0};
-	char out[14];
-	int len = 0;
+	unsigned char test[] = {0x25, 0xf5, 0x23, 0x1a, 0xd2, 0x86, 0x8d, 0};
+	char out[18]; 
 	
-	memset(out, 0, 14);
+	memset(out, 0, 18);
 	cgi(2, test, out, 7, 20);
 	fprintf(stdout, "%s\n", out);
-	memset(out, 0, 14);
+	memset(out, 0, 18);
 	cgi(1, &test[3], out, 7, 20);
 	fprintf(stdout, "%s\n", out);
 }
