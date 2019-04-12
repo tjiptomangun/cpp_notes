@@ -206,6 +206,7 @@ int main (int argc, char **argv) {
   double time_spent = (end.tv_nsec - start.tv_nsec);
 
   printf ("Time elapsed is %f secs\n", time_spent/BILLION);
+  printf ("Time elapsed is %f nsecs\n", time_spent);
 
 }
 #endif
