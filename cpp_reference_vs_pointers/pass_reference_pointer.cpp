@@ -18,11 +18,24 @@ int main() {
 	r = y;
 
 	p = NULL;
-	&r = NULL;	//compile error, cannot be NULL
+	//&r = NULL;	//compile error, cannot be NULL
 
 	p ++;		//points to nex memory location
 	r ++;		//x become 7
 
 	cout << &p << " " << &x << endl;	// Different address
-	cout << &r << " " << &x << endl'	// Same address
+	cout << &r << " " << &x << endl;	// Same address
+
+	demo *q = &d;
+	demo &qq = d;
+
+	q->a = 8;
+	//q.a = 8; /*compile error*/
+	qq.a = 8; /*compile error*/
+
+	cout << p <<endl;	//Print the address
+	cout << r <<endl;	//Print the value
+
+	return 0; 
+	
 }
