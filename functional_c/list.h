@@ -1,6 +1,19 @@
 #ifndef _LIST_H_
 #define _LIST_H_
 #include <any.h>
+
+/**
+ * LIST_NODE is helper struct for list member
+ * it is not a functional data structure but
+ * wrap functional data structure.
+ * It's constructor and destructor are implemented
+ * on LIST
+ */
+typedef struct list_node{
+	struct list_node *next;
+	struct list_node *prev; 
+	ANY *wrapped_data;
+} LIST_NODE;
 /**
  * LIST is functional data structure.
  * So it has to have ANY members and methods.
@@ -15,15 +28,15 @@ typedef struct list {
 	 * INPUT
 	 *		in		: pointer to itself
 	 */
-	void (*delete) struct(list*);
+	void (*delete) (struct list*);
 	/**
 	 * head is the first element of this list
 	 */
-	ANY *head;
+	LIST_NODE *head;
 	/**
 	 * last it the last element of thist list
 	 */
-	ANY *last;
+	LIST_NODE *last;
 	int size;
 	/**
 	 * NAME			: prepend
@@ -33,7 +46,7 @@ typedef struct list {
 	 * RETURNS
 	 *	This list with a node added
 	 */
-	(struct list *) (*prepend) (ANY *); 
+	struct list * (*prepend) (struct list*, ANY *); 
 	/**
 	 * NAME			: append
 	 * DESCRIPTION	: add member to end of list
@@ -42,7 +55,7 @@ typedef struct list {
 	 * RETURNS
 	 *	This list with a node added
 	 */ 
-	(struct list *) (*append) (ANY *);
+	struct list * (*append) (struct list*, ANY *);
 	/**
 	 * NAME			: init
 	 * DESCRIPTION	: Delete the last element.
@@ -51,7 +64,7 @@ typedef struct list {
 	 * RETURNS
 	 *	The new list
 	 */ 
-	(struct list *) (*init) ();
+	struct list * (*init) (struct list*);
 	/**
 	 * NAME			: tails
 	 * DESCRIPTION	: Delete the first element.
@@ -60,7 +73,7 @@ typedef struct list {
 	 * RETURNS
 	 *	The new list
 	 */ 
-	(struct list *) (*tails) ();
+	struct list * (*tails) (struct list*);
 	/**
 	 * NAME			: get
 	 * DESCRIPTION	: get the nth element from head. 
@@ -71,6 +84,6 @@ typedef struct list {
 	 * RETURNS
 	 *	the nth element
 	 */ 
-	(struct unit *) (*get)(int);
+	struct unit * (*get)(int);
 } LIST;
 #endif
