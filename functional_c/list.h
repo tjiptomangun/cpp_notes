@@ -66,19 +66,19 @@ typedef struct list {
 	 */ 
 	struct list * (*init) (struct list*);
 	/**
-	 * NAME			: tails
+	 * NAME			: tail
 	 * DESCRIPTION	: Delete the first element.
 	 * INPUT
 	 *
 	 * RETURNS
 	 *	The new list
 	 */ 
-	struct list * (*tails) (struct list*);
+	struct list * (*tail) (struct list*);
 	/**
 	 * NAME			: get
 	 * DESCRIPTION	: get the nth element from head. 
 	 *				  the returned element did not detached from
-	 *				  the list
+	 *				  the list. Returned data already unwrapped.
 	 * INPUT
 	 *
 	 * RETURNS
