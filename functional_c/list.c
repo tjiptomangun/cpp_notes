@@ -1,6 +1,8 @@
 #include <list.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
+#include <any.h>
 
 /**
  * NAME			: __new_list_node
@@ -98,6 +100,8 @@ static LIST *__init_list(LIST *inlist) {
 	if (inlist && inlist->last){
 		temp = inlist->last->prev;
 		__delete_list_node(inlist->last);
+		if (inlist->head == inlist->last)
+			inlist->head = temp;
 		inlist->last = temp;
 		inlist->size --;
 	}
@@ -105,14 +109,16 @@ static LIST *__init_list(LIST *inlist) {
 }
 
 /**
- * NAME			: __tails_list
+ * NAME			: __tail_list
  * DESCRIPTION	: delete first element of given list
  */
-static LIST *__tails_list(LIST *inlist){
+static LIST *__tail_list(LIST *inlist){
 	LIST_NODE *temp;
 	if(inlist && inlist->head){
 		temp = inlist->head->next;
 		__delete_list_node(inlist->head);
+		if (inlist->head == inlist->last)
+			inlist->last = temp;
 		inlist->head = temp;
 		inlist->size --; 
 	}
@@ -128,7 +134,7 @@ static void __delete_list(LIST *inlist) {
 	inlist->prepend = NULL;
 	inlist->append = NULL;
 	inlist->init = NULL;
-	inlist->tails = NULL;
+	inlist->tail = NULL;
 	free(inlist);
 }
 LIST *new_list() {
@@ -141,17 +147,104 @@ LIST *new_list() {
 	ret->prepend = __prepend_list;
 	ret->append = __append_list;
 	ret->init = __init_list;
-	ret->tails = __tails_list;
+	ret->tail = __tail_list;
 	return ret;
 }
 
 #ifdef _LIST_UNIT_TEST_
 	void create_list(){
+		printf("-create list\n");
 		LIST *t = new_list();
 		assert(t != NULL);
 		t->delete(t);
+	}
+	void prepend_list(){
+		printf("-prepend list\n");
+		LIST *t = new_list();
+		unsigned char *h1, *t1;
+		unsigned char *h2, *t2;
+		assert(t != NULL);
+		t->prepend(t, new_any());
+		h1 = (unsigned char *)t->head;
+		t1 = (unsigned char *)t->last;
+		t->prepend(t, new_any());
+		h2 = (unsigned char *)t->head;
+		t2 = (unsigned char *)t->last;
+		assert(t->size == 2);
+		assert(t->head != NULL);
+		assert(t->head->next != NULL);
+		assert(h1 != h2);
+		assert(t1 == t2);
+		t->delete(t);
 	}	
+	void append_list(){
+		printf("-append list\n");
+		LIST *t = new_list();
+		unsigned char *h1, *t1;
+		unsigned char *h2, *t2;
+		assert(t != NULL);
+		t->append(t, new_any());
+		h1 = (unsigned char *)t->head;
+		t1 = (unsigned char *)t->last;
+		t->append(t, new_any());
+		h2 = (unsigned char *)t->head;
+		t2 = (unsigned char *)t->last;
+		assert(t->size == 2);
+		assert(t->head != NULL);
+		assert(t->head->next != NULL);
+		assert(h1 == h2);
+		assert(t1 != t2);
+		t->delete(t);
+	}
+	void init_list(){
+		printf("-init list\n");
+		LIST *t = new_list();
+		unsigned char  *t1;
+		unsigned char  *t2;
+		unsigned char  *t3;
+		assert(t != NULL);
+		t->append(t, new_any());
+		t1 = (unsigned char *)t->last;
+		t->append(t, new_any());
+		t2 = (unsigned char *)t->last;
+		t->append(t, new_any());
+		t3 = (unsigned char *)t->last;
+		assert(t->size == 3);
+		assert((unsigned char *)t->last == t3); 
+		t->init(t);
+		assert((unsigned char *)t->last == t2);
+		t->init(t);
+		assert((unsigned char *)t->last == t1);
+		assert(t->size == 1); 
+		t->delete(t);
+	}
+	void tail_list(){
+		printf("-tail list\n");
+		LIST *t = new_list();
+		unsigned char *t1;
+		unsigned char *t2;
+		unsigned char *t3;
+		assert(t != NULL);
+		t->append(t, new_any());
+		t1 = (unsigned char *)t->last;
+		t->append(t, new_any());
+		t2 = (unsigned char *)t->last;
+		t->append(t, new_any());
+		t3 = (unsigned char *)t->last;
+		assert(t->size == 3);
+		assert((unsigned char *)t->head== t1); 
+		t->tail(t);
+		assert((unsigned char *)t->head== t2);
+		t->tail(t);
+		assert((unsigned char *)t->head== t3);
+		assert(t->size == 1); 
+		t->delete(t);
+	}
 	int main (int argc, char **argv) {
 		create_list();
+		prepend_list();
+		append_list();
+		init_list();
+		tail_list();
 	}
 #endif
