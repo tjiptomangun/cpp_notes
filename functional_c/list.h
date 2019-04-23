@@ -18,29 +18,29 @@ typedef struct list_node{
  * LIST is functional data structure.
  * So it has to have ANY members and methods.
  * It is a single pointer linked list with
- * two reference head and tail
+ * two reference __s__head and tail
  */
 typedef struct list {
 	struct list *this;
 	/**
 	 * NAME			: delete
-	 * DESCRIPTION	: delete all nodes from head to last, and delete the list
+	 * DESCRIPTION	: delete all nodes from __s__head to __s__last, and delete the list
 	 * INPUT
 	 *		in		: pointer to itself
 	 */
 	void (*delete) (struct list*);
 	/**
-	 * head is the first element of this list
+	 * __s__head is the first element of this list
 	 */
-	LIST_NODE *head;
+	LIST_NODE *__s__head;
 	/**
-	 * last it the last element of thist list
+	 * __s__last it the __s__last element of thist list
 	 */
-	LIST_NODE *last;
+	LIST_NODE *__s__last;
 	int size;
 	/**
 	 * NAME			: prepend
-	 * DESCRIPTION	: add member to head of list
+	 * DESCRIPTION	: add member to __s__head of list
 	 * INPUT
 	 *				: node to add
 	 * RETURNS
@@ -58,7 +58,7 @@ typedef struct list {
 	struct list * (*append) (struct list*, ANY *);
 	/**
 	 * NAME			: init
-	 * DESCRIPTION	: Delete the last element.
+	 * DESCRIPTION	: Delete the __s__last element.
 	 * INPUT
 	 *
 	 * RETURNS
@@ -76,14 +76,31 @@ typedef struct list {
 	struct list * (*tail) (struct list*);
 	/**
 	 * NAME			: get
-	 * DESCRIPTION	: get the nth element from head. 
+	 * DESCRIPTION	: get the nth element from __s__head. 
 	 *				  the returned element did not detached from
-	 *				  the list. Returned data already unwrapped.
+	 *				  the list.
 	 * INPUT
+	 *			n	: the index
 	 *
 	 * RETURNS
 	 *	the nth element
 	 */ 
-	struct unit * (*get)(int);
+	ANY * (*get)(struct list*, unsigned int);
+
+	/**
+	 * NAME			: head
+	 * DESCRIPTION	: get the first element. This is equal to get(0)
+	 *
+	 */
+	ANY * (*head)(struct list*);
+
+	/**
+	 * NAME			: last
+	 * DESCRIPTION	: get the last element
+	 *
+	 */
+	ANY * (*last)(struct list*);
+
+
 } LIST;
 #endif
