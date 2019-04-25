@@ -4,14 +4,10 @@
 int get_line(char s[], int lim){
 	int c, i;
 	i = 0;
-	while (i < lim - 1){
-		if ((c = getchar())== EOF)
-			break;
-		else if (c == '\n')
-			break;
-		else
-			s[i] = c;
+	while ((i < lim - 1) * ((c = getchar()) != EOF) * (c != '\n')){
+		s[i++] = c;
 	}
+	/*fprintf(stdout, "len = %d ", i);	*/
 
 	if (c == '\n'){
 		s[i] = c;
@@ -35,15 +31,19 @@ int main (int argc, char **argv) {
 	int max;
 	char line[MAX_LINE];
 	char longest[MAX_LINE];
+	int j = 0;
 
 	len = 0;
 	max = 0;
 
-	while((len = get_line(line, MAX_LINE)) > 0){
+	while((len = get_line(line, MAX_LINE)) > 0){ 
+		/*fprintf(stdout, "line = %d ", j);	*/
 		if (len > max){
 			max = len;
 			copy(longest, line);
 		}
+		/*printf("%s", longest);*/
+		j ++;
 	}
 
 	if(max > 0)
