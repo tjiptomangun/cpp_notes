@@ -6,7 +6,10 @@ int main (int argc, char **argv) {
   int int_mod = *int_ptr;
   int_mod ++;
 
-  fprintf(stdout, "int_ptr : %d\n", *int_ptr);
+  fprintf(stdout, "pre int_ptr : %d\n", *int_ptr);
   fprintf(stdout, "int_mod: %d\n", int_mod);
+  *int_ptr = int_mod;
+  fprintf(stdout, "pos int_ptr : %d\n", *int_ptr);
+  
 
 }
