@@ -103,4 +103,20 @@ typedef struct list {
 
 
 } LIST;
+
+LIST *new_list();
+
+/**
+ *list case class 
+*/
+typedef struct Cons{
+	ANY *hd;
+	LIST *tl;
+} CONS;
+
+/**
+ * NAME			: uncons
+ * DESCRIPTION	: destructure list by separating head with tail
+ */
+//CONS *uncons(LIST *in);
 #endif

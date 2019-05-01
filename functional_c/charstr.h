@@ -1,5 +1,6 @@
 #ifndef _CHARSTR_H_
 #define _CHARSTR_H_
+/* string object */
 typedef struct charstr{
   struct charstr *this;
   void (*delete)(struct charstr *);

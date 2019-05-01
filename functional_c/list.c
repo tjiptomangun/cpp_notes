@@ -1,7 +1,7 @@
-#include <list.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <list.h>
 #include <any.h>
 
 /**
@@ -12,7 +12,7 @@
  *		next	: the successor of this new node
  *		wrapped	: the data wrapped by this node
  */
-static LIST_NODE * __new_list_node(ANY* wrapped, LIST_NODE *prev, LIST_NODE *next) {
+static LIST_NODE* __new_list_node(ANY* wrapped, LIST_NODE *prev, LIST_NODE *next) {
 	if (wrapped){
 		LIST_NODE *ret = (LIST_NODE *) calloc (1, sizeof (LIST_NODE));
 		if (wrapped != NULL)
@@ -33,13 +33,19 @@ static LIST_NODE * __new_list_node(ANY* wrapped, LIST_NODE *prev, LIST_NODE *nex
 }
 /**
  * NAME			: __delete_list_node
- * DESCRIPTION	:delete the wrapped data, detach from other member
+ * DESCRIPTION	: delete the wrapped data, detach from other member
  */
-static void __delete_list_node(LIST_NODE *node) {
+static void __delete_list_node(LIST *ls, LIST_NODE *node) {
 	if (node){
 		if (node->wrapped_data){
 			node->wrapped_data->delete(node->wrapped_data);
 			node->wrapped_data = NULL;
+		}
+		if (ls->__s__head == node){
+			ls->__s__head = node->next;
+		}
+		if (ls->__s__last == node){
+			ls->__s__last = node->prev;
 		}
 		if (node->prev){
 			node->prev->next = node->next;
@@ -52,6 +58,63 @@ static void __delete_list_node(LIST_NODE *node) {
 		free(node);
 	}
 }
+
+/**
+ * NAME			: __detach_list_node
+ * DESCRIPTION	: detach from other member
+ */
+static LIST_NODE* __detach_list_node(LIST_NODE *node) {
+	if (node){
+		if (node->prev){
+			node->prev->next = node->next;
+			node->next = NULL;
+		}
+		if (node->next) {
+			node->next->prev = node->prev;
+			node->prev = NULL;
+		} 
+	}
+	return node;
+}
+
+/**
+ * NAME			: __release_wrapped_data
+ * DESCRIPTION	: release wrapped_data
+ */
+static ANY* __release_wrapped_data(LIST_NODE *node) {
+	ANY *ret = NULL;
+	if (node && node->wrapped_data){
+		ret = node->wrapped_data;
+		node->wrapped_data = NULL;
+		return ret; 
+	}
+	else{
+		return NULL;
+	}
+
+}
+
+/**
+ * NAME			: __release_wrapped_and_delete
+ * DESCRIPTION	: release wrapped data in a node and delete the node
+ */
+static ANY* __release_wrapped_and_delete(LIST *ls, LIST_NODE *node){
+	ANY *ret = __release_wrapped_data(node);
+	__delete_list_node(ls, node);
+	return ret;
+}
+
+/**
+ * NAME			: __unwrap_list_node
+ * DESCRIPTION	: return wrapped data
+ */
+static ANY *__unwrap_list_node(LIST_NODE *node){
+	if(node && node->wrapped_data)
+		return node->wrapped_data;
+
+	return NULL;
+}
+
 /**
  * NAME			: __prepend_list
  * DESCRIPTION	: assign new data as inlist __s__head
@@ -99,7 +162,7 @@ static LIST *__init_list(LIST *inlist) {
 	LIST_NODE *temp;
 	if (inlist && inlist->__s__last){
 		temp = inlist->__s__last->prev;
-		__delete_list_node(inlist->__s__last);
+		__delete_list_node(inlist, inlist->__s__last);
 		if (inlist->__s__head == inlist->__s__last)
 			inlist->__s__head = temp;
 		inlist->__s__last = temp;
@@ -116,7 +179,7 @@ static LIST *__tail_list(LIST *inlist){
 	LIST_NODE *temp;
 	if(inlist && inlist->__s__head){
 		temp = inlist->__s__head->next;
-		__delete_list_node(inlist->__s__head);
+		__delete_list_node(inlist, inlist->__s__head);
 		if (inlist->__s__head == inlist->__s__last)
 			inlist->__s__last = temp;
 		inlist->__s__head = temp;
@@ -167,7 +230,7 @@ static ANY * __head(LIST *inlist) {
 		return NULL;
 	else
 		return curr->wrapped_data;
-}
+} 
 
 static ANY * __last(LIST *inlist) {
 	LIST_NODE *curr = inlist->__s__last;
@@ -175,6 +238,14 @@ static ANY * __last(LIST *inlist) {
 		return NULL;
 	else
 		return curr->wrapped_data;
+}
+
+static ANY * __fold_left(LIST *inlist, ANY *dflt, ANY *(*fn)(ANY*, ANY*)){
+	if (inlist->size == 0){
+		return dflt;
+	}
+	else {
+	}
 }
 
 LIST *new_list() {
@@ -193,6 +264,28 @@ LIST *new_list() {
 	ret->last= __last;
 	return ret;
 }
+
+LIST *cons(ANY *hd, LIST *tl){
+	tl->prepend(tl, hd);
+}
+
+CONS *uncons(LIST *in){
+	ANY *hd;
+	CONS *nc = (CONS *) calloc(1, sizeof(CONS));
+	if (!nc)
+			return NULL;
+
+	if (in && in->size && in->__s__head){
+			__release_wrapped_and_delete(in, in->__s__head);
+			nc->hd = hd;
+			nc->tl = in;
+			return nc; 
+	}
+	else
+		return NULL;
+}
+
+
 
 #ifdef _LIST_UNIT_TEST_
 	void create_list(){
