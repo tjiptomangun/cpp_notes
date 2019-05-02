@@ -118,5 +118,5 @@ typedef struct Cons{
  * NAME			: uncons
  * DESCRIPTION	: destructure list by separating head with tail
  */
-//CONS *uncons(LIST *in);
+CONS *uncons(LIST *in);
 #endif

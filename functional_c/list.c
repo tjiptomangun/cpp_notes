@@ -239,12 +239,19 @@ static ANY * __last(LIST *inlist) {
 	else
 		return curr->wrapped_data;
 }
-
-static ANY * __fold_left(LIST *inlist, ANY *dflt, ANY *(*fn)(ANY*, ANY*)){
+/**
+ * Won't free previous acc
+ */
+static ANY * __fold_left(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
+	CONS *hd_tl;
+	ANY *res;
 	if (inlist->size == 0){
-		return dflt;
+		return acc;
 	}
 	else {
+		hd_tl = uncons(inlist);
+		res = fn(hd_tl->hd, acc);
+		return __fold_left(hd_tl->tl, res, fn);
 	}
 }
 
@@ -276,7 +283,7 @@ CONS *uncons(LIST *in){
 			return NULL;
 
 	if (in && in->size && in->__s__head){
-			__release_wrapped_and_delete(in, in->__s__head);
+			hd = __release_wrapped_and_delete(in, in->__s__head);
 			nc->hd = hd;
 			nc->tl = in;
 			return nc; 
