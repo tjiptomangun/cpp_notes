@@ -101,6 +101,45 @@ typedef struct list {
 	 */
 	ANY * (*last)(struct list*);
 
+	/**
+	 * NAME			: fold_left
+	 * DESCRIPTION	: iterate this list and apply function fn from left.
+	 *				  will empty inlist.
+	 * INPUT
+	 *		inlist	: the list to fold
+	 *		acc		: accumulating value
+	 *		fn		: function which returns value of type acc
+	 * fn param1	: accumulator
+	 * fn param2	: current list item value	
+	 */ 
+	ANY * (*fold_left)(struct list* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
+
+	/**
+	 * NAME			: fold_right
+	 * DESCRIPTION	: iterate this list and apply function fn from right.
+	 *				  will empty inlist.
+	 * INPUT
+	 *		inlist	: the list to fold
+	 *		acc		: accumulating value
+	 *		fn		: function which returns value of type acc
+	 * fn param1	: accumulator
+	 * fn param2	: current list item value	
+	 */ 
+	ANY * (*fold_right)(struct list* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
+
+	/**
+	 * NAME			: reverse
+	 * DESCRIPTION	: iterate this list and apply function fn from right.
+	 *				  will empty inlist.
+	 * INPUT
+	 *		inlist	: the list to fold
+	 *		acc		: accumulating value
+	 *		fn		: function which returns value of type acc
+	 * fn param1	: accumulator
+	 * fn param2	: current list item value	
+	 */ 
+	ANY * (*fold_right)(struct list* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
+
 
 } LIST;
 
@@ -119,4 +158,18 @@ typedef struct Cons{
  * DESCRIPTION	: destructure list by separating head with tail
  */
 CONS *uncons(LIST *in);
+
+/**
+ * NAME			: free_cons
+ * DESCRIPTION	: helper to free list construct. 
+ *				  head and tail data will not be freed.
+ */
+void free_cons(CONS *cons);
+
+/**
+ * NAME			: list_create
+ * DESCRIPTION	: create list with its ANY* items
+ */
+LIST *list_create(int num_items, ...);
+
 #endif

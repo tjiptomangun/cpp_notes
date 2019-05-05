@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <list.h>
 #include <any.h>
+#include <memory.h>
+#include <stdarg.h> 
 
 /**
  * NAME			: __new_list_node
@@ -55,6 +57,7 @@ static void __delete_list_node(LIST *ls, LIST_NODE *node) {
 			node->next->prev = node->prev;
 			node->prev = NULL;
 		}
+		ls->size --;
 		free(node);
 	}
 }
@@ -63,6 +66,7 @@ static void __delete_list_node(LIST *ls, LIST_NODE *node) {
  * NAME			: __detach_list_node
  * DESCRIPTION	: detach from other member
  */
+/*
 static LIST_NODE* __detach_list_node(LIST_NODE *node) {
 	if (node){
 		if (node->prev){
@@ -76,6 +80,7 @@ static LIST_NODE* __detach_list_node(LIST_NODE *node) {
 	}
 	return node;
 }
+*/
 
 /**
  * NAME			: __release_wrapped_data
@@ -108,12 +113,14 @@ static ANY* __release_wrapped_and_delete(LIST *ls, LIST_NODE *node){
  * NAME			: __unwrap_list_node
  * DESCRIPTION	: return wrapped data
  */
+/*
 static ANY *__unwrap_list_node(LIST_NODE *node){
 	if(node && node->wrapped_data)
 		return node->wrapped_data;
 
 	return NULL;
 }
+*/
 
 /**
  * NAME			: __prepend_list
@@ -166,7 +173,6 @@ static LIST *__init_list(LIST *inlist) {
 		if (inlist->__s__head == inlist->__s__last)
 			inlist->__s__head = temp;
 		inlist->__s__last = temp;
-		inlist->size --;
 	}
 	return inlist;
 }
@@ -183,7 +189,6 @@ static LIST *__tail_list(LIST *inlist){
 		if (inlist->__s__head == inlist->__s__last)
 			inlist->__s__last = temp;
 		inlist->__s__head = temp;
-		inlist->size --; 
 	}
 	return inlist;
 }
@@ -206,6 +211,8 @@ static void __delete_list(LIST *inlist) {
 	inlist->get = NULL;
 	inlist->head = NULL;
 	inlist->last = NULL;
+	inlist->fold_left= NULL;
+	inlist->fold_right= NULL;
 	free(inlist);
 }
 
@@ -240,19 +247,47 @@ static ANY * __last(LIST *inlist) {
 		return curr->wrapped_data;
 }
 /**
- * Won't free previous acc
+ * Mutable Fold Left
+ * Will cause inlist size reduced to zero
+ * fn first param is accumulator
+ * fn second param is current list item value
  */
 static ANY * __fold_left(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	CONS *hd_tl;
+	ANY *hd;
+	LIST *tl;
 	ANY *res;
 	if (inlist->size == 0){
 		return acc;
 	}
 	else {
 		hd_tl = uncons(inlist);
-		res = fn(hd_tl->hd, acc);
-		return __fold_left(hd_tl->tl, res, fn);
+		hd = hd_tl->hd;
+		tl = hd_tl->tl;
+		free_cons(hd_tl);
+		res = fn(acc, hd);
+		hd->delete(hd);
+		return __fold_left(tl, res, fn);
 	}
+}
+
+static ANY * __fold_right(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
+	CONS *hd_tl;
+	ANY *hd;
+	LIST *tl;
+	ANY *res;
+	if (inlist->size == 0){
+		return acc;
+	}
+	else {
+		hd_tl = uncons(inlist);
+		hd = hd_tl->hd;
+		tl = hd_tl->tl;
+		free_cons(hd_tl);
+		res = fn( __fold_right(tl, acc, fn), hd);
+		hd->delete(hd);
+		return res;
+	} 
 }
 
 LIST *new_list() {
@@ -269,11 +304,16 @@ LIST *new_list() {
 	ret->get = __get_nth;
 	ret->head = __head;
 	ret->last= __last;
+	ret->fold_left = __fold_left;
+	ret->fold_right= __fold_right;
 	return ret;
 }
 
 LIST *cons(ANY *hd, LIST *tl){
-	tl->prepend(tl, hd);
+	if (tl)
+		tl->prepend(tl, hd);
+	
+	return tl;
 }
 
 CONS *uncons(LIST *in){
@@ -292,9 +332,30 @@ CONS *uncons(LIST *in){
 		return NULL;
 }
 
+void free_cons(CONS *cons) {
+	memset(cons, 0, sizeof(CONS));
+	free(cons);
+}
 
+LIST *list_create(int num_items, ...) {
+	int i;
+	va_list ap;
+	LIST *list = new_list();
+	ANY *cur;
+	if (list){
+		va_start(ap, num_items);
+		for(i = 0; i < num_items; i++){
+			cur = va_arg(ap, ANY *);
+			list->append(list, cur);
+		}
+		va_end(ap);
+	} 
+	return list;
+}
 
 #ifdef _LIST_UNIT_TEST_
+#include <integer.h>
+#include <charstr.h>
 	void create_list(){
 		printf("-create list\n");
 		LIST *t = new_list();
@@ -434,7 +495,45 @@ CONS *uncons(LIST *in){
 		t->delete(t);
 	}
 
+	Integer *add_str_length(Integer *in, CHARSTR *sin) {
+		in->value += sin->len;
+		return in;
+	}	
+
+	void fold_left() {
+		printf("-fold_left\n");
+		LIST *l = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+		Integer *res = (Integer *) l->fold_left(l, (ANY *)new_integer(0), (ANY * (*) (ANY *, ANY *)) add_str_length);
+		assert(res->value == 21);
+		res->delete(res);
+		l->delete(l); 
+	}
+
+	void fold_right() {
+		printf("-fold_right\n");
+		LIST *l = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+		Integer *res = (Integer *) l->fold_right(l, (ANY *)new_integer(0), (ANY * (*) (ANY *, ANY *)) add_str_length);
+		assert(res->value == 21);
+		res->delete(res);
+		l->delete(l); 
+	}
+
+	void reverse_via_foldleft() {
+		LIST *nl;
+		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+		CHARSTR *st;
+		printf("-reverse_via_foldleft\n"); 
+		nl = (LIST *)__fold_left(inlist, (ANY *)new_list(), (ANY * (*) (ANY *, ANY *))__prepend_list);
+		st = (CHARSTR *)nl->head(nl);
+		assert(!strcmp(st->data, "soul")); 
+		inlist->delete(inlist);
+	} 
+
 	int main (int argc, char **argv) {
+/*
 		create_list();
 		prepend_list();
 		append_list();
@@ -442,5 +541,9 @@ CONS *uncons(LIST *in){
 		tail_list();
 		get();
 		head_last();
+		fold_left();
+		fold_right();
+*/
+		reverse_via_foldleft();
 	}
 #endif
