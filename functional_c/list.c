@@ -266,7 +266,6 @@ static ANY * __fold_left(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 		tl = hd_tl->tl;
 		free_cons(hd_tl);
 		res = fn(acc, hd);
-		hd->delete(hd);
 		return __fold_left(tl, res, fn);
 	}
 }
@@ -285,9 +284,23 @@ static ANY * __fold_right(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 		tl = hd_tl->tl;
 		free_cons(hd_tl);
 		res = fn( __fold_right(tl, acc, fn), hd);
-		hd->delete(hd);
 		return res;
 	} 
+}
+
+static LIST *copy (LIST *in) {
+	LIST *out = new_list();
+	ANY *item;
+	ANY *cp;
+	int i;
+	if (out) {
+		for (i = 0; i < in->size; i ++){
+			item = in->get(in, i);
+			cp = item->copy(item);
+			out->append(out, cp);		
+		}
+	}
+	return out;
 }
 
 LIST *new_list() {
@@ -306,6 +319,7 @@ LIST *new_list() {
 	ret->last= __last;
 	ret->fold_left = __fold_left;
 	ret->fold_right= __fold_right;
+	ret->copy= copy;
 	return ret;
 }
 
@@ -533,7 +547,6 @@ LIST *list_create(int num_items, ...) {
 	} 
 
 	int main (int argc, char **argv) {
-/*
 		create_list();
 		prepend_list();
 		append_list();
@@ -543,7 +556,6 @@ LIST *list_create(int num_items, ...) {
 		head_last();
 		fold_left();
 		fold_right();
-*/
 		reverse_via_foldleft();
 	}
 #endif

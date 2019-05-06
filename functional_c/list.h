@@ -29,6 +29,12 @@ typedef struct list {
 	 *		in		: pointer to itself
 	 */
 	void (*delete) (struct list*);
+
+	/**
+	 * NAME			: copy
+	 * DESCRIPTION	: create a copy of this list
+	 */
+	struct list * (*copy) (struct list *);
 	/**
 	 * __s__head is the first element of this list
 	 */
@@ -126,20 +132,6 @@ typedef struct list {
 	 * fn param2	: current list item value	
 	 */ 
 	ANY * (*fold_right)(struct list* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
-
-	/**
-	 * NAME			: reverse
-	 * DESCRIPTION	: iterate this list and apply function fn from right.
-	 *				  will empty inlist.
-	 * INPUT
-	 *		inlist	: the list to fold
-	 *		acc		: accumulating value
-	 *		fn		: function which returns value of type acc
-	 * fn param1	: accumulator
-	 * fn param2	: current list item value	
-	 */ 
-	ANY * (*fold_right)(struct list* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
-
 
 } LIST;
 

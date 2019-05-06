@@ -32,6 +32,7 @@ CHARSTR *new_charstr(char *in){
   ret->delete = delete_charstr;
   ret->data = data;
   ret->to_charstr = to_charstr;
+  ret->copy = to_charstr;
   return ret; 
 } 
 

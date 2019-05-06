@@ -9,6 +9,7 @@
 typedef struct any {
 	struct any *this;
 	void (*delete) (struct any*);
+	struct any *(*copy) (struct any*);
 }ANY;
 void delete_any(ANY *);
 ANY *new_any();

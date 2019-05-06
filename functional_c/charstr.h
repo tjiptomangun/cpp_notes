@@ -4,6 +4,7 @@
 typedef struct charstr{
   struct charstr *this;
   void (*delete)(struct charstr *);
+  struct charstr* (*copy)(struct charstr *);
   char *data;
   int len;
   struct charstr* (*to_charstr)(struct charstr *);
