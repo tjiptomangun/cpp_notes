@@ -213,6 +213,7 @@ static void __delete_list(LIST *inlist) {
 	inlist->last = NULL;
 	inlist->fold_left= NULL;
 	inlist->fold_right= NULL;
+	inlist->reverse = NULL;
 	free(inlist);
 }
 
@@ -246,46 +247,62 @@ static ANY * __last(LIST *inlist) {
 	else
 		return curr->wrapped_data;
 }
-/**
- * Mutable Fold Left
- * Will cause inlist size reduced to zero
- * fn first param is accumulator
- * fn second param is current list item value
- */
-static ANY * __fold_left(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
-	CONS *hd_tl;
-	ANY *hd;
-	LIST *tl;
+
+static ANY * __i_fold_left(LIST_NODE *node, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	ANY *res;
+	if (node){
+		res = fn(acc, node->wrapped_data);	
+		return __i_fold_left(node->next, res, fn);
+	}
+	else {
+		return acc;
+	}
+}
+
+static ANY * __fold_left(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	if (inlist->size == 0){
 		return acc;
 	}
 	else {
-		hd_tl = uncons(inlist);
-		hd = hd_tl->hd;
-		tl = hd_tl->tl;
-		free_cons(hd_tl);
-		res = fn(acc, hd);
-		return __fold_left(tl, res, fn);
+		return __i_fold_left(inlist->__s__head, acc, fn);
+	}
+	
+}
+
+static ANY * __i_fold_right(LIST_NODE *node, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
+	if (node){
+		return fn(__i_fold_right(node->next, acc, fn),node->wrapped_data);	
+	}
+	else {
+		return acc;
 	}
 }
 
 static ANY * __fold_right(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
-	CONS *hd_tl;
-	ANY *hd;
-	LIST *tl;
-	ANY *res;
 	if (inlist->size == 0){
 		return acc;
 	}
 	else {
-		hd_tl = uncons(inlist);
-		hd = hd_tl->hd;
-		tl = hd_tl->tl;
-		free_cons(hd_tl);
-		res = fn( __fold_right(tl, acc, fn), hd);
-		return res;
-	} 
+		return __i_fold_right(inlist->__s__head, acc, fn);
+		
+	}
+}
+static LIST *__reverse(LIST *inlist) {
+	LIST_NODE *curr = inlist->__s__head;
+	LIST_NODE *hd = inlist->__s__head;
+	LIST_NODE *tl = inlist->__s__last;
+	LIST_NODE *next;
+	LIST_NODE *prev;
+	while(curr != NULL){
+		next = curr->next;
+		prev = curr->prev;
+		curr->prev = next;
+		curr->next = prev; 
+		curr = next;
+	}
+	inlist->__s__last = hd;
+	inlist->__s__head = tl;
+	return inlist;
 }
 
 static LIST *copy (LIST *in) {
@@ -318,8 +335,9 @@ LIST *new_list() {
 	ret->head = __head;
 	ret->last= __last;
 	ret->fold_left = __fold_left;
-	ret->fold_right= __fold_right;
-	ret->copy= copy;
+	ret->fold_right = __fold_right;
+	ret->copy = copy;
+	ret->reverse = __reverse;
 	return ret;
 }
 
@@ -520,8 +538,9 @@ LIST *list_create(int num_items, ...) {
 			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
 		Integer *res = (Integer *) l->fold_left(l, (ANY *)new_integer(0), (ANY * (*) (ANY *, ANY *)) add_str_length);
 		assert(res->value == 21);
-		res->delete(res);
 		l->delete(l); 
+		res->delete(res);
+	
 	}
 
 	void fold_right() {
@@ -546,6 +565,17 @@ LIST *list_create(int num_items, ...) {
 		inlist->delete(inlist);
 	} 
 
+	void reverse() {
+		printf("-reverse\n"); 
+		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+		inlist->reverse(inlist);
+		CHARSTR *st = (CHARSTR *)inlist->head(inlist);
+		assert(!strcmp(st->data, "soul")); 
+		inlist->delete(inlist);
+		
+	}
+
 	int main (int argc, char **argv) {
 		create_list();
 		prepend_list();
@@ -557,5 +587,6 @@ LIST *list_create(int num_items, ...) {
 		fold_left();
 		fold_right();
 		reverse_via_foldleft();
+		reverse();
 	}
 #endif

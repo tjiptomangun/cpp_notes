@@ -110,7 +110,7 @@ typedef struct list {
 	/**
 	 * NAME			: fold_left
 	 * DESCRIPTION	: iterate this list and apply function fn from left.
-	 *				  will empty inlist.
+	 *				 
 	 * INPUT
 	 *		inlist	: the list to fold
 	 *		acc		: accumulating value
@@ -123,7 +123,7 @@ typedef struct list {
 	/**
 	 * NAME			: fold_right
 	 * DESCRIPTION	: iterate this list and apply function fn from right.
-	 *				  will empty inlist.
+	 *				  
 	 * INPUT
 	 *		inlist	: the list to fold
 	 *		acc		: accumulating value
@@ -132,6 +132,16 @@ typedef struct list {
 	 * fn param2	: current list item value	
 	 */ 
 	ANY * (*fold_right)(struct list* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
+
+	/**
+	 * NAME			: reverse
+	 * DESCRIPTION	: reverse list nodes postition. In place.
+	 * INPUT
+	 *		inlist	: the list to reverse
+	 * RETURN		: pointer to this list after reversed
+	 *		
+	 */
+	struct list* (*reverse)(struct list *inlist);
 
 } LIST;
 
