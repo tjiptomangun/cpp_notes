@@ -134,14 +134,26 @@ typedef struct list {
 	ANY * (*fold_right)(struct list* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
 
 	/**
-	 * NAME			: reverse
+	 * NAME			: flip
 	 * DESCRIPTION	: reverse list nodes postition. In place.
 	 * INPUT
-	 *		inlist	: the list to reverse
+	 *		inlist	: the list to flip
 	 * RETURN		: pointer to this list after reversed
 	 *		
 	 */
+	struct list* (*flip)(struct list *inlist);
+
+	/**
+	 * NAME			: reverse
+	 * DESCRIPTION	: new list with reversed postition.
+	 * INPUT
+	 *		inlist	: the list to reverse
+	 * RETURN		: pointer to new list 
+	 *		
+	 */
 	struct list* (*reverse)(struct list *inlist);
+
+	struct list* (*map)(struct list *inlist, ANY* (*fn)(ANY *));
 
 } LIST;
 

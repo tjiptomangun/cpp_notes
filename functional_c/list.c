@@ -213,7 +213,9 @@ static void __delete_list(LIST *inlist) {
 	inlist->last = NULL;
 	inlist->fold_left= NULL;
 	inlist->fold_right= NULL;
-	inlist->reverse = NULL;
+	inlist->flip= NULL;
+	inlist->reverse= NULL;
+	inlist->map= NULL;
 	free(inlist);
 }
 
@@ -287,7 +289,8 @@ static ANY * __fold_right(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 		
 	}
 }
-static LIST *__reverse(LIST *inlist) {
+
+static LIST *__flip(LIST *inlist) {
 	LIST_NODE *curr = inlist->__s__head;
 	LIST_NODE *hd = inlist->__s__head;
 	LIST_NODE *tl = inlist->__s__last;
@@ -304,6 +307,49 @@ static LIST *__reverse(LIST *inlist) {
 	inlist->__s__head = tl;
 	return inlist;
 }
+
+static LIST *__reverse(LIST *inlist){
+	return (LIST *)__fold_left(inlist, (ANY *)new_list(), (ANY * (*) (ANY *, ANY *))__prepend_list);
+}
+
+typedef struct map_struct{
+	struct map_struct *this;
+	void (*delete) (struct map_struct*);
+	struct map_struct* (*copy) (struct map_struct *);
+	LIST	*acc;
+	ANY * (*fn)(ANY *);
+}MAP_STRUCT;
+
+static MAP_STRUCT* __map_helper(MAP_STRUCT *instruct, ANY *in){
+	ANY * out = instruct->fn(in); 
+	instruct->acc->append(instruct->acc, out);
+	return instruct;	
+}
+
+/**
+ * NAME			: map
+ * DESCRIPTION	: change a list of type x to list of type y
+ * INPUT
+ *		inlist	: list to tranform
+ *		fn		: function with parameter of inlist member type
+ *				  and return of desired output list member type
+ *				  example list of type integer to list of type string
+ * RETURNS		: new tranformed list. inlist is not mutated.
+ */
+
+static LIST *__map(LIST *inlist, ANY * (*fn)(ANY *)){	
+	LIST *nl = new_list();
+	MAP_STRUCT ms;
+	ms.acc = nl;
+	ms.fn = fn;
+	ms.this = &ms;
+	ms.copy = NULL;
+	ms.delete = NULL; 
+	inlist->fold_left(inlist, (ANY *) &ms, (ANY *(*)(ANY*, ANY*))__map_helper);
+
+	return nl;
+}
+
 
 static LIST *copy (LIST *in) {
 	LIST *out = new_list();
@@ -337,7 +383,9 @@ LIST *new_list() {
 	ret->fold_left = __fold_left;
 	ret->fold_right = __fold_right;
 	ret->copy = copy;
-	ret->reverse = __reverse;
+	ret->flip= __flip;
+	ret->reverse= __reverse;
+	ret->map = __map;
 	return ret;
 }
 
@@ -553,27 +601,48 @@ LIST *list_create(int num_items, ...) {
 		l->delete(l); 
 	}
 
-	void reverse_via_foldleft() {
+	void reverse() {
 		LIST *nl;
 		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
 		CHARSTR *st;
-		printf("-reverse_via_foldleft\n"); 
-		nl = (LIST *)__fold_left(inlist, (ANY *)new_list(), (ANY * (*) (ANY *, ANY *))__prepend_list);
+		printf("-reverse\n"); 
+		nl = inlist->reverse(inlist);
 		st = (CHARSTR *)nl->head(nl);
 		assert(!strcmp(st->data, "soul")); 
+		st = (CHARSTR *) inlist->get(inlist, 2);
+		assert(!strcmp(st->data, "of")); 
 		inlist->delete(inlist);
 	} 
 
-	void reverse() {
-		printf("-reverse\n"); 
+	void flip() {
+		printf("-flip\n"); 
 		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-		inlist->reverse(inlist);
+		inlist->flip(inlist);
 		CHARSTR *st = (CHARSTR *)inlist->head(inlist);
-		assert(!strcmp(st->data, "soul")); 
+		assert(!strcmp(st->data, "soul"));
+		st = (CHARSTR *) inlist->get(inlist, 2);
+		assert(!strcmp(st->data, "of")); 
 		inlist->delete(inlist);
 		
+	}
+	Integer *char_len(CHARSTR *in){
+		return new_integer(in->len);
+	}
+	void map() {
+		printf("-map\n"); 
+		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+		LIST *outlist = inlist->map(inlist, (ANY *(*)(ANY *)) char_len);
+
+		Integer *res = (Integer *)outlist->get(outlist, 3);
+		assert(res->value == 5);
+		res = (Integer *)outlist->get(outlist, 2);
+		assert(res->value == 2);
+		
+		outlist->delete(outlist);
+		inlist->delete(inlist);	
 	}
 
 	int main (int argc, char **argv) {
@@ -586,7 +655,8 @@ LIST *list_create(int num_items, ...) {
 		head_last();
 		fold_left();
 		fold_right();
-		reverse_via_foldleft();
 		reverse();
+		flip();
+		map();
 	}
 #endif
