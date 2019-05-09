@@ -153,7 +153,30 @@ typedef struct list {
 	 */
 	struct list* (*reverse)(struct list *inlist);
 
+	
+	/**
+	 * NAME			: map
+	 * DESCRIPTION	: change a list of type x to list of type y
+	 * INPUT
+	 *		inlist	: list to tranform
+	 *		fn		: function with parameter of inlist member type
+	 *				  and return of desired output list member type
+	 *				  example list of type integer to list of type string
+	 * RETURNS		: new tranformed list. inlist is not mutated.
+	 */
 	struct list* (*map)(struct list *inlist, ANY* (*fn)(ANY *));
+
+
+	/**
+	 * NAME			: filter
+	 * DESCRIPTION	: create a new list that match fn condition
+	 * INPUT
+	 *		inlist	: list to tranform
+	 *		fn		: function which accept inlist member type
+	 *				  and return boolean *				  
+	 * RETURNS		: new tranformed list. inlist is not mutated.
+	 */
+	struct list* (*filter)(struct list *inlist, int (*fn)(ANY *));
 
 } LIST;
 

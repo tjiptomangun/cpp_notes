@@ -216,6 +216,7 @@ static void __delete_list(LIST *inlist) {
 	inlist->flip= NULL;
 	inlist->reverse= NULL;
 	inlist->map= NULL;
+	inlist->delete= NULL;
 	free(inlist);
 }
 
@@ -320,14 +321,35 @@ typedef struct map_struct{
 	ANY * (*fn)(ANY *);
 }MAP_STRUCT;
 
+/**
+ * Higher order function of map
+ */
 static MAP_STRUCT* __map_helper(MAP_STRUCT *instruct, ANY *in){
 	ANY * out = instruct->fn(in); 
 	instruct->acc->append(instruct->acc, out);
 	return instruct;	
 }
 
+typedef struct filter_struct{
+	struct filter_struct *this;
+	void (*delete) (struct map_struct*);
+	struct map_struct* (*copy) (struct map_struct *);
+	LIST	*acc;
+	int  (*fn)(ANY *);
+}FILTER_STRUCT;
+
 /**
- * NAME			: map
+ * Higher order function of filter 
+ */
+static FILTER_STRUCT* __filter_helper(FILTER_STRUCT *instruct, ANY *in){
+	int truth = instruct->fn(in); 
+	if (truth)
+		instruct->acc->append(instruct->acc, in->copy(in));
+	return instruct;	
+} 
+
+/**
+ * NAME			: __map
  * DESCRIPTION	: change a list of type x to list of type y
  * INPUT
  *		inlist	: list to tranform
@@ -347,6 +369,27 @@ static LIST *__map(LIST *inlist, ANY * (*fn)(ANY *)){
 	ms.delete = NULL; 
 	inlist->fold_left(inlist, (ANY *) &ms, (ANY *(*)(ANY*, ANY*))__map_helper);
 
+	return nl;
+}
+
+/**
+ * NAME			: __filter
+ * DESCRIPTION	: create a new list that match fn condition
+ * INPUT
+ *		inlist	: list to tranform
+ *		fn		: function which accept inlist member type
+ *				  and return boolean *				  
+ * RETURNS		: new tranformed list. inlist is not mutated.
+ */
+static LIST * __filter(LIST *inlist, int (*fn)(ANY *)){
+	LIST *nl = new_list();
+	FILTER_STRUCT fs;
+	fs.acc = nl;
+	fs.fn = fn;
+	fs.this = &fs;
+	fs.copy = NULL;
+	fs.delete = NULL; 
+	inlist->fold_left(inlist, (ANY *) &fs, (ANY *(*)(ANY*, ANY*))__filter_helper);
 	return nl;
 }
 
@@ -386,6 +429,7 @@ LIST *new_list() {
 	ret->flip= __flip;
 	ret->reverse= __reverse;
 	ret->map = __map;
+	ret->filter = __filter;
 	return ret;
 }
 
@@ -627,9 +671,15 @@ LIST *list_create(int num_items, ...) {
 		inlist->delete(inlist);
 		
 	}
+
 	Integer *char_len(CHARSTR *in){
 		return new_integer(in->len);
 	}
+
+	int filter_fun(CHARSTR *in) {
+		return (in->len > 4);
+	}
+
 	void map() {
 		printf("-map\n"); 
 		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
@@ -641,6 +691,20 @@ LIST *list_create(int num_items, ...) {
 		res = (Integer *)outlist->get(outlist, 2);
 		assert(res->value == 2);
 		
+		outlist->delete(outlist);
+		inlist->delete(inlist);	
+	}
+
+	void filter() {
+		printf("-filter\n"); 
+		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+		LIST *outlist = inlist->filter(inlist, (int (*)(ANY *)) filter_fun);
+		assert(outlist->size == 3);
+
+		CHARSTR *res = (CHARSTR *)outlist->get(outlist, 2);
+		assert(!strcmp(res->data, "brave"));
+
 		outlist->delete(outlist);
 		inlist->delete(inlist);	
 	}
@@ -658,5 +722,6 @@ LIST *list_create(int num_items, ...) {
 		reverse();
 		flip();
 		map();
+		filter();
 	}
 #endif
