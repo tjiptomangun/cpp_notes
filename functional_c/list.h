@@ -1,6 +1,7 @@
 #ifndef _LIST_H_
 #define _LIST_H_
 #include <any.h>
+#include <option.h>
 
 /**
  * LIST_NODE is helper struct for list member
@@ -171,12 +172,25 @@ typedef struct list {
 	 * NAME			: filter
 	 * DESCRIPTION	: create a new list that match fn condition
 	 * INPUT
-	 *		inlist	: list to tranform
+	 *		inlist	: list to filter
 	 *		fn		: function which accept inlist member type
 	 *				  and return boolean *				  
 	 * RETURNS		: new tranformed list. inlist is not mutated.
 	 */
 	struct list* (*filter)(struct list *inlist, int (*fn)(ANY *));
+
+	/**
+	 * NAME			: collect
+	 * DESCRIPTION	: create a new list that filter and tranform input
+	 * INPUT
+	 *		inlist	: list to filter and transfor
+	 *		fn		: function which accept inlist member type
+	 *				  and return option object of filtered and transform.
+	 *				  if fn return none_object then it will not be added
+	 *				  to new list. If it is some_object then added
+	 * RETURNS		: new tranformed list. inlist is not mutated.
+	 */
+	struct list* (*collect)(struct list *inlist, OPTION *(*fn)(ANY *));
 
 } LIST;
 

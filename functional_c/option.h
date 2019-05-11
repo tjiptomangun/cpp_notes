@@ -2,45 +2,46 @@
 #define _OPTION_H_
 
 #include <stdbool.h>
+#include <any.h>
 
 /**
- * option is base struct for Option implementation
+ * o_option is base struct for Option implementation
  * it is functional so it should also have any
  * member (this) and method. It is just interface, or
  * thread or abstract class, so does not have to
  * have concrete implementation.
  */
-typedef struct option {
-	struct o_option *this;
-	void (*delete) (struct option*);
+typedef struct o_option {
+	struct o_o_option *this;
+	void (*delete) (struct o_option*);
 	bool (* is_some) ();
 }OPTION;
 
 /**
- * some is struct for option that has data.
+ * some is struct for o_option that has data.
  * It is concrete implementation.
  */
 typedef struct some{
-	struct option *this;
+	struct o_option *this;
 	void (*delete) (struct some*);
 	bool (* is_some) ();
-	void* (* get) (struct some *); 
-	void *wrapped_data;
+	ANY* (* get) (struct some *); 
+	ANY* wrapped_data;
 }SOME;
 
 /**
- * none is struct for option that has data
+ * none is struct for o_option that has data
  * It is concrete implementation.
  */
 typedef struct none{
-	struct option *this;
+	struct o_option *this;
 	void (*delete) (struct none*);
 	bool (* is_some) ();
 }NONE;
 
 /**
  * Option is union of Some and None. 
- * The philosophy of option is to prevent using 
+ * The philosophy of o_option is to prevent using 
  * 'the billion dollar bug' null pointer.
  * Option is common in functional programming concept.
  */
@@ -75,27 +76,26 @@ char *get_str(SOME *indata);
 
 
 /**
- * NAME			: some_string
- * DESCRIPTION	: create Option string wrapper. 
- * INPUT
- *		instr	: string to wrap. This string will be
- *				  duplicated so the original can be 
- *				  freed without affecting created object.
- */
-OPTION* some_string(char *instr);
-
-/**
  * NAME			: none_object
  * DESCRIPTION	: create none object
  */
 OPTION* none_object();
 
 /**
- * NAME			: free_option
- * DESCRIPTION	: freeing an option. Only free SOME, NONE type will not 
+ * NAME			: free_o_option
+ * DESCRIPTION	: freeing an o_option. Only free SOME, NONE type will not 
 				  be freed since the system only have one NONE.
  * INPUT
- *		opt		: option to free
+ *		opt		: o_option to free
  */
-void free_option(OPTION *opt); 
+void free_o_option(OPTION *opt); 
+
+/**
+ * NAME			: some_object
+ * DESCRIPTION	: create Some wrapper of an object.
+ * INPUT
+ *		obj		: an ANY object, will be duplicated for wrapping.
+ */
+
+SOME *some_object(ANY *obj); 
 #endif

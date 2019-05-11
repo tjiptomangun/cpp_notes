@@ -217,6 +217,9 @@ static void __delete_list(LIST *inlist) {
 	inlist->reverse= NULL;
 	inlist->map= NULL;
 	inlist->delete= NULL;
+	inlist->collect= NULL;
+	inlist->filter= NULL;
+	inlist->map= NULL;
 	free(inlist);
 }
 
@@ -393,6 +396,42 @@ static LIST * __filter(LIST *inlist, int (*fn)(ANY *)){
 	return nl;
 }
 
+typedef struct collect_struct{
+	struct collect_struct *this;
+	void (*delete) (struct collect_struct*);
+	struct collect_struct* (*copy) (struct collect_struct *);
+	LIST	*acc;
+	OPTION *(*fn)(ANY *);
+}COLLECT_STRUCT; 
+
+/**
+ * Higher order function of collect 
+ */
+static COLLECT_STRUCT* __collect_helper(COLLECT_STRUCT *instruct, ANY *in){
+	OPTION *opt = instruct->fn(in); 
+	ANY * out; 
+	if (opt->is_some(opt)) { 
+		out = ((SOME *)opt)->get((SOME *)opt);
+		out = out->copy(out);
+		opt->delete(opt);	
+		instruct->acc->append(instruct->acc, out);
+	}
+	return instruct;
+} 
+
+static LIST *__collect(LIST *inlist, OPTION* (*fn)(ANY *)){	
+	LIST *nl = new_list();
+	COLLECT_STRUCT ms;
+	ms.acc = nl;
+	ms.fn = fn;
+	ms.this = &ms;
+	ms.copy = NULL;
+	ms.delete = NULL; 
+	inlist->fold_left(inlist, (ANY *) &ms, (ANY *(*)(ANY*, ANY*))__collect_helper);
+
+	return nl;
+}
+
 
 static LIST *copy (LIST *in) {
 	LIST *out = new_list();
@@ -430,6 +469,7 @@ LIST *new_list() {
 	ret->reverse= __reverse;
 	ret->map = __map;
 	ret->filter = __filter;
+	ret->collect = __collect;
 	return ret;
 }
 
@@ -572,8 +612,8 @@ LIST *list_create(int num_items, ...) {
 		assert(t->size == 1); 
 		t->delete(t);
 	}
-	void get(){
-		printf("-get\n");
+	void list_get(){
+		printf("-list_get\n");
 		LIST *t = new_list();
 		LIST_NODE *t2;
 		LIST_NODE *t3;
@@ -709,13 +749,32 @@ LIST *list_create(int num_items, ...) {
 		inlist->delete(inlist);	
 	}
 
+	OPTION *collect_fun(CHARSTR *in) {
+		if (in->data[0] == 'h' || in->data[0] == 's'){
+			return (OPTION *)some_object((ANY *)in);
+		}
+		else
+			return (OPTION *)none_object();
+	}
+
+	void collect_test() {
+		printf("-collect_test\n");
+		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+		LIST *outlist = inlist->collect(inlist, (OPTION *(*)(ANY *)) collect_fun);
+		CHARSTR *out = (CHARSTR *)outlist->head(outlist);
+		assert(!strcmp(out->data, "hello"));
+		assert(outlist->size == 2); 
+		
+	}
+
 	int main (int argc, char **argv) {
 		create_list();
 		prepend_list();
 		append_list();
 		init_list();
 		tail_list();
-		get();
+		list_get();
 		head_last();
 		fold_left();
 		fold_right();
@@ -723,5 +782,6 @@ LIST *list_create(int num_items, ...) {
 		flip();
 		map();
 		filter();
+		collect_test();
 	}
 #endif

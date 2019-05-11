@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <any.h>
 
 bool __some_is_some(){
 	return true;
@@ -13,21 +14,8 @@ bool __none_is_some(){
 
 extern NONE *none_instance;
 
-char *get_str(SOME *indata){
-	return (char *) indata->wrapped_data;
-}
-
-OPTION* some_string(char *instr) {
-	SOME *x = (SOME *)calloc(1, sizeof(SOME));
-	int len = strlen(instr);
-	char *data = (char *) calloc(1, len  + 1);
-	memcpy(data, instr, len); 
-	x->this = (OPTION *)x;
-	x->is_some = __some_is_some;
-	x->get = (void *(*) (SOME*))get_str; 
-	x->wrapped_data = (void *) data;
-	x->delete = (void (*) (SOME*)) free_option;
-	return (OPTION *)x;
+ANY *get_some_data(SOME *indata){
+	return (ANY *) indata->wrapped_data;
 }
 
 OPTION* none_object() {
@@ -35,15 +23,31 @@ OPTION* none_object() {
 		none_instance = (NONE *)calloc(1, sizeof(NONE));
 		none_instance->this = (OPTION *)none_instance;;
 		none_instance->is_some = __none_is_some; 
-		none_instance->delete = (void (*) (NONE *))free_option;
+		none_instance->delete = (void (*) (NONE *))free_o_option;
 	}
 	return (OPTION*)none_instance;
 }
 
-void free_option(OPTION *opt) {
+void free_o_option(OPTION *opt) {
 	if (opt->is_some()) {
 		SOME*x = (SOME *)opt;
-		free(x->wrapped_data);
+		x->wrapped_data->delete(x->wrapped_data);
+		x->this = NULL;
+		x->delete = NULL;
+		x->is_some = NULL;
+		x->get = NULL;
 		free(x);
 	}
+}
+
+SOME *some_object(ANY *obj) {
+	SOME *x = (SOME *)calloc(1, sizeof(SOME)); 
+	ANY *dup = obj->copy(obj);
+	x->this = (OPTION *)x;
+	x->delete = (void (*) (SOME*)) free_o_option;
+	x->is_some = __some_is_some;
+	x->get = get_some_data; 
+	x->wrapped_data = dup;
+	return x;
+	
 }
