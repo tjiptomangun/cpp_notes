@@ -138,11 +138,11 @@ typedef struct list {
 	 * NAME			: flip
 	 * DESCRIPTION	: reverse list nodes postition. In place.
 	 * INPUT
-	 *		inlist	: the list to flip
+	 *		inlist	: the list to flip, mutated
 	 * RETURN		: pointer to this list after reversed
 	 *		
 	 */
-	struct list* (*flip)(struct list *inlist);
+	void (*flip)(struct list *inlist);
 
 	/**
 	 * NAME			: reverse
@@ -191,6 +191,8 @@ typedef struct list {
 	 * RETURNS		: new tranformed list. inlist is not mutated.
 	 */
 	struct list* (*collect)(struct list *inlist, OPTION *(*fn)(ANY *));
+
+	struct list* (*zip) (struct list *inlist, struct list *otherlist);
 
 } LIST;
 

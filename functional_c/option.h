@@ -69,13 +69,6 @@ bool __none_is_some();
 NONE *none_instance;
 
 /**
- * NAME			: get_str
- * DESCRIPTION	: the implementation of get for Some<char *>
- */
-char *get_str(SOME *indata);
-
-
-/**
  * NAME			: none_object
  * DESCRIPTION	: create none object
  */

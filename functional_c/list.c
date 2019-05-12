@@ -294,7 +294,7 @@ static ANY * __fold_right(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	}
 }
 
-static LIST *__flip(LIST *inlist) {
+static void __flip(LIST *inlist) {
 	LIST_NODE *curr = inlist->__s__head;
 	LIST_NODE *hd = inlist->__s__head;
 	LIST_NODE *tl = inlist->__s__last;
@@ -308,8 +308,7 @@ static LIST *__flip(LIST *inlist) {
 		curr = next;
 	}
 	inlist->__s__last = hd;
-	inlist->__s__head = tl;
-	return inlist;
+	inlist->__s__head = tl; 
 }
 
 static LIST *__reverse(LIST *inlist){
@@ -518,270 +517,313 @@ LIST *list_create(int num_items, ...) {
 }
 
 #ifdef _LIST_UNIT_TEST_
-#include <integer.h>
-#include <charstr.h>
-	void create_list(){
-		printf("-create list\n");
-		LIST *t = new_list();
-		assert(t != NULL);
-		t->delete(t);
-	}
+#include <getopt.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "integer.h"
+#include "charstr.h"
+void create_list(){
+	printf("-create list\n");
+	LIST *t = new_list();
+	assert(t != NULL);
+	t->delete(t);
+}
 
-	void prepend_list(){
-		printf("-prepend list\n");
-		LIST *t = new_list();
-		unsigned char *h1, *t1;
-		unsigned char *h2, *t2;
-		assert(t != NULL);
-		t->prepend(t, new_any());
-		h1 = (unsigned char *)t->__s__head;
-		t1 = (unsigned char *)t->__s__last;
-		t->prepend(t, new_any());
-		h2 = (unsigned char *)t->__s__head;
-		t2 = (unsigned char *)t->__s__last;
-		assert(t->size == 2);
-		assert(t->__s__head != NULL);
-		assert(t->__s__head->next != NULL);
-		assert(h1 != h2);
-		assert(t1 == t2);
-		t->delete(t);
-	}
+void prepend_list(){
+	printf("-prepend list\n");
+	LIST *t = new_list();
+	unsigned char *h1, *t1;
+	unsigned char *h2, *t2;
+	assert(t != NULL);
+	t->prepend(t, new_any());
+	h1 = (unsigned char *)t->__s__head;
+	t1 = (unsigned char *)t->__s__last;
+	t->prepend(t, new_any());
+	h2 = (unsigned char *)t->__s__head;
+	t2 = (unsigned char *)t->__s__last;
+	assert(t->size == 2);
+	assert(t->__s__head != NULL);
+	assert(t->__s__head->next != NULL);
+	assert(h1 != h2);
+	assert(t1 == t2);
+	t->delete(t);
+}
 
-	void append_list(){
-		printf("-append list\n");
-		LIST *t = new_list();
-		unsigned char *h1, *t1;
-		unsigned char *h2, *t2;
-		assert(t != NULL);
-		t->append(t, new_any());
-		h1 = (unsigned char *)t->__s__head;
-		t1 = (unsigned char *)t->__s__last;
-		t->append(t, new_any());
-		h2 = (unsigned char *)t->__s__head;
-		t2 = (unsigned char *)t->__s__last;
-		assert(t->size == 2);
-		assert(t->__s__head != NULL);
-		assert(t->__s__head->next != NULL);
-		assert(h1 == h2);
-		assert(t1 != t2);
-		t->delete(t);
-	}
+void append_list(){
+	printf("-append list\n");
+	LIST *t = new_list();
+	unsigned char *h1, *t1;
+	unsigned char *h2, *t2;
+	assert(t != NULL);
+	t->append(t, new_any());
+	h1 = (unsigned char *)t->__s__head;
+	t1 = (unsigned char *)t->__s__last;
+	t->append(t, new_any());
+	h2 = (unsigned char *)t->__s__head;
+	t2 = (unsigned char *)t->__s__last;
+	assert(t->size == 2);
+	assert(t->__s__head != NULL);
+	assert(t->__s__head->next != NULL);
+	assert(h1 == h2);
+	assert(t1 != t2);
+	t->delete(t);
+}
 
-	void init_list(){
-		printf("-init list\n");
-		LIST *t = new_list();
-		unsigned char  *t1;
-		unsigned char  *t2;
-		unsigned char  *t3;
-		assert(t != NULL);
-		t->append(t, new_any());
-		t1 = (unsigned char *)t->__s__last;
-		t->append(t, new_any());
-		t2 = (unsigned char *)t->__s__last;
-		t->append(t, new_any());
-		t3 = (unsigned char *)t->__s__last;
-		assert(t->size == 3);
-		assert((unsigned char *)t->__s__last == t3); 
-		t->init(t);
-		assert((unsigned char *)t->__s__last == t2);
-		t->init(t);
-		assert((unsigned char *)t->__s__last == t1);
-		assert(t->size == 1); 
-		t->delete(t);
-	}
+void init_list(){
+	printf("-init list\n");
+	LIST *t = new_list();
+	unsigned char  *t1;
+	unsigned char  *t2;
+	unsigned char  *t3;
+	assert(t != NULL);
+	t->append(t, new_any());
+	t1 = (unsigned char *)t->__s__last;
+	t->append(t, new_any());
+	t2 = (unsigned char *)t->__s__last;
+	t->append(t, new_any());
+	t3 = (unsigned char *)t->__s__last;
+	assert(t->size == 3);
+	assert((unsigned char *)t->__s__last == t3); 
+	t->init(t);
+	assert((unsigned char *)t->__s__last == t2);
+	t->init(t);
+	assert((unsigned char *)t->__s__last == t1);
+	assert(t->size == 1); 
+	t->delete(t);
+}
 
-	void tail_list(){
-		printf("-tail list\n");
-		LIST *t = new_list();
-		unsigned char *t1;
-		unsigned char *t2;
-		unsigned char *t3;
-		assert(t != NULL);
-		t->append(t, new_any());
-		t1 = (unsigned char *)t->__s__last;
-		t->append(t, new_any());
-		t2 = (unsigned char *)t->__s__last;
-		t->append(t, new_any());
-		t3 = (unsigned char *)t->__s__last;
-		assert(t->size == 3);
-		assert((unsigned char *)t->__s__head== t1); 
-		t->tail(t);
-		assert((unsigned char *)t->__s__head== t2);
-		t->tail(t);
-		assert((unsigned char *)t->__s__head== t3);
-		assert(t->size == 1); 
-		t->delete(t);
-	}
-	void list_get(){
-		printf("-list_get\n");
-		LIST *t = new_list();
-		LIST_NODE *t2;
-		LIST_NODE *t3;
-		LIST_NODE *t4;
-		assert(t != NULL);
-		t->append(t, new_any());
-		t->append(t, new_any());
-		t2 = t->__s__last;
-		t->append(t, new_any());
-		t3 = t->__s__last;
-		t->append(t, new_any());
-		t4 = t->__s__last;
-		assert(t->get(t, 3) == t4->wrapped_data); 
-		t->tail(t);
-		assert(t->get(t, 2) == t4->wrapped_data);
-		assert(t->get(t, 1) == t3->wrapped_data);
-		assert(t->get(t, 0) == t2->wrapped_data);
-		t->init(t);
-		t->delete(t);
-	}
-	void head_last(){
-		printf("-head_last\n");
-		LIST *t = new_list();
-		LIST_NODE *t1;
-		LIST_NODE *t2;
-		LIST_NODE *t3;
-		LIST_NODE *t4;
-		assert(t != NULL);
-		t->append(t, new_any());
-		t1 = t->__s__last;
-		t->append(t, new_any());
-		t2 = t->__s__last;
-		t->append(t, new_any());
-		t3 = t->__s__last;
-		t->append(t, new_any());
-		t4 = t->__s__last;
-		assert(t->last(t) == t4->wrapped_data); 
-		assert(t->head(t) == t1->wrapped_data); 
-		t->tail(t);
-		assert(t->head(t) == t2->wrapped_data); 
-		t->init(t);
-		assert(t->last(t) == t3->wrapped_data); 
-		t->delete(t);
-	}
+void tail_list(){
+	printf("-tail list\n");
+	LIST *t = new_list();
+	unsigned char *t1;
+	unsigned char *t2;
+	unsigned char *t3;
+	assert(t != NULL);
+	t->append(t, new_any());
+	t1 = (unsigned char *)t->__s__last;
+	t->append(t, new_any());
+	t2 = (unsigned char *)t->__s__last;
+	t->append(t, new_any());
+	t3 = (unsigned char *)t->__s__last;
+	assert(t->size == 3);
+	assert((unsigned char *)t->__s__head== t1); 
+	t->tail(t);
+	assert((unsigned char *)t->__s__head== t2);
+	t->tail(t);
+	assert((unsigned char *)t->__s__head== t3);
+	assert(t->size == 1); 
+	t->delete(t);
+}
+void list_get(){
+	printf("-list_get\n");
+	LIST *t = new_list();
+	LIST_NODE *t2;
+	LIST_NODE *t3;
+	LIST_NODE *t4;
+	assert(t != NULL);
+	t->append(t, new_any());
+	t->append(t, new_any());
+	t2 = t->__s__last;
+	t->append(t, new_any());
+	t3 = t->__s__last;
+	t->append(t, new_any());
+	t4 = t->__s__last;
+	assert(t->get(t, 3) == t4->wrapped_data); 
+	t->tail(t);
+	assert(t->get(t, 2) == t4->wrapped_data);
+	assert(t->get(t, 1) == t3->wrapped_data);
+	assert(t->get(t, 0) == t2->wrapped_data);
+	t->init(t);
+	t->delete(t);
+}
+void head_last(){
+	printf("-head_last\n");
+	LIST *t = new_list();
+	LIST_NODE *t1;
+	LIST_NODE *t2;
+	LIST_NODE *t3;
+	LIST_NODE *t4;
+	assert(t != NULL);
+	t->append(t, new_any());
+	t1 = t->__s__last;
+	t->append(t, new_any());
+	t2 = t->__s__last;
+	t->append(t, new_any());
+	t3 = t->__s__last;
+	t->append(t, new_any());
+	t4 = t->__s__last;
+	assert(t->last(t) == t4->wrapped_data); 
+	assert(t->head(t) == t1->wrapped_data); 
+	t->tail(t);
+	assert(t->head(t) == t2->wrapped_data); 
+	t->init(t);
+	assert(t->last(t) == t3->wrapped_data); 
+	t->delete(t);
+}
 
-	Integer *add_str_length(Integer *in, CHARSTR *sin) {
-		in->value += sin->len;
-		return in;
-	}	
+Integer *add_str_length(Integer *in, CHARSTR *sin) {
+	in->value += sin->len;
+	return in;
+}	
 
-	void fold_left() {
-		printf("-fold_left\n");
-		LIST *l = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
-			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-		Integer *res = (Integer *) l->fold_left(l, (ANY *)new_integer(0), (ANY * (*) (ANY *, ANY *)) add_str_length);
-		assert(res->value == 21);
-		l->delete(l); 
-		res->delete(res);
+void fold_left() {
+	printf("-fold_left\n");
+	LIST *l = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+	Integer *res = (Integer *) l->fold_left(l, (ANY *)new_integer(0), (ANY * (*) (ANY *, ANY *)) add_str_length);
+	assert(res->value == 21);
+	l->delete(l); 
+	res->delete(res);
+
+}
+
+void fold_right() {
+	printf("-fold_right\n");
+	LIST *l = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+	Integer *res = (Integer *) l->fold_right(l, (ANY *)new_integer(0), (ANY * (*) (ANY *, ANY *)) add_str_length);
+	assert(res->value == 21);
+	res->delete(res);
+	l->delete(l); 
+}
+
+void reverse() {
+	LIST *nl;
+	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+	CHARSTR *st;
+	printf("-reverse\n"); 
+	nl = inlist->reverse(inlist);
+	st = (CHARSTR *)nl->head(nl);
+	assert(!strcmp(st->data, "soul")); 
+	st = (CHARSTR *) inlist->get(inlist, 2);
+	assert(!strcmp(st->data, "of")); 
+	inlist->delete(inlist);
+} 
+
+void flip() {
+	printf("-flip\n"); 
+	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+	inlist->flip(inlist);
+	CHARSTR *st = (CHARSTR *)inlist->head(inlist);
+	assert(!strcmp(st->data, "soul"));
+	st = (CHARSTR *) inlist->get(inlist, 2);
+	assert(!strcmp(st->data, "of")); 
+	inlist->delete(inlist);
 	
+}
+
+Integer *char_len(CHARSTR *in){
+	return new_integer(in->len);
+}
+
+int filter_fun(CHARSTR *in) {
+	return (in->len > 4);
+}
+
+void map() {
+	printf("-map\n"); 
+	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+	LIST *outlist = inlist->map(inlist, (ANY *(*)(ANY *)) char_len);
+
+	Integer *res = (Integer *)outlist->get(outlist, 3);
+	assert(res->value == 5);
+	res = (Integer *)outlist->get(outlist, 2);
+	assert(res->value == 2);
+	
+	outlist->delete(outlist);
+	inlist->delete(inlist);	
+}
+
+void filter() {
+	printf("-filter\n"); 
+	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+	LIST *outlist = inlist->filter(inlist, (int (*)(ANY *)) filter_fun);
+	assert(outlist->size == 3);
+
+	CHARSTR *res = (CHARSTR *)outlist->get(outlist, 2);
+	assert(!strcmp(res->data, "brave"));
+
+	outlist->delete(outlist);
+	inlist->delete(inlist);	
+}
+
+OPTION *collect_fun(CHARSTR *in) {
+	if (in->data[0] == 'h' || in->data[0] == 's'){
+		return (OPTION *)some_object((ANY *)in);
+	}
+	else
+		return (OPTION *)none_object();
+}
+
+void collect_test() {
+	printf("-collect_test\n");
+	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+	LIST *outlist = inlist->collect(inlist, (OPTION *(*)(ANY *)) collect_fun);
+	CHARSTR *out = (CHARSTR *)outlist->head(outlist);
+	assert(!strcmp(out->data, "hello"));
+	assert(outlist->size == 2); 
+	outlist->delete(outlist);
+	inlist->delete(inlist);
+	
+}
+
+int unit_test() {
+	create_list();
+	prepend_list();
+	append_list();
+	init_list();
+	tail_list();
+	list_get();
+	head_last();
+	fold_left();
+	fold_right();
+	reverse();
+	flip();
+	map();
+	filter();
+	collect_test();
+	return 0;
+}
+
+void mem_test() {
+  while(1){
+    unit_test();
+    sleep(1);
+  }
+}
+
+int main (int argc, char **argv) { 
+	int c;
+	int flag = 0;
+	while(-1 !=(c = getopt(argc, argv, "um"))) {
+		switch (c){
+			case 'u':
+				flag = 0;
+				break;
+			case 'm':
+				flag = 1;
+				break;
+			default:
+				fprintf(stderr, "usage: %s -flag\n", argv[0]);
+				fprintf(stderr, "flags:\n");
+				fprintf(stderr, "	 u :unit test\n");
+				fprintf(stderr, "	 m :memchec test\n"); 
+				return -1;
+		} 
 	}
 
-	void fold_right() {
-		printf("-fold_right\n");
-		LIST *l = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
-			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-		Integer *res = (Integer *) l->fold_right(l, (ANY *)new_integer(0), (ANY * (*) (ANY *, ANY *)) add_str_length);
-		assert(res->value == 21);
-		res->delete(res);
-		l->delete(l); 
+	if (flag == 0){
+		unit_test();
+	}
+	else if(flag == 1){
+		mem_test();
 	}
 
-	void reverse() {
-		LIST *nl;
-		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
-			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-		CHARSTR *st;
-		printf("-reverse\n"); 
-		nl = inlist->reverse(inlist);
-		st = (CHARSTR *)nl->head(nl);
-		assert(!strcmp(st->data, "soul")); 
-		st = (CHARSTR *) inlist->get(inlist, 2);
-		assert(!strcmp(st->data, "of")); 
-		inlist->delete(inlist);
-	} 
-
-	void flip() {
-		printf("-flip\n"); 
-		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
-			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-		inlist->flip(inlist);
-		CHARSTR *st = (CHARSTR *)inlist->head(inlist);
-		assert(!strcmp(st->data, "soul"));
-		st = (CHARSTR *) inlist->get(inlist, 2);
-		assert(!strcmp(st->data, "of")); 
-		inlist->delete(inlist);
-		
-	}
-
-	Integer *char_len(CHARSTR *in){
-		return new_integer(in->len);
-	}
-
-	int filter_fun(CHARSTR *in) {
-		return (in->len > 4);
-	}
-
-	void map() {
-		printf("-map\n"); 
-		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
-			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-		LIST *outlist = inlist->map(inlist, (ANY *(*)(ANY *)) char_len);
-
-		Integer *res = (Integer *)outlist->get(outlist, 3);
-		assert(res->value == 5);
-		res = (Integer *)outlist->get(outlist, 2);
-		assert(res->value == 2);
-		
-		outlist->delete(outlist);
-		inlist->delete(inlist);	
-	}
-
-	void filter() {
-		printf("-filter\n"); 
-		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
-			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-		LIST *outlist = inlist->filter(inlist, (int (*)(ANY *)) filter_fun);
-		assert(outlist->size == 3);
-
-		CHARSTR *res = (CHARSTR *)outlist->get(outlist, 2);
-		assert(!strcmp(res->data, "brave"));
-
-		outlist->delete(outlist);
-		inlist->delete(inlist);	
-	}
-
-	OPTION *collect_fun(CHARSTR *in) {
-		if (in->data[0] == 'h' || in->data[0] == 's'){
-			return (OPTION *)some_object((ANY *)in);
-		}
-		else
-			return (OPTION *)none_object();
-	}
-
-	void collect_test() {
-		printf("-collect_test\n");
-		LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
-			(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-		LIST *outlist = inlist->collect(inlist, (OPTION *(*)(ANY *)) collect_fun);
-		CHARSTR *out = (CHARSTR *)outlist->head(outlist);
-		assert(!strcmp(out->data, "hello"));
-		assert(outlist->size == 2); 
-		
-	}
-
-	int main (int argc, char **argv) {
-		create_list();
-		prepend_list();
-		append_list();
-		init_list();
-		tail_list();
-		list_get();
-		head_last();
-		fold_left();
-		fold_right();
-		reverse();
-		flip();
-		map();
-		filter();
-		collect_test();
-	}
+	return 0;
+}
 #endif
