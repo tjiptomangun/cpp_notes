@@ -224,5 +224,4 @@ void free_cons(CONS *cons);
  * DESCRIPTION	: create list with its ANY* items
  */
 LIST *list_create(int num_items, ...);
-
 #endif

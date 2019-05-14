@@ -1,10 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <list.h>
-#include <any.h>
 #include <memory.h>
 #include <stdarg.h> 
+#include "list.h"
+#include "any.h"
+#include "tuple.h"
 
 /**
  * NAME			: __new_list_node
@@ -211,15 +212,16 @@ static void __delete_list(LIST *inlist) {
 	inlist->get = NULL;
 	inlist->head = NULL;
 	inlist->last = NULL;
-	inlist->fold_left= NULL;
-	inlist->fold_right= NULL;
-	inlist->flip= NULL;
-	inlist->reverse= NULL;
-	inlist->map= NULL;
-	inlist->delete= NULL;
-	inlist->collect= NULL;
-	inlist->filter= NULL;
-	inlist->map= NULL;
+	inlist->fold_left = NULL;
+	inlist->fold_right = NULL;
+	inlist->flip = NULL;
+	inlist->reverse = NULL;
+	inlist->map = NULL;
+	inlist->delete = NULL;
+	inlist->collect = NULL;
+	inlist->filter = NULL;
+	inlist->map = NULL;
+	inlist->zip = NULL;
 	free(inlist);
 }
 
@@ -431,6 +433,27 @@ static LIST *__collect(LIST *inlist, OPTION* (*fn)(ANY *)){
 	return nl;
 }
 
+static LIST * __zip_helper(LIST *outlist, LIST_NODE *n1, LIST_NODE *n2) {
+	TUPLE_2 *t2;
+	if (n1 && n2) {
+		t2 = new_tuple2(n1->wrapped_data->copy(n1->wrapped_data), n2->wrapped_data->copy(n2->wrapped_data));	
+		outlist->append(outlist, (ANY *)t2);
+		return __zip_helper(outlist, n1->next, n2->next);
+	}
+	else {
+		return outlist;
+	}
+}
+
+static LIST *__zip(LIST *e0l, LIST *e1l) {
+	LIST *nl = new_list();
+	if (nl) {
+		return __zip_helper(nl, e0l->__s__head, e1l->__s__head);
+	}
+	else
+		return nl;
+}
+
 
 static LIST *copy (LIST *in) {
 	LIST *out = new_list();
@@ -443,6 +466,22 @@ static LIST *copy (LIST *in) {
 			cp = item->copy(item);
 			out->append(out, cp);		
 		}
+		out->prepend = in->prepend;
+		out->append = in->append;
+		out->init = in->init;
+		out->tail = in->tail;
+		out->get = in->get;
+		out->head = in->head;
+		out->last= in->last;
+		out->fold_left = in->fold_left;
+		out->fold_right = in->fold_right;
+		out->copy = in->copy;
+		out->flip= in->flip;
+		out->reverse= in->reverse;
+		out->map = in->map;
+		out->filter = in->filter;
+		out->collect = in->collect;
+		out->zip = in->zip;
 	}
 	return out;
 }
@@ -469,6 +508,7 @@ LIST *new_list() {
 	ret->map = __map;
 	ret->filter = __filter;
 	ret->collect = __collect;
+	ret->zip= __zip;
 	return ret;
 }
 
@@ -768,8 +808,31 @@ void collect_test() {
 	assert(!strcmp(out->data, "hello"));
 	assert(outlist->size == 2); 
 	outlist->delete(outlist);
-	inlist->delete(inlist);
+	inlist->delete(inlist); 
+}
+
+void zip_test() {
+	printf("-zip_test\n");
+	CHARSTR *str0;
+	CHARSTR *str1;
+	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
+	LIST *inlist2 = list_create(4, (ANY *)new_charstr("hallo"), (ANY *)new_charstr("dunia"), 
+		(ANY *)new_charstr("milik"), (ANY *)new_charstr("pemberani"));
+	LIST *outlist = inlist->zip(inlist, inlist2);
+	assert(outlist->size == 4); 
+	str0 = (CHARSTR *)((TUPLE_2 *)outlist->get(outlist, 0))->e0;
+	str1 = (CHARSTR *)((TUPLE_2 *)outlist->get(outlist, 0))->e1;
+	assert(!strcmp(str0->data, "hello"));
+	assert(!strcmp(str1->data, "hallo"));
+	str0 = (CHARSTR *)((TUPLE_2 *)outlist->get(outlist, 3))->e0;
+	str1 = (CHARSTR *)((TUPLE_2 *)outlist->get(outlist, 3))->e1;
+	assert(!strcmp(str0->data, "brave"));
+	assert(!strcmp(str1->data, "pemberani"));
 	
+	outlist->delete(outlist);
+	inlist->delete(inlist); 
+	inlist2->delete(inlist2); 
 }
 
 int unit_test() {
@@ -787,6 +850,7 @@ int unit_test() {
 	map();
 	filter();
 	collect_test();
+	zip_test();
 	return 0;
 }
 
