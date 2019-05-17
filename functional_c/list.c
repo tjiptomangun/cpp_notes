@@ -222,6 +222,7 @@ static void __delete_list(LIST *inlist) {
 	inlist->filter = NULL;
 	inlist->map = NULL;
 	inlist->zip = NULL;
+	inlist->take= NULL;
 	free(inlist);
 }
 
@@ -486,6 +487,25 @@ static LIST *copy (LIST *in) {
 	return out;
 }
 
+static LIST *__take_n_helper(LIST_NODE *in, int n, LIST *out) {
+	if (n > 0 && in) {
+		out = out->append(out, in->wrapped_data);
+		return __take_n_helper(in->next, n - 1, out);
+	}
+	return out;
+
+}
+
+static LIST *__take_n(LIST *in, int n) {
+	LIST *out = NULL;
+	if (in->size > 0 && (out = calloc(1, sizeof(LIST)))){
+		return __take_n_helper(in->__s__head, n, out);	
+	}
+	else {
+		return out;
+	}
+}
+
 LIST *new_list() {
 	LIST *ret = (LIST *) calloc(1, sizeof(LIST));
 	ret->this = ret;
@@ -509,6 +529,7 @@ LIST *new_list() {
 	ret->filter = __filter;
 	ret->collect = __collect;
 	ret->zip= __zip;
+	ret->take= __take_n;
 	return ret;
 }
 

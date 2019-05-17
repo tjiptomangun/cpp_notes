@@ -192,7 +192,24 @@ typedef struct list {
 	 */
 	struct list* (*collect)(struct list *inlist, OPTION *(*fn)(ANY *));
 
+	/**	
+	 * NAME			: zip
+	 * DESCRIPTION	: create a new list with its members are 2-tuple of each original list element
+	 * INPUT
+	 *		inlist	: list to zip with
+	 *		otherlist : the second list to zip with
+	 * 
+	 */
 	struct list* (*zip) (struct list *inlist, struct list *otherlist);
+
+	/**
+	 * NAME			: take
+	 * DESCRIPTION	: take first n member
+	 * INPUT
+	 *		inlist  : to take
+	 *		n		: number of member to take
+	 */
+	struct list* (*take) (struct list *inlist, int n);
 
 } LIST;
 
