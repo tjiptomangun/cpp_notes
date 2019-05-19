@@ -110,6 +110,15 @@ static ANY* __release_wrapped_and_delete(LIST *ls, LIST_NODE *node){
 	return ret;
 }
 
+static LIST *__list_release_all_wrapped(LIST *ls) {
+	LIST_NODE *curr = ls->__s__head;
+	while(curr){
+		curr->wrapped_data = NULL;
+		curr = curr->next;
+	}
+	return ls;
+}
+
 /**
  * NAME			: __unwrap_list_node
  * DESCRIPTION	: return wrapped data
@@ -238,7 +247,7 @@ static ANY * __get_nth(LIST *inlist, unsigned int ndx) {
 	if(!curr)
 		return NULL;
 	else
-		return curr->wrapped_data;
+		return curr->wrapped_data->copy(curr->wrapped_data);
 }
 
 static ANY * __head(LIST *inlist) {
@@ -246,7 +255,7 @@ static ANY * __head(LIST *inlist) {
 	if(!curr)
 		return NULL;
 	else
-		return curr->wrapped_data;
+		return curr->wrapped_data->copy(curr->wrapped_data);
 } 
 
 static ANY * __last(LIST *inlist) {
@@ -254,7 +263,7 @@ static ANY * __last(LIST *inlist) {
 	if(!curr)
 		return NULL;
 	else
-		return curr->wrapped_data;
+		return curr->wrapped_data->copy(curr->wrapped_data);
 }
 
 static ANY * __i_fold_left(LIST_NODE *node, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
@@ -315,7 +324,12 @@ static void __flip(LIST *inlist) {
 }
 
 static LIST *__reverse(LIST *inlist){
-	return (LIST *)__fold_left(inlist, (ANY *)new_list(), (ANY * (*) (ANY *, ANY *))__prepend_list);
+	LIST *cp = inlist->copy(inlist);
+	LIST *ret = (LIST *)__fold_left(cp, (ANY *)new_list(), (ANY * (*) (ANY *, ANY *))__prepend_list);
+	__list_release_all_wrapped(cp);
+	cp->delete(cp);
+	return ret;
+	
 }
 
 typedef struct map_struct{
@@ -437,7 +451,7 @@ static LIST *__collect(LIST *inlist, OPTION* (*fn)(ANY *)){
 static LIST * __zip_helper(LIST *outlist, LIST_NODE *n1, LIST_NODE *n2) {
 	TUPLE_2 *t2;
 	if (n1 && n2) {
-		t2 = new_tuple2(n1->wrapped_data->copy(n1->wrapped_data), n2->wrapped_data->copy(n2->wrapped_data));	
+		t2 = new_tuple2(n1->wrapped_data, n2->wrapped_data);	
 		outlist->append(outlist, (ANY *)t2);
 		return __zip_helper(outlist, n1->next, n2->next);
 	}
@@ -459,13 +473,11 @@ static LIST *__zip(LIST *e0l, LIST *e1l) {
 static LIST *copy (LIST *in) {
 	LIST *out = new_list();
 	ANY *item;
-	ANY *cp;
 	int i;
 	if (out) {
 		for (i = 0; i < in->size; i ++){
 			item = in->get(in, i);
-			cp = item->copy(item);
-			out->append(out, cp);		
+			out->append(out, item);
 		}
 		out->prepend = in->prepend;
 		out->append = in->append;
@@ -489,7 +501,7 @@ static LIST *copy (LIST *in) {
 
 static LIST *__take_n_helper(LIST_NODE *in, int n, LIST *out) {
 	if (n > 0 && in) {
-		out = out->append(out, in->wrapped_data);
+		out = out->append(out, in->wrapped_data->copy(in->wrapped_data));
 		return __take_n_helper(in->next, n - 1, out);
 	}
 	return out;
@@ -498,8 +510,8 @@ static LIST *__take_n_helper(LIST_NODE *in, int n, LIST *out) {
 
 static LIST *__take_n(LIST *in, int n) {
 	LIST *out = NULL;
-	if (in->size > 0 && (out = calloc(1, sizeof(LIST)))){
-		return __take_n_helper(in->__s__head, n, out);	
+	if (in->size > 0 && (out = new_list())){
+		return __take_n_helper(in->__s__head, n < in->size ? n : in->size, out);
 	}
 	else {
 		return out;
@@ -681,19 +693,24 @@ void list_get(){
 	LIST_NODE *t2;
 	LIST_NODE *t3;
 	LIST_NODE *t4;
+	CHARSTR *c1;
 	assert(t != NULL);
-	t->append(t, new_any());
-	t->append(t, new_any());
+	t->append(t, (ANY *)new_charstr("hello"));
+	t->append(t, (ANY *)new_charstr("world"));
 	t2 = t->__s__last;
-	t->append(t, new_any());
+	t->append(t, (ANY *)new_charstr("of"));
 	t3 = t->__s__last;
-	t->append(t, new_any());
+	t->append(t, (ANY *)new_charstr("amazing"));
 	t4 = t->__s__last;
-	assert(t->get(t, 3) == t4->wrapped_data); 
+	assert(!strcmp((c1 = (CHARSTR *)t->get(t, 3))->data, ((CHARSTR *)t4->wrapped_data)->data)); 
+	c1->delete(c1);
 	t->tail(t);
-	assert(t->get(t, 2) == t4->wrapped_data);
-	assert(t->get(t, 1) == t3->wrapped_data);
-	assert(t->get(t, 0) == t2->wrapped_data);
+	assert(!strcmp((c1 = (CHARSTR *)t->get(t, 2))->data, ((CHARSTR *)t4->wrapped_data)->data));
+	c1->delete(c1);
+	assert(!strcmp((c1 = (CHARSTR *)t->get(t, 1))->data, ((CHARSTR *)t3->wrapped_data)->data));
+	c1->delete(c1);
+	assert(!strcmp((c1 = (CHARSTR *)t->get(t, 0))->data, ((CHARSTR *)t2->wrapped_data)->data));
+	c1->delete(c1);
 	t->init(t);
 	t->delete(t);
 }
@@ -704,21 +721,26 @@ void head_last(){
 	LIST_NODE *t2;
 	LIST_NODE *t3;
 	LIST_NODE *t4;
+	CHARSTR *c1;
 	assert(t != NULL);
-	t->append(t, new_any());
+	t->append(t, (ANY *)new_charstr("hello"));
 	t1 = t->__s__last;
-	t->append(t, new_any());
+	t->append(t, (ANY *)new_charstr("world"));
 	t2 = t->__s__last;
-	t->append(t, new_any());
+	t->append(t, (ANY *)new_charstr("of"));
 	t3 = t->__s__last;
-	t->append(t, new_any());
+	t->append(t, (ANY *)new_charstr("wonder"));
 	t4 = t->__s__last;
-	assert(t->last(t) == t4->wrapped_data); 
-	assert(t->head(t) == t1->wrapped_data); 
+	assert(!strcmp((c1 = (CHARSTR *)t->last(t))->data, ((CHARSTR *)t4->wrapped_data)->data)); 
+	c1->delete(c1);
+	assert(!strcmp((c1 = (CHARSTR *)t->head(t))->data, ((CHARSTR *)t1->wrapped_data)->data)); 
+	c1->delete(c1);
 	t->tail(t);
-	assert(t->head(t) == t2->wrapped_data); 
+	assert(!strcmp((c1 = (CHARSTR *)t->head(t))->data, ((CHARSTR *)t2->wrapped_data)->data)); 
+	c1->delete(c1);
 	t->init(t);
-	assert(t->last(t) == t3->wrapped_data); 
+	assert(!strcmp((c1 = (CHARSTR *)t->last(t))->data, ((CHARSTR *)t3->wrapped_data)->data)); 
+	c1->delete(c1);
 	t->delete(t);
 }
 
@@ -748,6 +770,18 @@ void fold_right() {
 	l->delete(l); 
 }
 
+void copy_test() {
+	printf("-copy_test\n");
+	LIST *inlist = list_create(11, (ANY *)new_charstr("Hello"), (ANY *)new_charstr("world"), 
+		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"), 
+		(ANY *)new_charstr("!"), (ANY *)new_charstr("never"), (ANY *)new_charstr("forget"),
+		(ANY *)new_charstr("your"), (ANY *)new_charstr("beginner's"), (ANY *)new_charstr("spirit"));
+	LIST *rev = inlist->copy(inlist);
+	assert(inlist->size == rev->size);
+	inlist->delete(inlist);
+	rev->delete(rev);
+} 
+
 void reverse() {
 	LIST *nl;
 	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
@@ -757,8 +791,11 @@ void reverse() {
 	nl = inlist->reverse(inlist);
 	st = (CHARSTR *)nl->head(nl);
 	assert(!strcmp(st->data, "soul")); 
+	st->delete(st);
 	st = (CHARSTR *) inlist->get(inlist, 2);
 	assert(!strcmp(st->data, "of")); 
+	st->delete(st);
+	nl->delete(nl);
 	inlist->delete(inlist);
 } 
 
@@ -769,8 +806,10 @@ void flip() {
 	inlist->flip(inlist);
 	CHARSTR *st = (CHARSTR *)inlist->head(inlist);
 	assert(!strcmp(st->data, "soul"));
+	st->delete(st);
 	st = (CHARSTR *) inlist->get(inlist, 2);
 	assert(!strcmp(st->data, "of")); 
+	st->delete(st);
 	inlist->delete(inlist);
 	
 }
@@ -791,8 +830,10 @@ void map() {
 
 	Integer *res = (Integer *)outlist->get(outlist, 3);
 	assert(res->value == 5);
+	res->delete(res);
 	res = (Integer *)outlist->get(outlist, 2);
 	assert(res->value == 2);
+	res->delete(res);
 	
 	outlist->delete(outlist);
 	inlist->delete(inlist);	
@@ -807,6 +848,7 @@ void filter() {
 
 	CHARSTR *res = (CHARSTR *)outlist->get(outlist, 2);
 	assert(!strcmp(res->data, "brave"));
+	res->delete(res);
 
 	outlist->delete(outlist);
 	inlist->delete(inlist);	
@@ -827,6 +869,7 @@ void collect_test() {
 	LIST *outlist = inlist->collect(inlist, (OPTION *(*)(ANY *)) collect_fun);
 	CHARSTR *out = (CHARSTR *)outlist->head(outlist);
 	assert(!strcmp(out->data, "hello"));
+	out->delete(out);
 	assert(outlist->size == 2); 
 	outlist->delete(outlist);
 	inlist->delete(inlist); 
@@ -836,24 +879,67 @@ void zip_test() {
 	printf("-zip_test\n");
 	CHARSTR *str0;
 	CHARSTR *str1;
+	TUPLE_2 *t1, *t2;
 	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
 	LIST *inlist2 = list_create(4, (ANY *)new_charstr("hallo"), (ANY *)new_charstr("dunia"), 
 		(ANY *)new_charstr("milik"), (ANY *)new_charstr("pemberani"));
 	LIST *outlist = inlist->zip(inlist, inlist2);
 	assert(outlist->size == 4); 
-	str0 = (CHARSTR *)((TUPLE_2 *)outlist->get(outlist, 0))->e0;
-	str1 = (CHARSTR *)((TUPLE_2 *)outlist->get(outlist, 0))->e1;
+	str0 = (CHARSTR *)(t1 = (TUPLE_2 *)outlist->get(outlist, 0))->e0;
+	str1 = (CHARSTR *)(t2 = (TUPLE_2 *)outlist->get(outlist, 0))->e1;
 	assert(!strcmp(str0->data, "hello"));
 	assert(!strcmp(str1->data, "hallo"));
-	str0 = (CHARSTR *)((TUPLE_2 *)outlist->get(outlist, 3))->e0;
-	str1 = (CHARSTR *)((TUPLE_2 *)outlist->get(outlist, 3))->e1;
+	t1->delete(t1);
+	t2->delete(t2);
+	str0 = (CHARSTR *)(t1 = (TUPLE_2 *)outlist->get(outlist, 3))->e0;
+	str1 = (CHARSTR *)(t2 = (TUPLE_2 *)outlist->get(outlist, 3))->e1;
 	assert(!strcmp(str0->data, "brave"));
 	assert(!strcmp(str1->data, "pemberani"));
-	
+	t1->delete(t1);
+	t2->delete(t2);
 	outlist->delete(outlist);
 	inlist->delete(inlist); 
 	inlist2->delete(inlist2); 
+}
+
+void take_test() {
+	printf("-take_test\n");
+	CHARSTR * c1;
+	TUPLE_2 * t1;
+	LIST * outlist;
+	LIST * zipped;
+
+	LIST *inlist = list_create(11, (ANY *)new_charstr("Hello"), (ANY *)new_charstr("world"), 
+		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"), 
+		(ANY *)new_charstr("!"), (ANY *)new_charstr("never"), (ANY *)new_charstr("forget"),
+		(ANY *)new_charstr("your"), (ANY *)new_charstr("beginner's"), (ANY *)new_charstr("spirit"));
+
+	LIST *inlist2 = list_create(10, (ANY *)new_charstr("hallo"), (ANY *)new_charstr("dunia"), 
+		(ANY *)new_charstr("milik"), (ANY *)new_charstr("pemberani"), (ANY *)new_charstr("jangan"),
+		(ANY *)new_charstr("pernah"), (ANY *)new_charstr("lupakan"), (ANY *)new_charstr("semangatmu"),
+		(ANY *)new_charstr("yang"), (ANY *)new_charstr("permulaan"));
+
+	outlist = inlist->take(inlist, 6); 
+	assert(outlist->size == 6);
+	c1 = (CHARSTR *)outlist->last(outlist);
+	assert(!strcmp(c1->data, "!"));
+	c1->delete(c1);
+	c1 = (CHARSTR *)outlist->get(outlist, 2);
+	assert(!strcmp(c1->data, "of"));
+	c1->delete(c1);
+	outlist->delete(outlist);
+
+	zipped = inlist->zip(inlist, inlist2);
+	outlist = zipped->take(zipped, 17);
+	t1 = (TUPLE_2*) outlist->get(outlist, 2);
+	assert(!strcmp(((CHARSTR *)t1->e1)->data, "milik"));
+	t1->delete(t1);
+	outlist->delete(outlist);
+	zipped->delete(zipped);
+	inlist2->delete(inlist2);
+	inlist->delete(inlist);
+	
 }
 
 int unit_test() {
@@ -866,49 +952,20 @@ int unit_test() {
 	head_last();
 	fold_left();
 	fold_right();
+	copy_test();
 	reverse();
 	flip();
 	map();
 	filter();
 	collect_test();
 	zip_test();
+	take_test();
 	return 0;
 }
 
 void mem_test() {
   while(1){
     unit_test();
-    sleep(1);
   }
-}
-
-int main (int argc, char **argv) { 
-	int c;
-	int flag = 0;
-	while(-1 !=(c = getopt(argc, argv, "um"))) {
-		switch (c){
-			case 'u':
-				flag = 0;
-				break;
-			case 'm':
-				flag = 1;
-				break;
-			default:
-				fprintf(stderr, "usage: %s -flag\n", argv[0]);
-				fprintf(stderr, "flags:\n");
-				fprintf(stderr, "	 u :unit test\n");
-				fprintf(stderr, "	 m :memchec test\n"); 
-				return -1;
-		} 
-	}
-
-	if (flag == 0){
-		unit_test();
-	}
-	else if(flag == 1){
-		mem_test();
-	}
-
-	return 0;
 }
 #endif
