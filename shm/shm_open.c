@@ -33,7 +33,7 @@ int main(int argc, char ** argv)
   char *path;
   int c;
 
-  while(-1 !=(c = getopt(argc,"p:s:cxrtw")))
+  while(-1 !=(c = getopt(argc, argv, "p:s:cxrtw")))
   {
      switch(c)
      {
