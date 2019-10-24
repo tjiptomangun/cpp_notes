@@ -22,7 +22,7 @@
  *   others  : pointer to the attribute
  * 
  */
-char* tools_xml_find_attribute(char *xml_string, char *path, char *attr_name, char *out_buffer, int outbuffer_max) { 
+char* xml_find_attribute(char *xml_string, char *path, char *attr_name, char *out_buffer, int outbuffer_max) { 
   char *p_path = path;
   char *start_path, *end_path ; 
   int done_path = 0;
@@ -131,10 +131,12 @@ char* tools_xml_find_attribute(char *xml_string, char *path, char *attr_name, ch
                 break;
             }
                 
-        }
-      }//for
+        }//for
+      }//if
       else {
        out_ptr = elem_ptr;
+       for (;out_ptr != NULL && *out_ptr != 0 && *out_ptr != '<'; out_ptr --)
+            ;
       }
     }//if
   }//!done_path
@@ -154,8 +156,88 @@ char* tools_xml_find_attribute(char *xml_string, char *path, char *attr_name, ch
  *      others  : pointer to element
  * 
  */
-char *tools_xml_find_element(char *xml_string, char *path) {
-  return tools_xml_find_attribute(xml_string, path, NULL, NULL, 0);
+char *xml_find_element(char *xml_string, char *path) {
+  return xml_find_attribute(xml_string, path, NULL, NULL, 0);
+}
+
+/**
+ * collection of pointers to xml element of same name
+ */
+typedef struct xml_elem_iterator {
+  int num; // number of pointer
+  char *ptrs[20]; //the pointer collection of start of element
+  char *src_str; // source xml string
+}XML_ELEM_ITERATOR;
+
+/**
+ * NAME          : to_xml_iterator
+ * DESCRIPTION   : create element iterator from an xml string
+ * INPUT
+ * 	xml_str      : string to find iterator from
+ *  elem_name    : name of element to iterate 
+ *  iter         : iterator buffer
+ *
+ * RETURNS
+ *  NULL		 : none exists
+ *  iter		 : found some
+ */
+XML_ELEM_ITERATOR *to_xml_iterator(char *xml_str, char *elem_name, XML_ELEM_ITERATOR *iter) {
+	char *tmp;
+	char *xptr;
+	int len = strlen(elem_name);	
+	XML_ELEM_ITERATOR *ret = NULL;
+	if (iter == NULL)
+		return NULL;
+	else if (xml_str == NULL)
+		return NULL;
+	else if (elem_name == NULL)
+		return NULL; 
+	else if ((tmp = xml_find_element(xml_str, elem_name)) == NULL)
+		return NULL;
+	else {
+		xptr = &elem_name[len];
+		do {
+			xptr --;
+		}while (*xptr != 0 && *xptr != '/');
+		xptr ++;
+		iter->src_str = xml_str;
+		char *doc_p;
+		yxml_t xml_elem;
+		yxml_ret_t xml_ret;
+		char buf[2048];
+		int xml_depth = 0;
+
+		do{	
+			yxml_init(&xml_elem, buf, 2048);
+			iter->num += 1;
+			iter->ptrs[iter->num - 1] = tmp;
+			doc_p = tmp; 
+			for (; xml_depth == 0; doc_p ++){
+				xml_ret = yxml_parse(&xml_elem, *doc_p);
+				if (xml_ret == YXML_ELEMSTART)
+					xml_depth ++; 
+			}
+			do {
+				xml_ret = yxml_parse(&xml_elem, *doc_p);
+				switch(xml_ret) {
+					case YXML_ELEMSTART:
+						xml_depth ++;
+						break;
+					case YXML_ELEMEND:
+						xml_depth --;
+						break;
+					default:
+						break;
+				}
+				doc_p ++;
+			}while (xml_depth > 0);
+		}while ((tmp = xml_find_element(doc_p, xptr)) != NULL);
+
+		ret =  iter; 
+	}
+
+	return ret;
+	 
 }
 
 #define bool unsigned int
@@ -164,6 +246,31 @@ char *tools_xml_find_element(char *xml_string, char *path) {
 #define KRED  "\x1B[31m"
 #define KBLU  "\x1B[34m"
 #define KNRM  "\x1B[0m"
+
+char *gup_profile_multi_res = "<!-- IMSI1 -->\
+	<entry dn=\"subdata=profile,ds=gup,subdata=services,msisdn=66818010400,dc=MSISDN,dc=C-NTDB\">\
+		<attr name=\"imsi\">\
+			<val value=\"520011893780810|\"></val>\
+		</attr>\
+		<attr name=\"msisdn\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+		<attr name=\"mscAddress\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+	</entry>\
+<!-- IMSI2 -->\
+	<entry dn=\"subdata=profile,ds=gup,subdata=services,msisdn=66818010400,dc=MSISDN,dc=C-NTDB\">\
+		<attr name=\"imsi\">\
+			<val value=\"520010991818108\"></val>\
+		</attr>\
+		<attr name=\"msisdn\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+		<attr name=\"mscAddress\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+	</entry>";
 
 char *srism_ok = "\
 		<SS7AP ret=\"0\" type=\"response\" session=\"66818110001:12345678:OSS7.ESS.0.0\">\
@@ -194,41 +301,56 @@ bool test_xml_elem() {
     
     bool assertion = true;
     char *findet ;
-    findet = tools_xml_find_element( srism_ok, "SS7AP");
+    findet = xml_find_element( srism_ok, "SS7AP");
     assertion = assertion && findet != NULL;
-    findet = tools_xml_find_element(srism_ok, "SS7AX");    
+    findet = xml_find_element(srism_ok, "SS7AX");    
     assertion = assertion && findet == NULL;
-    findet = tools_xml_find_element(srism_ok, "SS7AP/SCCX");
+    findet = xml_find_element(srism_ok, "SS7AP/SCCX");
     assertion = assertion && findet == NULL;    
-    findet = tools_xml_find_element(srism_ok, "SS7AP/SCCP/CDPA");
+    findet = xml_find_element(srism_ok, "SS7AP/SCCP/CDPA");
     assertion = assertion && findet != NULL;
-    findet = tools_xml_find_element(srism_ok, "SS7AP/SCCP/CDPA/GTX");
+    findet = xml_find_element(srism_ok, "SS7AP/SCCP/CDPA/GTX");
     assertion = assertion && findet == NULL;
-    findet = tools_xml_find_element(srism_ok, "SS7AP/SCCP/CDPA/GTITLE");
+    findet = xml_find_element(srism_ok, "SS7AP/SCCP/CDPA/GTITLE");
     assertion = assertion && findet != NULL;
-    findet = tools_xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/GTITLE");
+    findet = xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/GTITLE");
     assertion = assertion && findet != NULL;
-    findet = tools_xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/GTIT");
+    findet = xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/GTIT");
     assertion = assertion && findet == NULL;
-    findet = tools_xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/ GTITLE ");
+    findet = xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/ GTITLE ");
     assertion = assertion && findet != NULL;
-    findet = tools_xml_find_element(srism_ok, " SS7AP/SCCP/ CDPA / GTITLE ");
+    findet = xml_find_element(srism_ok, " SS7AP/SCCP/ CDPA / GTITLE ");
     assertion = assertion && findet != NULL;
     
     return assertion;
 }
+
 bool test_xml_attrib() {
   bool assertion = true;
   char *findet ;
   char buff[1024];  
-  findet = tools_xml_find_attribute(srism_ok, "SS7AP/SCCP/CDPA/GTITLE", "ret", buff, 1024);
+  findet = xml_find_attribute(srism_ok, "SS7AP/SCCP/CDPA/GTITLE", "ret", buff, 1024);
   assertion = assertion && (findet == NULL);
-  findet = tools_xml_find_attribute(srism_ok, "SS7AP/SCCP/CDPA/GTITLE", "nai", buff, 1024);
+  findet = xml_find_attribute(srism_ok, "SS7AP/SCCP/CDPA/GTITLE", "nai", buff, 1024);
   assertion = assertion && (findet != NULL);
   assertion = assertion && (!strcmp(buff, "4"));
 
   return assertion; 
   
+}
+
+bool test_xml_iterator() {
+  	bool assertion = true;
+	XML_ELEM_ITERATOR t, p, x ;
+	memset (&t, 0, sizeof(t));
+	to_xml_iterator(gup_profile_multi_res, "entry", &t);
+	assertion = assertion && t.num == 2;
+	memset (&p, 0, sizeof(p));
+	to_xml_iterator(t.ptrs[0], "entry/attr", &p);
+	assertion = assertion && p.num == 3;
+	to_xml_iterator(t.ptrs[1], "entry/attr", &x);
+	assertion = assertion && p.num == 3;
+	return assertion;
 }
 
 
@@ -247,5 +369,7 @@ int main (int argc, char **argv) {
     print_assertion(test_xml_attrib());
     fprintf(stdout, "test_xml_elem  ");
     print_assertion(test_xml_elem());
+    fprintf(stdout, "test_xml_iterator ");
+    print_assertion(test_xml_iterator());
     return 0;
 }
