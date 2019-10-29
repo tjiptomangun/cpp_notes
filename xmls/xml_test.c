@@ -3,7 +3,7 @@
 #include "yxml.h"
 
 /**
- * NAME         : tools_find_xml_attribute
+ * NAME         : xml_find_attribute
  * DESCRIPTION  : get an attribute's value of xml path from an xml string.
  * INPUT
  *  xml_string  : xml string to find element from
@@ -22,20 +22,23 @@
  *   others  : pointer to the attribute
  * 
  */
-char* tools_xml_find_attribute(char *xml_string, char *path, char *attr_name, char *out_buffer, int outbuffer_max) { 
+
+
+char* xml_find_attribute(char *xml_string, char *path, char *attr_name, char *out_buffer, int outbuffer_max) {
   char *p_path = path;
-  char *start_path, *end_path ; 
+  char *start_path = NULL, *end_path = NULL;
   int done_path = 0;
 
   int xml_depth = 0;
   int path_depth = 0;
 
-  char *doc_p = xml_string; 
-  
+  char *doc_p = xml_string;
+  char *t_doc_p;
+
   yxml_t xml_elem;
   yxml_ret_t xml_ret;
-  char buf[2048];
-  yxml_init(&xml_elem, buf, 2048);
+  char buf[8192];
+  yxml_init(&xml_elem, buf, 8192);
   int match = 0;
   int i = 0;
   int found = 0;
@@ -43,8 +46,9 @@ char* tools_xml_find_attribute(char *xml_string, char *path, char *attr_name, ch
   char *out_ptr = NULL;
   char *elem_ptr = NULL;
   char *attrib_ptr = NULL;
+  char temp_str[2048] = "";
 
-  while (*p_path != 0 && !done_path) { 
+  while (*p_path != 0 && !done_path) {
 
     while(*p_path == ' '){
       p_path ++;
@@ -54,29 +58,29 @@ char* tools_xml_find_attribute(char *xml_string, char *path, char *attr_name, ch
     while (*p_path != 0 && *p_path != '/' && *p_path != ' '){
       p_path ++;
     }
-  
+
     /* empty path or end of string */
     if (start_path == p_path)
-      done_path = 1; 
-   
-    end_path = p_path; 
-  
+      done_path = 1;
+
+    end_path = p_path;
+
     while (*p_path == ' ')
       p_path ++;
-    
+
     if (*p_path == '\0')
       done_path = 1;
 
     if (*p_path == '/')
       p_path ++;
 
-    path_depth ++; 
-    
-    // find the elem    
+    path_depth ++;
+
+    // find the elem
     found = 0;
     out_ptr = NULL;
     for(; !found && *doc_p; doc_p++) {
-        
+
         xml_ret = yxml_parse(&xml_elem, *doc_p);
         switch (xml_ret) {
           case YXML_ELEMSTART:
@@ -86,20 +90,22 @@ char* tools_xml_find_attribute(char *xml_string, char *path, char *attr_name, ch
             match = elem_len == path_len;
             for(i = 0; i < path_len && match; i++)
                 match = match && (start_path[i] == xml_elem.elem[i]);
-                
+
             if (match && xml_depth == path_depth){
               found = 1;
+              t_doc_p = doc_p;
               doc_p -= path_len;
               for(;*doc_p != '<'; doc_p--){
                       ;
               }
               elem_ptr = doc_p;
+              doc_p = t_doc_p;
             }
             break;
           case YXML_ELEMEND:
             xml_depth --;
             break;
-            
+
           default:
             break;
         }
@@ -121,16 +127,26 @@ char* tools_xml_find_attribute(char *xml_string, char *path, char *attr_name, ch
                 break;
             case YXML_ATTRVAL:
                 if (attr_found) {
-                  strncpy(out_buffer, xml_elem.data, outbuffer_max);
-                  ret_len = strlen(out_buffer);
-                  out_ptr = attrib_ptr;
+                  strncat(temp_str, xml_elem.data, 1024);
                 }
                 break;
-                
+            case YXML_ATTREND:
+                if (attr_found) {
+                    strncpy(out_buffer, temp_str, outbuffer_max);
+                    ret_len = strlen(out_buffer);
+                    out_ptr = attrib_ptr;
+                }
+                break;
+						case YXML_ELEMEND:
+								found = 0;
+								done_path = 0;
+								return out_ptr;
+								break;
+
             default:
                 break;
             }
-                
+
         }
       }//for
       else {
@@ -154,8 +170,8 @@ char* tools_xml_find_attribute(char *xml_string, char *path, char *attr_name, ch
  *      others  : pointer to element
  * 
  */
-char *tools_xml_find_element(char *xml_string, char *path) {
-  return tools_xml_find_attribute(xml_string, path, NULL, NULL, 0);
+char * xml_find_element(char *xml_string, char *path) {
+  return xml_find_attribute(xml_string, path, NULL, NULL, 0);
 }
 
 #define bool unsigned int
@@ -194,25 +210,25 @@ bool test_xml_elem() {
     
     bool assertion = true;
     char *findet ;
-    findet = tools_xml_find_element( srism_ok, "SS7AP");
+    findet = xml_find_element( srism_ok, "SS7AP");
     assertion = assertion && findet != NULL;
-    findet = tools_xml_find_element(srism_ok, "SS7AX");    
+    findet = xml_find_element(srism_ok, "SS7AX");    
     assertion = assertion && findet == NULL;
-    findet = tools_xml_find_element(srism_ok, "SS7AP/SCCX");
+    findet = xml_find_element(srism_ok, "SS7AP/SCCX");
     assertion = assertion && findet == NULL;    
-    findet = tools_xml_find_element(srism_ok, "SS7AP/SCCP/CDPA");
+    findet = xml_find_element(srism_ok, "SS7AP/SCCP/CDPA");
     assertion = assertion && findet != NULL;
-    findet = tools_xml_find_element(srism_ok, "SS7AP/SCCP/CDPA/GTX");
+    findet = xml_find_element(srism_ok, "SS7AP/SCCP/CDPA/GTX");
     assertion = assertion && findet == NULL;
-    findet = tools_xml_find_element(srism_ok, "SS7AP/SCCP/CDPA/GTITLE");
+    findet = xml_find_element(srism_ok, "SS7AP/SCCP/CDPA/GTITLE");
     assertion = assertion && findet != NULL;
-    findet = tools_xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/GTITLE");
+    findet = xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/GTITLE");
     assertion = assertion && findet != NULL;
-    findet = tools_xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/GTIT");
+    findet = xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/GTIT");
     assertion = assertion && findet == NULL;
-    findet = tools_xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/ GTITLE ");
+    findet = xml_find_element(srism_ok, " SS7AP/SCCP/CDPA/ GTITLE ");
     assertion = assertion && findet != NULL;
-    findet = tools_xml_find_element(srism_ok, " SS7AP/SCCP/ CDPA / GTITLE ");
+    findet = xml_find_element(srism_ok, " SS7AP/SCCP/ CDPA / GTITLE ");
     assertion = assertion && findet != NULL;
     
     return assertion;
@@ -221,11 +237,17 @@ bool test_xml_attrib() {
   bool assertion = true;
   char *findet ;
   char buff[1024];  
-  findet = tools_xml_find_attribute(srism_ok, "SS7AP/SCCP/CDPA/GTITLE", "ret", buff, 1024);
+  findet = xml_find_attribute(srism_ok, "SS7AP/SCCP/CDPA/GTITLE", "ret", buff, 1024);
   assertion = assertion && (findet == NULL);
-  findet = tools_xml_find_attribute(srism_ok, "SS7AP/SCCP/CDPA/GTITLE", "nai", buff, 1024);
+  findet = xml_find_attribute(srism_ok, "SS7AP/SCCP/CDPA/GTITLE", "nai", buff, 1024);
   assertion = assertion && (findet != NULL);
   assertion = assertion && (!strcmp(buff, "4"));
+  findet = xml_find_attribute(srism_ok, "SS7AP/SCCP/CDPA/GTITLE", "addr", buff, 1024);
+  assertion = assertion && (!strcmp(buff, "66818110001"));
+  findet = xml_find_attribute(srism_ok, "SS7AP/SCCP/CGPA/GTITLE", "addr", buff, 1024);
+  assertion = assertion && (!strcmp(buff, "66818110002"));
+  assertion = assertion && (strcmp(buff, "66818110001"));
+
 
   return assertion; 
   
