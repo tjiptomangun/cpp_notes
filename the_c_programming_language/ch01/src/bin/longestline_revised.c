@@ -41,7 +41,7 @@ int main (int argc, char **argv) {
 	}
 
 	if(max > 0)
-		printf("%s", longest);
+		printf("%s -> %d\n", longest, max);
 
 	return 0;
 }
