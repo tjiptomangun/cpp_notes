@@ -28,11 +28,13 @@ int main (int argc, char **argv) {
   char *string3 = "*123*#";
   char *string4 = "*123**";
   char *string5 = "*123";
+  char *string6 = "*AAA*123432#";
 
   regcheck(string1);
   regcheck(string2);
   regcheck(string3);
   regcheck(string4);
   regcheck(string5);
+  regcheck(string6);
 }
                           
