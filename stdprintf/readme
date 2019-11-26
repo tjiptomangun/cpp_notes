@@ -1,0 +1,6 @@
+this experiments about writting to stdout and stderr
+
+
+
+./PRINT >>log 2>&1
+

@@ -1,1 +1,7 @@
 test_list
+core
+.kdev4/
+functional_c.kdev4
+test_charstr
+test_key_val
+test_tuple
