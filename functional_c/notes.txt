@@ -1,0 +1,2 @@
+read more on this
+http://conal.net/blog/posts/the-c-language-is-purely-functional
