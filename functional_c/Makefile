@@ -1,4 +1,4 @@
-all: test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3
+all: test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1
 
 test_list: list.c charstr.c integer.c tuple.c main.c
 	gcc -Wall -ggdb3 -I . -D_LIST_UNIT_TEST_ any.c charstr.c integer.c option.c list.c tuple.c main.c -o test_list
@@ -14,7 +14,9 @@ mylambda2: mylambda2.c
 	gcc -Wall -ggdb3 -I . mylambda2.c -o mylambda2
 mylambda3: mylambda3.c
 	gcc -Wall -ggdb3 -I . -gdwarf-2 -g3 mylambda3.c -o mylambda3
+curry1: curry1.c
+	gcc -Wall -ggdb3 -I . -gdwarf-2 -g3 curry1.c -o curry1
 
 clean:
-	rm -f functional_test test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3
+	rm -f functional_test test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1
 
