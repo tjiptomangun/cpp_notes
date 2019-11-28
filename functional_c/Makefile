@@ -1,4 +1,4 @@
-all: test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1
+all: test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1 nested_func curry2
 
 test_list: list.c charstr.c integer.c tuple.c main.c
 	gcc -Wall -ggdb3 -I . -D_LIST_UNIT_TEST_ any.c charstr.c integer.c option.c list.c tuple.c main.c -o test_list
@@ -15,8 +15,15 @@ mylambda2: mylambda2.c
 mylambda3: mylambda3.c
 	gcc -Wall -ggdb3 -I . -gdwarf-2 -g3 mylambda3.c -o mylambda3
 curry1: curry1.c
-	gcc -Wall -ggdb3 -I . -gdwarf-2 -g3 curry1.c -o curry1
+	gcc -Wall -ggdb3 -I . curry1.c -o curry1
+#	gcc -Wall -ggdb3 -I . -gdwarf-2 -g3 curry1.c -o curry1
+curry1_dc: curry1.c
+	gcc -Wall -ggdb3 -I . -D_COMPILE_ONLY_ -gdwarf-2 -g3 curry1.c -o curry1
+nested_func: nested_func.c
+	gcc -Wall -ggdb3 -I . nested_func.c -o nested_func
+curry2: curry2.c
+	gcc -Wall -ggdb3 -I . curry2.c -o curry2
 
 clean:
-	rm -f functional_test test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1
+	rm -f functional_test test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1 nested_func curry2
 

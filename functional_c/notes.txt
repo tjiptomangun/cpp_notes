@@ -1,2 +1,6 @@
 read more on this
 http://conal.net/blog/posts/the-c-language-is-purely-functional
+https://github.com/HackerFoo/curry.c/blob/master/curry.c
+https://www.reddit.com/r/programming/comments/1e92hk/curried_functions_in_c/
+https://gist.github.com/a3f/2729c1248d0f2ee39b4a
+https://stackoverflow.com/questions/997821/how-to-make-a-function-return-a-pointer-to-a-function-c

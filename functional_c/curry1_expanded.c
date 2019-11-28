@@ -1889,8 +1889,28 @@ void some_fun(void){
 }
 # 46 "curry1.c"
 int main (int argc, char **argv) {
-    typedef int (*_curry_add_t) (int); int _curried_a_add; int _curried_ret_add(int b) { int a = _curried_a_add; return a + b; } _curry_add_t add(int a) { _curried_a_add = a; return _curried_ret_add; };
-    typedef int (*_curry_add_str_t) (char *); char * _curried_a_add_str; int _curried_ret_add_str(char * b) { char * a = _curried_a_add_str; return atoi(a) + atoi(b); } _curry_add_str_t add_str(char * a) { _curried_a_add_str = a; return _curried_ret_add_str; };
+    typedef int (*_curry_add_t) (int); 
+    int _curried_a_add; 
+    int _curried_ret_add(int b) { 
+       int a = _curried_a_add; 
+       return a + b; 
+    } 
+    _curry_add_t add(int a) { 
+       _curried_a_add = a; 
+       return _curried_ret_add; 
+    };
+
+
+    typedef int (*_curry_add_str_t) (char *); 
+    char * _curried_a_add_str; 
+    int _curried_ret_add_str(char * b) { 
+       char * a = _curried_a_add_str; 
+       return atoi(a) + atoi(b); 
+    } 
+    _curry_add_str_t add_str(char * a) { 
+       _curried_a_add_str = a; 
+       return _curried_ret_add_str; 
+    };
 
     int j = add(5)(3);
 

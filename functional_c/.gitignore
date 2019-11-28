@@ -5,3 +5,6 @@ functional_c.kdev4
 test_charstr
 test_key_val
 test_tuple
+curry1
+curry2
+nested_func
