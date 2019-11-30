@@ -1,4 +1,4 @@
-all: test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1 nested_func curry2
+all: test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1 nested_func curry2 trampoline
 
 test_list: list.c charstr.c integer.c tuple.c main.c
 	gcc -Wall -ggdb3 -I . -D_LIST_UNIT_TEST_ any.c charstr.c integer.c option.c list.c tuple.c main.c -o test_list
@@ -22,8 +22,10 @@ curry1_dc: curry1.c
 nested_func: nested_func.c
 	gcc -Wall -ggdb3 -I . nested_func.c -o nested_func
 curry2: curry2.c
-	gcc -Wall -ggdb3 -I . curry2.c -o curry2
+	gcc -Wall -ggdb3 -I . -Wtrampolines curry2.c -o curry2
+trampoline: trampoline.c
+	gcc -Wall -ggdb3 -I . -Wtrampolines trampoline.c -o trampoline
 
 clean:
-	rm -f functional_test test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1 nested_func curry2
+	rm -f functional_test test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1 nested_func curry2 trampoline
 

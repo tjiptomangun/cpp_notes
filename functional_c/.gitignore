@@ -8,3 +8,7 @@ test_tuple
 curry1
 curry2
 nested_func
+mylambda1
+mylambda2
+mylambda3
+trampoline
