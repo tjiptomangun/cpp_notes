@@ -1,0 +1,2 @@
+https://www.lucabol.com/2013/01/04/functional-programming-in-c/
+https://github.com/lucabol/CLiterary/blob/master/lutils.h

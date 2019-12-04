@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 
-float thelist[]={ 3.141, 6.02, 42.0, 0.7 };
 
 #define lambda(lambda$_ret, lambda$_args, lambda$_body)\
 ({\
@@ -15,9 +14,9 @@ float thelist[]={ 3.141, 6.02, 42.0, 0.7 };
  &lambda$_anon$;\
 })
 
-float average_apply(float (*fn)(float inp))
+float average_apply(float (*fn)(float inp), float thelist[], int n)
 {
-    int i,n=sizeof(thelist)/sizeof(thelist[0]);
+    int i;
     float avg=0.0;
     for (i=0;i<n;i++)
     {
@@ -29,11 +28,12 @@ float average_apply(float (*fn)(float inp))
 }
 
 int main (int argc, char **argv) {
+  float thelist[]={ 3.141, 6.02, 42.0, .7 };
+  int n=sizeof(thelist)/sizeof(thelist[0]);
   fprintf(stdout, "%f\n", average_apply(lambda(float, (float x), { 
     float y = x/2.0;
     return 2.0 * x * x/y; 
-  })));
-//  fprintf(stdout, "%f\n", average_apply(lambda(float, (float x), { return x / 3.0; })));
+  }), thelist, n));
 
   return 0;
 }
