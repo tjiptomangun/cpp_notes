@@ -1,0 +1,11 @@
+all: mylambda4
+
+mylambda4: mylambda4.c
+	gcc -Wall -ggdb3 -I . mylambda4.c -o mylambda4
+
+mylambda4-expand: mylambda4.c
+	gcc -E -Wall -ggdb3 -I . mylambda4.c 
+
+clean:
+	rm -f mylambda4
+
