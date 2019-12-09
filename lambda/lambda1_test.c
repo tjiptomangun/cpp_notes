@@ -2,6 +2,7 @@
  * gcc -o lambda1_test --std=gnu99 lambda1_test.c
  * https://hackaday.com/2019/09/11/lambdas-for-c-sort-of/
  * https://github.com/wd5gnr/clambda/blob/master/clambda2.c
+ * https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html (gcc statement expression)
  */
 
 #include <stdio.h>
