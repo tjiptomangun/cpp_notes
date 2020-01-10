@@ -460,7 +460,7 @@ int main (int argc, char **argv)
 		}
 		while (cont); 
 		fprintf (stdout ,"\nnum iter = %d\n", j);
-		if (lstest);
+		if (lstest)
 			alarm (0); 
 
 	}
