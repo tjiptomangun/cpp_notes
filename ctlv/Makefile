@@ -1,8 +1,8 @@
 ctlvtest: ctlv.c parserclass.c ctlvtest.c ctlvgen.c
-	gcc -ggdb3 -Wall -fPIC -g -c ctlv.c
-	gcc -shared -o libctlv.so.1.0 ctlv.o
-	ln -s libctlv.so.1.0 libctlv.so
-	gcc parserclass.c ctlvtest.c -Wall -ggdb3 -L. -lctlv -o ctlvtest 
+	gcc -m32 -ggdb3 -Wall -fPIC -g -c ctlv.c
+	gcc -m32 -shared -o libctlv.so.1.0 ctlv.o
+	ln -snf libctlv.so.1.0 libctlv.so
+	gcc -m32 parserclass.c ctlvtest.c -Wall -ggdb3 -L. -lctlv -o ctlvtest 
 	gcc ctlvgen.c -Wall -ggdb3 -o ctlvgen
 
 clean:
