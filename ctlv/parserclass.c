@@ -391,7 +391,7 @@ PPROPERTY newproperty (char *name)
 int __stack_ptr_init (PSTACK_PTR p)
 {
 	p->top  = -1;
-	memset (p->c, 0, 100);
+	memset (p->c, 0, 100*sizeof(void *));
 	return 0;
 } 
 int __stack_ptr_push (PSTACK_PTR p, void * v)
