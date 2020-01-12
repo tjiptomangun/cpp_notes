@@ -1,0 +1,21 @@
+active = root
+    
+<SS7AP>\  ne[0], active->add_child(ne[0]), ne[0]->set_parent(active == root),  active = ne[0] 
+       
+	<SCCP sls=\"14\">\  ne[1], active->add_child(ne[1]), ne[1]->set_parent(active == ne[0]),  active = ne[1] 
+		<CDPA routing=\"gt\">\ ne[2], active->add_child(ne[2]), ne[2]->set_parent(active == ne[1]),  active = ne[2] 
+			<GTITLE spc=\"0\" ssn=\"6\" nai=\"4\" tt=\"0\" np=\"7\" es=\"2\" addr=\"6690000004\" />\ ne[3], active->add_child(ne[3]), ne[3]->set_parent(active == ne[2]),  active = ne[3], active = active->get_parent() (ne[3]->get_parent() == ne[2]);
+		</CDPA>\ active = active->get_parent() (ne[2]->get_parent() == ne[1]);
+		<CGPA routing=\"gt\">\ ne[4], active->add_child(ne[4]), ne[4]->set_parent(active == ne[1]),  active = ne[4] 
+			<GTITLE spc=\"0\" ssn=\"7\" nai=\"4\" tt=\"0\" np=\"1\" es=\"2\" addr=\"7700000007\" />\ ne[5], active->add_child(ne[5]), ne[5]->set_parent(active == ne[4]),  active = ne[5], active = active->get_parent() (ne[5]->get_parent() == ne[4]);
+		</CGPA>\ active = active->get_parent() (ne[4]->get_parent() == ne[1]);
+	</SCCP>\ active = active->get_parent() (ne[1]->get_parent() == ne[0]);
+	<TCAP type=\"begin\" otid=\"00100100\" dialogueid=\"\">\
+		<DIALOGUE oid=\"0.0.17.773.1.1.1\">\
+			<AARQ acn=\"0.4.0.0.1.0.1.2\" />\
+		</DIALOGUE>\
+		<COMPONENT>\
+			<DATA type=\"invoke\" invokeid=\"0\" opcode=\"2\" value=\"301A040825000100000000F581069177973721430406917797372143\" />\
+		</COMPONENT>\
+	</TCAP>\
+</SS7AP>";
