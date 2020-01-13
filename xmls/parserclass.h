@@ -266,5 +266,8 @@ typedef struct primlist
 	PPRIML_ITEM (*detach) (struct primlist *, PPRIML_ITEM);
 }PRIMLIST, *PPRIMLIST; 
 
+struct tree_item * newtreeitem(struct tree_item *parent, char *name);
+PPRIML_ITEM newpriml_item ();
+PPRIMLIST newprimlist ();
 #endif
 
