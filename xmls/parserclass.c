@@ -875,6 +875,17 @@ static PTREE_ITEM __treeitem_getname (PTREE_ITEM root, char *name)
 	}
 	return NULL;
 }
+
+
+static int __treeitem_printattributes(PTREE_ITEM root, int ident){
+	__list_printattributes(&root->list, ident + 1);
+	PTREE_ITEM curr = root->head;
+	while(curr){
+		__treeitem_printattributes(curr, ident + 1);
+		curr = curr->next;
+	}
+	return 0;
+}
 /*
  * NAME		: newtreeitem
  * Description	: alloc memory for treeitem
@@ -897,6 +908,8 @@ struct tree_item * newtreeitem(struct tree_item *parent, char *name)
 	new->getname = __treeitem_getname;
 	new->detach = __treeitem_detach;
 	new->delete = __treeitem_delete;
+	new->list.l_item.class.printattributes = 
+		(int(*)(PCLASS, int))(__treeitem_printattributes);
 	
 	return new;
 }
