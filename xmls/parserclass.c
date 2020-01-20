@@ -297,9 +297,36 @@ static PL_ITEM __list_getnextchild (PLIST plist)
 	return ret;	
 }
 
+void list_resetlist (PLIST plist, char *list_name)
+{ 
+	if (plist)
+	{
+		plist->l_item.class.this = (PCLASS) plist;
+		plist->l_item.class.type = CLASS_LIST; 
+		plist->currptr = NULL;
+		strncpy (plist->l_item.class.name, list_name, MAX_NAME_LENGTH - 1); 
+		plist->l_item.next = NULL;
+		plist->count = 0;
+		plist->add = __list_add;
+		plist->take = __list_take;
+		plist->takename = __list_takename; 
+		plist->getname = __list_getname; 
+		plist->getfirstchild = __list_getfirstchild; 
+		plist->getnextchild= __list_getnextchild; 
+		plist->l_item.class.printattributes = 
+			(int(*)(PCLASS, int))(__list_printattributes);
+		plist->l_item.class.delete = 
+			(int(*)(PCLASS))(__list_delete); 
+		plist->detach = __list_detach;
+	} 
+}
+
+
 PLIST newlist (char *list_name)
 {
 	PLIST plist = (PLIST) calloc (1, sizeof (LIST));
+	list_resetlist(plist, list_name);
+/*
 	if (plist)
 	{
 		plist->l_item.class.this = (PCLASS) plist;
@@ -321,31 +348,10 @@ PLIST newlist (char *list_name)
 		plist->detach = __list_detach;
 			
 	}
+*/
 	return plist;
 }
 
-void list_resetlist (PLIST plist, char *list_name)
-{ 
-
-	if (plist)
-	{
-		plist->l_item.class.this = (PCLASS) plist;
-		plist->l_item.class.type = CLASS_LIST; 
-		plist->currptr = NULL;
-		strncpy (plist->l_item.class.name, list_name, MAX_NAME_LENGTH - 1); 
-		plist->l_item.next = NULL;
-		plist->count = 0;
-		plist->add = __list_add;
-		plist->take = __list_take;
-		plist->takename = __list_takename; 
-		plist->getname = __list_getname; 
-		plist->l_item.class.printattributes = 
-			(int(*)(PCLASS, int))(__list_printattributes);
-		plist->l_item.class.delete= 
-			(int(*)(PCLASS))(__list_delete); 
-	} 
-
-}
 
 static int __property_delete(PPROPERTY p) 
 {
@@ -359,6 +365,13 @@ static int __property_setvalue (PPROPERTY p, char *value)
 	strncpy (p->value, value, 256);
 	return 0;
 }
+
+static int __property_getvalue (PPROPERTY p, char *value)
+{
+	strncpy (value, p->value, 256);
+	return 0;
+}
+
 static int __property_printattributes(PPROPERTY p, int ident)
 {
 	__l_item_printattributes(&p->l_item, ident);	
@@ -377,12 +390,13 @@ PPROPERTY newproperty (char *name)
 		prop->l_item.class.type = CLASS_PROPERTY;
 		strncpy (prop->l_item.class.name, name, MAX_NAME_LENGTH - 1);
 		memset (prop->value, 0, 256);
-		prop->setvalue = __property_setvalue;
 		prop->l_item.next = NULL;
 		prop->l_item.class.printattributes = 
 			(int (*) (PCLASS, int))(__property_printattributes);
 		prop->l_item.class.delete = 
 			(int (*) (PCLASS))(__property_delete);
+		prop->setvalue = __property_setvalue;
+		prop->getvalue = __property_getvalue;
 
 	}
 	return prop;
@@ -730,10 +744,8 @@ static struct tree_item * __treeitem_getparent (struct tree_item *root)
  */
 static struct tree_item * __treeitem_getfirstchild (struct tree_item *root)
 {
-	struct tree_item *ret=root->head;
-	if (root->head)
-		root->curr = (PTREE_ITEM) root->curr->next;
-	return ret;
+	root->curr = root->head;
+	return root->curr;
 }
 
 /**

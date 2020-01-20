@@ -84,11 +84,6 @@ TREE_ITEM* xml_tree_find_element(TREE_ITEM *root_tree, char *path_to_find) {
     while (*p_path == ' ')
       p_path ++;
 
-//     if (*p_path == '\0'){
-//       done_path = 1;
-// 	  return root_tree;
-// 	}
-
     if (*p_path == '/')
       p_path ++;
 	
@@ -100,4 +95,69 @@ TREE_ITEM* xml_tree_find_element(TREE_ITEM *root_tree, char *path_to_find) {
 		return next_tree;
 	else
 		return xml_tree_find_element(next_tree, p_path);
+}
+
+
+PROPERTY *xml_tree_find_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name) {
+	TREE_ITEM *elem = NULL;
+	PROPERTY *ret = NULL;
+	
+	if ((elem = xml_tree_find_element(root_tree, path)) != NULL) {
+		ret = (PPROPERTY) elem->list.getname(&elem->list, attrib_name);
+	}
+	return ret;
+}
+
+
+int xml_tree_serialize(TREE_ITEM *root_tree, char *outbuf, int outmax, int curr_len) {
+	int len = 0;
+	int i = curr_len;
+	int j;
+	TREE_ITEM *tcurr;
+	PROPERTY *lcurr;
+	LIST *list = &root_tree->list;
+	outbuf[i++] = '<';
+	for (j = 0; list->l_item.class.name[j] != 0; j++, i++){
+		outbuf[i] = list->l_item.class.name[j];
+	}	
+	
+	lcurr = (PROPERTY *)list->getfirstchild(list);
+	if (lcurr)
+		outbuf[i++] = ' ';
+
+	while(lcurr){
+		
+		for(j = 0; lcurr->l_item.class.name[j]; j++, i++){
+			outbuf[i] = lcurr->l_item.class.name[j];
+		}
+		
+		outbuf[i++] = '=';
+		
+		outbuf[i++] = '"';
+		for(j = 0; lcurr->value[j]; j++, i++){
+			outbuf[i] = lcurr->value[j];
+		}
+		outbuf[i++] = '"';
+		
+		outbuf[i++] = ' ';
+		lcurr = (PROPERTY *)list->getnextchild(list);
+		
+	}
+	outbuf[i++] = '>';
+	
+	tcurr = root_tree->getfirstchild(root_tree);
+	
+	while(tcurr){
+		i = xml_tree_serialize(tcurr, outbuf, outmax, i);
+		tcurr = root_tree->getnextchild(root_tree);
+	}
+	
+	outbuf[i++] = '<';
+	outbuf[i++] = '/';
+	for (j = 0; list->l_item.class.name[j] != 0; j++, i++){
+		outbuf[i] = list->l_item.class.name[j];
+	}
+	outbuf[i++] = '>';
+		
+	return i;
 }

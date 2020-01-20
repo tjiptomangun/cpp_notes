@@ -88,6 +88,7 @@ typedef struct property
 	L_ITEM l_item ;
 	char value[256]; 
 	int (*setvalue) (struct property *, char*);
+	int (*getvalue) (struct property *, char*);
 }PROPERTY, *PPROPERTY; 
 
 extern PPROPERTY newproperty (char *name);
