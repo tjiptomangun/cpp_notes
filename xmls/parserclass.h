@@ -86,9 +86,10 @@ extern PLIST newlist (char *list_name);
 typedef struct property
 {
 	L_ITEM l_item ;
-	char value[256]; 
-	int (*setvalue) (struct property *, char*);
-	int (*getvalue) (struct property *, char*);
+	char  value[256]; 
+	int   (*setvalue) (struct property *, char*);
+	int   (*getvalue) (struct property *, char*);
+	char *(*getvalue_ptr) (struct property *);
 }PROPERTY, *PPROPERTY; 
 
 extern PPROPERTY newproperty (char *name);

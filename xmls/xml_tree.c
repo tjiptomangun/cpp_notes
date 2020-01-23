@@ -43,7 +43,7 @@ int xml_string_deserialize(char *xml_string, TREE_ITEM *root_tree){
 		break;
 
       case YXML_ATTREND:
-		  prop_active->setvalue(prop_active, tmp); 
+		prop_active->setvalue(prop_active, tmp); 
 		tmp[0] = 0;
 		prop_active = NULL;
         break; 
@@ -119,14 +119,13 @@ int xml_tree_serialize(TREE_ITEM *root_tree, char *outbuf, int outmax, int curr_
 	outbuf[i++] = '<';
 	for (j = 0; list->l_item.class.name[j] != 0; j++, i++){
 		outbuf[i] = list->l_item.class.name[j];
-	}	
+	}
 	
 	lcurr = (PROPERTY *)list->getfirstchild(list);
 	if (lcurr)
 		outbuf[i++] = ' ';
 
 	while(lcurr){
-		
 		for(j = 0; lcurr->l_item.class.name[j]; j++, i++){
 			outbuf[i] = lcurr->l_item.class.name[j];
 		}
@@ -134,8 +133,9 @@ int xml_tree_serialize(TREE_ITEM *root_tree, char *outbuf, int outmax, int curr_
 		outbuf[i++] = '=';
 		
 		outbuf[i++] = '"';
-		for(j = 0; lcurr->value[j]; j++, i++){
-			outbuf[i] = lcurr->value[j];
+		char *pv = lcurr->getvalue_ptr(lcurr);
+		for(j = 0; pv[j]; j++, i++){
+			outbuf[i] = pv[j];
 		}
 		outbuf[i++] = '"';
 		
@@ -158,6 +158,6 @@ int xml_tree_serialize(TREE_ITEM *root_tree, char *outbuf, int outmax, int curr_
 		outbuf[i] = list->l_item.class.name[j];
 	}
 	outbuf[i++] = '>';
-		
+	
 	return i;
 }

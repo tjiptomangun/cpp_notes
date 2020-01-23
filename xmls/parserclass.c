@@ -372,6 +372,10 @@ static int __property_getvalue (PPROPERTY p, char *value)
 	return 0;
 }
 
+static char* __property_getvalue_ptr (PPROPERTY p) {
+	return p->value;
+}
+
 static int __property_printattributes(PPROPERTY p, int ident)
 {
 	__l_item_printattributes(&p->l_item, ident);	
@@ -396,8 +400,7 @@ PPROPERTY newproperty (char *name)
 		prop->l_item.class.delete = 
 			(int (*) (PCLASS))(__property_delete);
 		prop->setvalue = __property_setvalue;
-		prop->getvalue = __property_getvalue;
-
+		prop->getvalue_ptr = __property_getvalue_ptr;
 	}
 	return prop;
 }
@@ -758,7 +761,7 @@ static struct tree_item * __treeitem_getnextchild (struct tree_item *root)
 	struct tree_item *ret = root->curr;
 	if (root->curr)
 		root->curr = (PTREE_ITEM) root->curr->next;
-	return ret;
+	return root->curr;
 }
 
 /**

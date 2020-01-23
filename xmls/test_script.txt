@@ -1,0 +1,9 @@
+print xml
+./xml_tree_test -i "<a><b></b><c><d><e></e><f/><g st=\"jar\"></g></d></c></a>" -p -f a/c/ -s
+
+get an attrib
+./xml_tree_test -i "<a><b></b><c><d><e></e><f/><g st=\"jar\"></g></d></c></a>" -p -g a/c/d/g
+
+serialize tree
+./xml_tree_test -i "<a><b><c></c><d><e h=\"w\" xx=\"y\"></e></d></b></a>" -f a/b -s 
+
