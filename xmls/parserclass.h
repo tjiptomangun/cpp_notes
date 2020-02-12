@@ -110,7 +110,10 @@ typedef struct stack_ptr
 
 extern PSTACK_PTR newstackptr ();
 
-
+/**
+ * miniparser is generic file parser structure
+ * parse is the real parser function
+ */
 typedef struct miniparser
 {
 	FILE *input;
