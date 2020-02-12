@@ -110,7 +110,6 @@ PROPERTY *xml_tree_find_attribute(TREE_ITEM *root_tree, char *path, char *attrib
 
 
 int xml_tree_serialize(TREE_ITEM *root_tree, char *outbuf, int outmax, int curr_len) {
-	int len = 0;
 	int i = curr_len;
 	int j;
 	TREE_ITEM *tcurr;

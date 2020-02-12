@@ -15,7 +15,8 @@ void usage(char *app) {
 					 -i --string input: input to parse xml\n\
 					 -p : print tree\n\
 					 -f find element input: to find and element\n\
-					 -g --get input:to element of name and print \n"
+					 -g --get input:to element of name and print \n\
+					 -s --serialize : print current tree to xml format\n"
 					 , app, app);
 }
 
@@ -82,7 +83,7 @@ int main (int argc, char **argv) {
 				break;
 			case 'p' :
 				if(active_tree)
-					active_tree->list.l_item.class.printattributes(active_tree, 1);
+					active_tree->list.l_item.class.printattributes((PCLASS)active_tree, 1);
 				else
 					fprintf(stdout, "empty tree");
 				break;
@@ -98,7 +99,7 @@ int main (int argc, char **argv) {
 				if (prop){
 					prop->getvalue(prop, val);
 					fprintf(stdout, "attr %s value = %s\n", attrib, val);
-					prop->l_item.class.printattributes(prop, 0);
+					prop->l_item.class.printattributes((PCLASS)prop, 0);
 				}
 				else
 					fprintf(stdout, "attr %s value = [empty]\n", attrib);
@@ -109,7 +110,7 @@ int main (int argc, char **argv) {
 				return 0;
 			case 's':
 				memset(buff, 0, 2048);
-				int l = xml_tree_serialize(active_tree, buff, 2048, 0);
+				xml_tree_serialize(active_tree, buff, 2048, 0);
 				fprintf(stdout, "%s\n", buff);
 				break;
 		}

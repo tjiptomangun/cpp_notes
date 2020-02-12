@@ -1,9 +1,41 @@
 print xml
 ./xml_tree_test -i "<a><b></b><c><d><e></e><f/><g st=\"jar\"></g></d></c></a>" -p -f a/c/ -s
+should be like
+                class.name : root
+
+                        class.name : a
+
+                                class.name : b
+
+                                class.name : c
+
+                                        class.name : d
+
+                                                class.name : e
+
+                                                class.name : f
+
+                                                class.name : g
+                                                        class.name : st
+                                                        property.value : jar
+
+<c><d><e></e><f></f><g st="jar" ></g></d></c>
+
+./xml_tree_test -i "<a><b></b><c><d><e></e><f/><g st=\"jar\" yt=\"sca\"></g></d></c></a>" -f a/c/ -s
+should be like
+<c><d><e></e><f></f><g st="jar" yt="sca" ></g></d></c>
+
 
 get an attrib
-./xml_tree_test -i "<a><b></b><c><d><e></e><f/><g st=\"jar\"></g></d></c></a>" -p -g a/c/d/g
+should be like
+./xml_tree_test -i "<a><b></b><c><d><e></e><f/><g st=\"jar\"></g></d></c></a>" -g a/c/d/g
+elem a/c/d
+attr g value = [empty]
 
-serialize tree
-./xml_tree_test -i "<a><b><c></c><d><e h=\"w\" xx=\"y\"></e></d></b></a>" -f a/b -s 
 
+./xml_tree_test -i "<a><b></b><c><d><e></e><f/><g st=\"jar\"></g></d></c></a>" -p -g a/c/d/g/st 
+should be like
+elem a/c/d/g
+attr st value = jar
+class.name : st
+property.value : jar 
