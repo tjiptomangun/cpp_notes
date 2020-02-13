@@ -1,0 +1,19 @@
+#include "parserclass.h"
+/**
+ * NAME          : insert_ordered
+ * DESCRIPTION   : insert an item to list of child orderly
+ * INPUT
+ *      parent   : parent of this key
+ *      key      : key to insert
+ *      fin      : function which compare two integer , returns 0 if 
+ *                 the result is equal, 1 if second param is greater
+ *                 -1 if second param is smaller 
+ *                
+ */
+int insert_ordered_int(PTREEITEM parent, int key, (int (*finder(int, int)))) {
+  PTREEITEM prev, curr; 
+  prev = parent->getfirstchild(parent);
+  if (prev = NULL){
+     
+  }
+}
