@@ -10,10 +10,5 @@
  *                 -1 if second param is smaller 
  *                
  */
-int insert_ordered_int(PTREEITEM parent, int key, (int (*finder(int, int)))) {
-  PTREEITEM prev, curr; 
-  prev = parent->getfirstchild(parent);
-  if (prev = NULL){
-     
-  }
-}
+PTREEITEM insert_ordered_int(PTREEITEM parent, int key, (int *)cmp(int, int)); 
+
