@@ -77,7 +77,10 @@ static int __class_delete (PCLASS p)
 static int __class_printattributes(PCLASS p, int ident)
 {
 	print_identation (ident);
-	fprintf (stdout, "class.name : %s", p->name);
+	if (p->name[0])
+		fprintf (stdout, "class.name : %s", p->name);
+	else
+		fprintf (stdout, "class.name : ");
 	fprintf (stdout, "\n");
 	return 0;
 }
