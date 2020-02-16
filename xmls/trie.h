@@ -10,5 +10,5 @@
  *                 -1 if second param is smaller 
  *                
  */
-PTREEITEM insert_ordered_int(PTREEITEM parent, int key, (int *)cmp(int, int)); 
+PTREEITEM insert_child_char(PTREEITEM parent, int key, (int *)cmp(int, int)); 
 

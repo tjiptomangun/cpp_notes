@@ -17,24 +17,24 @@
  *		other    : pointer to the newly added item or existing item
  *                
  */
-PTREE_ITEM insert_child_int(PTREE_ITEM parent, int key, int (*cmp)(int, int)) {
+PTREE_ITEM insert_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, char)) {
 	PTREE_ITEM prev = NULL, curr = NULL; 
 	char str_item[20] = {0};
 	PTREE_ITEM ntr;
-	int occ = -1;//assume this key occur after first key
+	int occ = 1;//assume this key is the first key
 	curr = parent->getfirstchild(parent);
 
 	while(curr &&
-		(occ = cmp(key, atoi(curr->list.l_item.class.name)))< 0){
+		(occ = cmp(key, curr->list.l_item.class.name[0]))> 0){
 		prev = curr;
 		curr = parent->getnextchild(parent);
 	}
 
 	if (occ == 0) {
-		return curr;	
+		return curr;
 	}
 
-	sprintf(str_item, "%d", key);
+	str_item[0] = (char) key;
 	ntr = newtreeitem(parent, str_item);
 
 	if(!ntr)
@@ -55,7 +55,32 @@ PTREE_ITEM insert_child_int(PTREE_ITEM parent, int key, int (*cmp)(int, int)) {
 	}
 }
 
-int compare_int(int key, int b) {
+PTREE_ITEM find_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, char)){
+	PTREE_ITEM curr = NULL; 
+	int occ = -1;//assume this key is the first key
+	
+	if (key == 0){
+		return parent;
+	}
+	else if ((curr = parent->getfirstchild(parent)) == NULL){//we are exhausted by key is not yet found
+		return NULL;
+	}
+	
+	while(curr &&
+		(occ = cmp(key, curr->list.l_item.class.name[0]))> 0){
+		curr = parent->getnextchild(parent);
+	}
+	
+	if (occ == 0){
+		return curr;
+	}
+	else
+		return NULL;
+	
+	
+}
+
+int compare_char(char key, char b) {
 	if (b == key)
 		return 0;
 	else if (key < b)
@@ -66,33 +91,86 @@ int compare_int(int key, int b) {
 /**
  *
  */
-PTREE_ITEM insert_key_int(PTREE_ITEM parent, char *inchar, int idx) {
+PTREE_ITEM insert_key_char(PTREE_ITEM parent, char *inchar, int idx) {
 	PTREE_ITEM ret;
-	if((ret = insert_child_int(parent, inchar[idx], compare_int)) && inchar[idx]!=0){
-		return insert_key_int(ret, inchar, ++idx);
+	if((ret = insert_child_char(parent, inchar[idx], compare_char)) && inchar[idx]!=0){
+		return insert_key_char(ret, inchar, ++idx);
 	}
 	else{
 		return ret;
 	}
 }
 
+PTREE_ITEM find_key_char(PTREE_ITEM parent, char *inchar, int idx) {
+	PTREE_ITEM ret;
+	if((ret = find_child_char(parent, inchar[idx], compare_char)) && inchar[idx]!=0){
+		return find_key_char(ret, inchar, ++idx);
+	}
+	else{
+		return ret;
+	}
+}
+
+PTREE_ITEM find_key_char_child(PTREE_ITEM parent, char *inchar) {
+	PTREE_ITEM ret = find_key_char(parent, inchar, 0);
+	
+	while(ret && ret->parent != parent){
+		ret = ret->parent;
+	}
+	return ret;
+}
+
 #ifdef TRIE_TEST
+
+void print_trie_test_res(PTREE_ITEM ret, PTREE_ITEM root){
+	PTREE_ITEM res[100] = {0};
+	int nums = 0;
+	
+	if (ret == NULL){
+		fprintf(stderr, "[EMPTY]\n");
+		return;
+	}
+	while(ret && ret != root){
+		res[nums++] = ret;
+		ret = ret->parent;
+	}
+	
+	while(--nums >= 0){
+		fprintf(stdout, "%c", res[nums]->list.l_item.class.name[0]);
+	}
+	fprintf (stdout, "\n");
+}
 int main (int argc, char **argv) {
 	PTREE_ITEM root = newtreeitem(NULL, "root");
-	PTREE_ITEM p0, p1, p2, p3, p4;
+	PTREE_ITEM ret;
+// 	char k0[] = "6";
+// 	char k1[] = "7";
+	
 	char k0[] = "6681132122";
 	char k1[] = "66811321235";
 	char k2[] = "21235";
 	char k3[] = "11235";
 	char k4[] = "11453435";
 
-	p0 = insert_key_int(root, k0, 0);
-	p1 = insert_key_int(root, k1, 0);
-	p2 = insert_key_int(root, k2, 0);
-	p3 = insert_key_int(root, k3, 0);
-	p4 = insert_key_int(root, k4, 0);
 
-	root->list.l_item.class.printattributes((PCLASS)&root, 0);
+	
+	insert_key_char(root, k0, 0);
+	insert_key_char(root, k1, 0);
+	insert_key_char(root, k2, 0);
+	insert_key_char(root, k3, 0);
+	insert_key_char(root, k4, 0);
+	
+	root->list.l_item.class.printattributes((PCLASS)root, 0);
+
+	
+	ret = find_key_char(root,  k1, 0);
+	print_trie_test_res(ret, root);
+	
+	ret = find_key_char(root, "111", 0);
+	print_trie_test_res(ret, root);
+	
+	ret = find_key_char(root, "11", 0);
+	print_trie_test_res(ret, root);
 	
 }
 #endif//TRIE_TEST
