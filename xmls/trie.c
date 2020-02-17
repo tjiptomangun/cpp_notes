@@ -126,7 +126,7 @@ PTREE_ITEM find_key_char_child(PTREE_ITEM parent, char *inchar) {
 void print_trie_test_res(PTREE_ITEM ret, PTREE_ITEM root){
 	PTREE_ITEM res[100] = {0};
 	int nums = 0;
-	
+
 	if (ret == NULL){
 		fprintf(stderr, "[EMPTY]\n");
 		return;
@@ -141,9 +141,15 @@ void print_trie_test_res(PTREE_ITEM ret, PTREE_ITEM root){
 	}
 	fprintf (stdout, "\n");
 }
+void find_test(PTREE_ITEM root, char *tofind) {
+  fprintf (stderr, "finding %s => ", tofind);
+  
+	PTREE_ITEM ret = find_key_char(root,  tofind, 0);
+	print_trie_test_res(ret, root);
+}
+
 int main (int argc, char **argv) {
 	PTREE_ITEM root = newtreeitem(NULL, "root");
-	PTREE_ITEM ret;
 // 	char k0[] = "6";
 // 	char k1[] = "7";
 	
@@ -158,15 +164,31 @@ int main (int argc, char **argv) {
 	insert_key_char(root, k2, 0);
 	insert_key_char(root, k3, 0);
 	insert_key_char(root, k4, 0); 
+  insert_key_char(root, "1013272", 0);
+  insert_key_char(root, "011", 0);
+  insert_key_char(root, "0342343409", 0);
+  insert_key_char(root, "01342343409", 0);
+  insert_key_char(root, "01242343409", 0);
+  insert_key_char(root, "02242343409", 0);
+  insert_key_char(root, "02242343509", 0);
+  insert_key_char(root, "0127343509", 0);
+  insert_key_char(root, "7127343509", 0);
+  insert_key_char(root, "75551509", 0);
+  insert_key_char(root, "75552", 0);
+  insert_key_char(root, "755522345569", 0);
+  insert_key_char(root, "754432343333", 0);
+  insert_key_char(root, "784443889348", 0);
+  insert_key_char(root, "88444", 0);
+  insert_key_char(root, "88555", 0);
+  insert_key_char(root, "96555", 0);
+  insert_key_char(root, "77555", 0);
+
+  find_test(root, k1);	
 	
-	ret = find_key_char(root,  k1, 0);
-	print_trie_test_res(ret, root);
-	
-	ret = find_key_char(root, "111", 0);
-	print_trie_test_res(ret, root);
-	
-	ret = find_key_char(root, "11", 0);
-	print_trie_test_res(ret, root);
+  find_test(root, "111");	
+  find_test(root, "11");	
+  find_test(root, "71");	
+  find_test(root, "766346");
 	
 }
 #endif//TRIE_TEST
