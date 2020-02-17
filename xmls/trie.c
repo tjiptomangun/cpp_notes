@@ -59,10 +59,8 @@ PTREE_ITEM find_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, PTREE_IT
 	PTREE_ITEM curr = NULL; 
 	int occ = -1;//assume this key is the first key
 	
-	if (key == 0){
-		return parent;
-	}
-	else if ((curr = parent->getfirstchild(parent)) == NULL){//we are exhausted by key is not yet found
+
+	if ((curr = parent->getfirstchild(parent)) == NULL){//we are exhausted by key is not yet found
 		return NULL;
 	}
 	
@@ -182,13 +180,41 @@ int main (int argc, char **argv) {
   insert_key_char(root, "88555", 0);
   insert_key_char(root, "96555", 0);
   insert_key_char(root, "77555", 0);
+  insert_key_char(root, "377555", 0);
+  insert_key_char(root, "7439347149414", 0);
+  insert_key_char(root, "74847294", 0);
+  insert_key_char(root, "27982048274", 0);
+  insert_key_char(root, "642403947", 0);
+  insert_key_char(root, "3792472928", 0);
+  insert_key_char(root, "8374747294", 0);
+  insert_key_char(root, "73948274", 0);
+  insert_key_char(root, "343549573", 0);
+  insert_key_char(root, "43485727", 0);
+  insert_key_char(root, "42423947", 0);
 
+/*
   find_test(root, k1);	
 	
   find_test(root, "111");	
+*/
+	find_test(root, "0111");
+/*
   find_test(root, "11");	
+
   find_test(root, "71");	
   find_test(root, "766346");
+  find_test(root, "22");
+  find_test(root, "95358");
+  find_test(root, "83957829");
+  find_test(root, "4248573");
+  find_test(root, "37755");
+  find_test(root, "672593846");
+  find_test(root, "583948503");
+  find_test(root, "42423");
+  find_test(root, "7592241");
+  find_test(root, "6424039");
+  find_test(root, "42983");
+*/
 	
 }
 #endif//TRIE_TEST
