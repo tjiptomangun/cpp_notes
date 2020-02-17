@@ -17,7 +17,7 @@
  *		other    : pointer to the newly added item or existing item
  *                
  */
-PTREE_ITEM insert_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, char)) {
+PTREE_ITEM insert_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, PTREE_ITEM)) {
 	PTREE_ITEM prev = NULL, curr = NULL; 
 	char str_item[20] = {0};
 	PTREE_ITEM ntr;
@@ -25,7 +25,7 @@ PTREE_ITEM insert_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, char))
 	curr = parent->getfirstchild(parent);
 
 	while(curr &&
-		(occ = cmp(key, curr->list.l_item.class.name[0]))> 0){
+		(occ = cmp(key, curr))> 0){
 		prev = curr;
 		curr = parent->getnextchild(parent);
 	}
@@ -55,7 +55,7 @@ PTREE_ITEM insert_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, char))
 	}
 }
 
-PTREE_ITEM find_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, char)){
+PTREE_ITEM find_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, PTREE_ITEM)){
 	PTREE_ITEM curr = NULL; 
 	int occ = -1;//assume this key is the first key
 	
@@ -67,7 +67,7 @@ PTREE_ITEM find_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, char)){
 	}
 	
 	while(curr &&
-		(occ = cmp(key, curr->list.l_item.class.name[0]))> 0){
+		(occ = cmp(key, curr))> 0){
 		curr = parent->getnextchild(parent);
 	}
 	
@@ -80,7 +80,8 @@ PTREE_ITEM find_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, char)){
 	
 }
 
-int compare_char(char key, char b) {
+int compare_char(char key, PTREE_ITEM item) {
+  char b = item->list.l_item.class.name[0];
 	if (b == key)
 		return 0;
 	else if (key < b)
@@ -150,18 +151,13 @@ int main (int argc, char **argv) {
 	char k1[] = "66811321235";
 	char k2[] = "21235";
 	char k3[] = "11235";
-	char k4[] = "11453435";
-
-
+	char k4[] = "11453435"; 
 	
 	insert_key_char(root, k0, 0);
 	insert_key_char(root, k1, 0);
 	insert_key_char(root, k2, 0);
 	insert_key_char(root, k3, 0);
-	insert_key_char(root, k4, 0);
-	
-	root->list.l_item.class.printattributes((PCLASS)root, 0);
-
+	insert_key_char(root, k4, 0); 
 	
 	ret = find_key_char(root,  k1, 0);
 	print_trie_test_res(ret, root);
