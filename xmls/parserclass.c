@@ -377,20 +377,20 @@ PLIST newlist (char *list_name)
 
 static int __property_delete(PPROPERTY p) 
 {
-	memset (p->value, 0, 256);
+	memset (p->value, 0, sizeof(p->value));
 	__class_delete (&p->l_item.class);
 	return 0;
 }
 
 static int __property_setvalue (PPROPERTY p, char *value)
 {
-	strncpy (p->value, value, 256);
+	strncpy (p->value, value, sizeof(p->value));
 	return 0;
 }
 
 static int __property_getvalue (PPROPERTY p, char *value)
 {
-	strncpy (value, p->value, 256);
+	strncpy (value, p->value, sizeof(p->value));
 	return 0;
 }
 
@@ -956,23 +956,13 @@ static PTREE_ITEM __treeitem_takename (PTREE_ITEM root, char *name)
 static PTREE_ITEM __treeitem_getname (PTREE_ITEM root, char *name)
 {
 	PTREE_ITEM curr = root->head;
-	PTREE_ITEM prev = NULL;
 
 	while (curr)
 	{
 		if (!strncmp (name, curr->list.l_item.class.name, MAX_NAME_LENGTH))
 		{
-			if (prev)
-			{
-				prev->next = curr->next; 
-			}
-			else
-			{
-				root->head = curr->next;
-			}
 			return curr;
 		}
-		prev = curr;
 		curr = curr->next;
 	}
 	return NULL;

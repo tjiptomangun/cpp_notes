@@ -1,5 +1,8 @@
 #include "parserclass.h"
 #include <stdlib.h>
+#include <getopt.h>
+#include <unistd.h>
+
 /**
  * NAME          : insert_child_int
  * DESCRIPTION   : find a place for a new key in list of node directly below 
@@ -148,17 +151,57 @@ void find_test(PTREE_ITEM root, char *tofind) {
 	print_trie_test_res(ret, root);
 }
 
+int test_test();
+void usage(char *app) {
+	fprintf(stdout, "%s [(a)ll case| -(h)elp/list case number -(m)emleak tet]\n", app); 
+}
 int main (int argc, char **argv) {
-	PTREE_ITEM root = newtreeitem(NULL, "root");
-// 	char k0[] = "6";
-// 	char k1[] = "7";
+	static struct option long_options[]	 = {
+		{"all", no_argument, 0, 'a'},
+		{"help", no_argument, 0, 'h'},
+		{"memleak", no_argument, 0, 'm'},
+		{0, 0, 0, 0}
+	};
 	
+	int option_index = 0;
+	int opt;
+	int optlong;
+	while ((opt = getopt_long(argc, argv, "ahm", long_options,&option_index))!= -1) {
+		switch (opt) {
+			case 'h':
+				usage(argv[0]);
+				exit(0);
+				break;
+			case 'a':
+			case 'm':
+				optlong = opt;
+				break;
+			
+		}
+		
+	}
+
+	if (optlong == 'a'){
+		return test_test();
+	}
+	else if (optlong == 'm'){
+		do{
+			test_test();
+			sleep(1);
+		}while (1);
+		return 1;
+	}
+
+	return 0;
+}
+
+int test_test() { 
+	PTREE_ITEM root = newtreeitem(NULL, "root"); 
 	char k0[] = "6681132122";
 	char k1[] = "66811321235";
 	char k2[] = "21235";
 	char k3[] = "11235";
 	char k4[] = "11453435"; 
-	
 	insert_key_char(root, k0, 0);
 	insert_key_char(root, k1, 0);
 	insert_key_char(root, k2, 0);
@@ -217,6 +260,8 @@ int main (int argc, char **argv) {
 	find_test(root, "3833542983");
 	find_test(root, "3832542983");
 	find_test(root, "38223822");
-	
+
+	root->delete(root);
+	return 1;	
 }
 #endif//TRIE_TEST

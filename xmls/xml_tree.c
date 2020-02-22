@@ -3,8 +3,15 @@
 #include <string.h>
 
 #include "yxml.h"
-#include "xmls.h"
 #include "parserclass.h" 
+
+/**
+ * NAME					: xml_string_deserialize
+ * DESCRIPTION	: deserialize an xml string to our internal structure
+ * INPUT
+ * 	xml_string	: string to deserialize
+ * 	root_tree		: storage
+ */
 int xml_string_deserialize(char *xml_string, TREE_ITEM *root_tree){
   char *doc_p = xml_string;
   TREE_ITEM *tree_active= root_tree;
@@ -16,7 +23,7 @@ int xml_string_deserialize(char *xml_string, TREE_ITEM *root_tree){
   yxml_ret_t xml_ret;
   char buf[8192] = {0};
   yxml_init(&xml_elem, buf, 8192);
-  char tmp[48] = {0};
+  char tmp[1024] = {0};
 
   while(*doc_p){
     xml_ret = yxml_parse(&xml_elem, *doc_p);
@@ -57,6 +64,15 @@ int xml_string_deserialize(char *xml_string, TREE_ITEM *root_tree){
   return 0;
 }
 
+/**
+ * NAME					: xml_tree_find_element
+ * DESCRIPTION	: find an element in a tree
+ * INPUT	
+ * 	root_tree		: container
+ * 	path_to_find: the path in format elem/elem/elem example SS7AP/SCCP/CDPA
+ * RETURNS
+ * 	pointer of element in tree
+ */
 TREE_ITEM* xml_tree_find_element(TREE_ITEM *root_tree, char *path_to_find) {
 	
   char *p_path = path_to_find;
@@ -98,6 +114,16 @@ TREE_ITEM* xml_tree_find_element(TREE_ITEM *root_tree, char *path_to_find) {
 }
 
 
+/**
+ * NAME					: xml_tree_find_attribute
+ * DESCRIPTION	: find an attribute
+ * INPUT
+ * 	root_tree		: container
+ * 	path				: path to element that contains this in format elem/elem/elem example SS7AP/TCAP/COMPONENT/DATA
+ * 	attrib_name	: name of the attribute example value
+ * RETURNS
+ * 	pointer to attribute
+ */
 PROPERTY *xml_tree_find_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name) {
 	TREE_ITEM *elem = NULL;
 	PROPERTY *ret = NULL;
@@ -108,15 +134,77 @@ PROPERTY *xml_tree_find_attribute(TREE_ITEM *root_tree, char *path, char *attrib
 	return ret;
 }
 
+char *xml_tree_get_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name, char *output) {
+	TREE_ITEM *elem = NULL;
+	PROPERTY *ret = NULL;
+	
+	if ((elem = xml_tree_find_element(root_tree, path)) != NULL) {
+		ret = (PPROPERTY) elem->list.getname(&elem->list, attrib_name);
+		if (!ret)
+			return NULL;
+		else {
+			ret->getvalue(ret, output);
+		}
+	}
+	else
+		return NULL;
 
+	return output;
+}
+
+
+/**
+ * NAME						: xml_tree_set_attribute
+ * DESCRIPTION		: set an xml attribute value
+  * INPUT
+ * 	root_tree			: container
+ * 	path					: path to element that contains this in format elem/elem/elem example SS7AP/TCAP/COMPONENT/DATA
+ * 	attrib_name		: name of the attribute example value
+ * 	new value			: new element value
+ * RETURNS
+ * 	1							: success
+ * 	0							: element or attribute name does not exists
+ */
+int xml_tree_set_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name, char *new_value) {
+	PROPERTY *ret = NULL;
+	if ((ret = xml_tree_find_attribute(root_tree, path, attrib_name)) != NULL){
+		ret->setvalue(ret, new_value);
+		return 1 ;
+	}
+	return 0;
+}
+
+
+int xml_tree_delete_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name) {
+	PROPERTY *ret = NULL;
+	if ((ret = xml_tree_find_attribute(root_tree, path, attrib_name)) != NULL){
+		ret->l_item.class.delete((CLASS*)ret);
+		return 1 ;
+	}
+	return 0;
+}
+
+/**
+ * NAME						: xml_tree_serialize
+ * DESCRIPTION		: serialize xml tree to string
+ * INPUT
+ * 	root_tree			: container
+ * 	outbuf				: string result
+ * 	outmax				: maximum size
+ * 	currlen				: current string length
+ * RETURNS
+ * 	i							: current length
+ */
 int xml_tree_serialize(TREE_ITEM *root_tree, char *outbuf, int outmax, int curr_len) {
 	int i = curr_len;
 	int j;
 	TREE_ITEM *tcurr;
 	PROPERTY *lcurr;
+	if (!root_tree)
+		return 0;
 	LIST *list = &root_tree->list;
 	outbuf[i++] = '<';
-	for (j = 0; list->l_item.class.name[j] != 0; j++, i++){
+	for (j = 0; list && list->l_item.class.name[j] != 0; j++, i++){
 		outbuf[i] = list->l_item.class.name[j];
 	}
 	
@@ -153,10 +241,12 @@ int xml_tree_serialize(TREE_ITEM *root_tree, char *outbuf, int outmax, int curr_
 	
 	outbuf[i++] = '<';
 	outbuf[i++] = '/';
-	for (j = 0; list->l_item.class.name[j] != 0; j++, i++){
+	for (j = 0; list && list->l_item.class.name[j] != 0; j++, i++){
 		outbuf[i] = list->l_item.class.name[j];
 	}
 	outbuf[i++] = '>';
+	if (curr_len == 0)
+		outbuf[i++] = 0;
 	
 	return i;
 }
