@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <string.h>
 #include "parserclass.h"
+#include "xml_tree.h"
 
 int xml_string_deserialize(char *xml_string, TREE_ITEM *root_tree);
 TREE_ITEM* xml_tree_find_element(TREE_ITEM *root_tree, char *path_to_find);
@@ -12,10 +13,10 @@ int xml_tree_serialize(TREE_ITEM *root_tree, char *outbuf, int outmax, int curr_
 void usage(char *app) {
 	fprintf (stdout, "usage : %s -s xml_string f:g:p\n\
 					  %s -h\n\
-					 -i --string input: input to parse xml\n\
-					 -p : print tree\n\
-					 -f find element input: to find and element\n\
-					 -g --get input:to element of name and print \n\
+					 -i -- string input: input to parse xml\n\
+					 -p -- print current active tree\n\
+					 -f find element , to find and element, parameter is path_to_the element\n\
+					 -c --collect an attribute(pointer to an attribute), parameter is path_to_element/attribute\n\
 					 -s --serialize : print current tree to xml format\n"
 					 , app, app);
 }
@@ -64,13 +65,14 @@ int main (int argc, char **argv) {
 			{"i", required_argument, 0, 'i'},
 			{"print", no_argument, 0, 'p'},
 			{"find", required_argument, 0, 'f'},
-			{"get", required_argument, 0, 'g'},
+			{"collect", required_argument, 0, 'g'},
 			{"help", no_argument, 0, 'h'},
 			{"serialize", no_argument, 0, 's'},
+			{"remove", required_argument, 0, 'r'},
 			{0, 0, 0, 0}
 		};
 
-		c  = getopt_long(argc, argv, "i:pf:g:hs", long_options, &option_index);
+		c  = getopt_long(argc, argv, "i:pf:c:hsr:", long_options, &option_index);
 
 		if (c == -1){
 			break;
@@ -91,15 +93,11 @@ int main (int argc, char **argv) {
 				strcpy(buff, optarg);
 				active_tree = xml_tree_find_element(active_tree, buff);
 				break;
-			case 'g' :
+			case 'c' :
 				strcpy(buff, optarg);
 				split_elem_attrib(buff, elem, attrib);
-				PROPERTY *prop = xml_tree_find_attribute(active_tree, elem, attrib);
-				fprintf(stdout, "elem %s\n", elem);
-				if (prop){
-					prop->getvalue(prop, val);
-					fprintf(stdout, "attr %s value = %s\n", attrib, val);
-					prop->l_item.class.printattributes((PCLASS)prop, 0);
+				if (xml_tree_get_attribute(active_tree, elem, attrib, val)){
+					fprintf(stdout, "attrib %s value is %s\n", attrib, val); 
 				}
 				else
 					fprintf(stdout, "attr %s value = [empty]\n", attrib);
@@ -112,6 +110,13 @@ int main (int argc, char **argv) {
 				memset(buff, 0, 2048);
 				xml_tree_serialize(active_tree, buff, 2048, 0);
 				fprintf(stdout, "%s\n", buff);
+				break;
+			case 'r' :
+				strcpy(buff, optarg);
+				split_elem_attrib(buff, elem, attrib);
+				if(!xml_tree_delete_attribute(active_tree, elem, attrib)){
+					fprintf(stderr, "invalid element/attribute");
+				}
 				break;
 		}
 		

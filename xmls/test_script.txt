@@ -39,3 +39,12 @@ elem a/c/d/g
 attr st value = jar
 class.name : st
 property.value : jar 
+
+./xml_tree_test -i "<a><b></b><c><d><e></e><f/><g st=\"jar\" yt=\"sca\"></g></d></c></a>" -r a/c/d/g/st -f a/c/ -s
+should be
+<c><d><e></e><f></f><g yt="sca" ></g></d></c>
+
+./xml_tree_test -i "<a><b></b><c><d><e></e><f/><g st=\"jar\" yt=\"sca\"></g></d></c></a>" -r a/c/d/g/st -c a/c/d/g/yt
+should be
+attrib yt  value is sca
+
