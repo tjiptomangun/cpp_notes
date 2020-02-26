@@ -21,41 +21,41 @@
  *                
  */
 PTREE_ITEM insert_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, PTREE_ITEM)) {
-	PTREE_ITEM prev = NULL, curr = NULL; 
-	char str_item[20] = {0};
-	PTREE_ITEM ntr;
-	int occ = 1;//assume this key is the first key
-	curr = parent->getfirstchild(parent);
+		PTREE_ITEM prev = NULL, curr = NULL; 
+		char str_item[20] = {0};
+		PTREE_ITEM ntr;
+		int occ = 1;//assume this key is the first key
+		curr = parent->getfirstchild(parent);
 
-	while(curr &&
-		(occ = cmp(key, curr))> 0){
-		prev = curr;
-		curr = parent->getnextchild(parent);
-	}
-
-	if (occ == 0) {
-		return curr;
-	}
-
-	str_item[0] = (char) key;
-	ntr = newtreeitem(parent, str_item);
-
-	if(!ntr)
-		return NULL; 
-	else if (occ > 0) {
-		parent->add(parent, ntr);
-		return ntr;
-	}
-	else {
-		ntr->next = curr;
-		if (prev){
-			prev->next = ntr;
+		while(curr &&
+			(occ = cmp(key, curr))> 0){
+			prev = curr;
+			curr = parent->getnextchild(parent);
 		}
-		else{
-			parent->head = ntr;
+
+		if (occ == 0) {
+			return curr;
 		}
-		return ntr;
-	}
+
+		str_item[0] = (char) key;
+		ntr = newtreeitem(parent, str_item);
+
+		if(!ntr)
+			return NULL; 
+		else if (occ > 0) {
+			parent->add(parent, ntr);
+			return ntr;
+		}
+		else {
+			ntr->next = curr;
+			if (prev){
+				prev->next = ntr;
+			}
+			else{
+				parent->head = ntr;
+			}
+			return ntr;
+		}
 }
 
 PTREE_ITEM find_child_char(PTREE_ITEM parent, int key, int (*cmp)(char, PTREE_ITEM)){
