@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <memory.h>
-#include "mytrie.h"
+#include <unistd.h>
+#include "radixtree.h"
 
-void __mytrieitem_ctor(PMYTRIE_ITEM new_item, PMYTRIE_ITEM parent, char *name, int name_len) {
+void __radixtreeitem_ctor(PRADIXTREE_ITEM new_item, PRADIXTREE_ITEM parent, char *name, int name_len) {
 	if (name_len > 1){
 		strncpy(new_item->name, name, name_len);
 		new_item->name_len = name_len;
@@ -16,16 +17,16 @@ void __mytrieitem_ctor(PMYTRIE_ITEM new_item, PMYTRIE_ITEM parent, char *name, i
 	new_item->parent = parent;
 }
 
-PMYTRIE_ITEM new_mytrieitem(char *name, int name_len, PMYTRIE_ITEM parent) {
-	PMYTRIE_ITEM ret = (PMYTRIE_ITEM) calloc(1, sizeof (MYTRIE_ITEM));	
+PRADIXTREE_ITEM new_radixtreeitem(char *name, int name_len, PRADIXTREE_ITEM parent) {
+	PRADIXTREE_ITEM ret = (PRADIXTREE_ITEM) calloc(1, sizeof (RADIXTREE_ITEM));	
 	if (ret){
-		__mytrieitem_ctor(ret, parent, name, name_len);	
+		__radixtreeitem_ctor(ret, parent, name, name_len);	
 	}
 	return ret; 
 }
 
 
-PMYTRIE_ITEM mytrieitem_add (struct mytrie_item *root, struct mytrie_item *addedchild)
+PRADIXTREE_ITEM radixtreeitem_add (struct radixtree_item *root, struct radixtree_item *addedchild)
 {
 	if (!root->head)
 	{
@@ -41,7 +42,7 @@ PMYTRIE_ITEM mytrieitem_add (struct mytrie_item *root, struct mytrie_item *added
 	return addedchild;
 }
 
-PMYTRIE_ITEM mytrieitem_insert_head(struct mytrie_item *root, struct mytrie_item *addedchild)
+PRADIXTREE_ITEM radixtreeitem_insert_head(struct radixtree_item *root, struct radixtree_item *addedchild)
 {
 	if (!root->head)
 	{
@@ -57,10 +58,10 @@ PMYTRIE_ITEM mytrieitem_insert_head(struct mytrie_item *root, struct mytrie_item
 	return addedchild;
 }
 
-PMYTRIE_ITEM insert_child(PMYTRIE_ITEM parent, char *name) {
+PRADIXTREE_ITEM insert_child(PRADIXTREE_ITEM parent, char *name) {
 	int len = strlen(name);	
 
-	PMYTRIE_ITEM curr = NULL, prev = NULL;
+	PRADIXTREE_ITEM curr = NULL, prev = NULL;
 
 	int occ; //1 occured after, 0 occured match, -1 occured before
 	curr = parent->head;
@@ -79,7 +80,7 @@ PMYTRIE_ITEM insert_child(PMYTRIE_ITEM parent, char *name) {
 			idx++;
 		// now idx is length of equal char
 		if (idx < curr->name_len){
-			PMYTRIE_ITEM fc = (PMYTRIE_ITEM) calloc(1, sizeof (MYTRIE_ITEM));
+			PRADIXTREE_ITEM fc = (PRADIXTREE_ITEM) calloc(1, sizeof (RADIXTREE_ITEM));
 			memcpy(fc->name, &curr->name[idx], curr->name_len - idx);	
 			fc->name_len =  curr->name_len - idx;
 			fc->head = curr->head; fc->tail = curr->tail; fc->parent = curr;
@@ -110,19 +111,19 @@ PMYTRIE_ITEM insert_child(PMYTRIE_ITEM parent, char *name) {
 	}
 	else if(occ < 0){
 		
-		PMYTRIE_ITEM p  = new_mytrieitem(name, len, parent);
+		PRADIXTREE_ITEM p  = new_radixtreeitem(name, len, parent);
 		if(prev) {
 			p->next = prev->next;
 			prev->next = p;
 		}
 		else {
-			mytrieitem_insert_head(parent, p);
+			radixtreeitem_insert_head(parent, p);
 		}
 		p->is_word = 1;
 		return p;
 	}
 	else {
-		PMYTRIE_ITEM p = mytrieitem_add(parent, new_mytrieitem(name, len, parent));
+		PRADIXTREE_ITEM p = radixtreeitem_add(parent, new_radixtreeitem(name, len, parent));
 		p->is_word = 1;
 		return p;
 	}
@@ -130,8 +131,8 @@ PMYTRIE_ITEM insert_child(PMYTRIE_ITEM parent, char *name) {
 	return NULL; 
 }
 
-PMYTRIE_ITEM find_child(PMYTRIE_ITEM parent, char *name){
-	PMYTRIE_ITEM curr = parent->head;	
+PRADIXTREE_ITEM find_name(PRADIXTREE_ITEM parent, char *name){
+	PRADIXTREE_ITEM curr = parent->head;	
 	while(curr) {
 		if(curr->name[0] == name[0]){
 			if(!memcmp(curr->name, name, curr->name_len)){
@@ -142,7 +143,7 @@ PMYTRIE_ITEM find_child(PMYTRIE_ITEM parent, char *name){
 						return NULL;
 				}
 				else {
-					return find_child(curr, &name[curr->name_len]);
+					return find_name(curr, &name[curr->name_len]);
 				}
 			}
 			return NULL;
@@ -152,12 +153,29 @@ PMYTRIE_ITEM find_child(PMYTRIE_ITEM parent, char *name){
 	return NULL;
 }
 
-#ifdef _MYTRIE_TEST_
+PRADIXTREE_ITEM find_prefix(PRADIXTREE_ITEM parent, char *name){
+	PRADIXTREE_ITEM curr = parent->head;	
+	while(curr) {
+		if(curr->name[0] == name[0]){
+			if(!memcmp(curr->name, name, curr->name_len)){
+				if (curr->is_word)
+					return curr;
+				else
+					return find_prefix(curr, &name[curr->name_len]);
+			}
+			return NULL;
+		}
+		curr = curr->next;
+	}
+	return NULL;
+}
+
+#ifdef _RADIXTREE_TEST_
 /**
- * gcc -Wall -ggdb3 -I . mytrie.c  -o mytrie_test -D_MYTRIE_TEST_
+ * gcc -Wall -ggdb3 -I . radixtree.c  -o radixtree_test -D_RADIXTREE_TEST_
  */
 #include <stdio.h>
-void print_reverse(PMYTRIE_ITEM bottom) {
+void print_reverse(PRADIXTREE_ITEM bottom) {
 	fprintf(stdout, "%s", bottom->name);
 	if (bottom->parent){
 		fprintf(stdout, " <- ");
@@ -165,33 +183,58 @@ void print_reverse(PMYTRIE_ITEM bottom) {
 	}
 }
 
-void print_tree(PMYTRIE_ITEM root, int tab_count){
+void print_tree(PRADIXTREE_ITEM root, int tab_count){
 	for(int i = 0; i < tab_count; i++){
 		fprintf(stdout, "\t");
 	}
 	fprintf(stdout, "name : %s, is_word : %d\n", root->name, root->is_word);
-	PMYTRIE_ITEM curr = root->head;
+	PRADIXTREE_ITEM curr = root->head;
 	while(curr){
 		print_tree(curr, tab_count + 1);
 		curr = curr->next;
-	}
-	
+	} 
 }
 
-void find_child_and_print(PMYTRIE_ITEM root, char * to_find){
-	fprintf(stdout, "finding %s  ", to_find);
-	PMYTRIE_ITEM curr = find_child(root, to_find);
+void find_child_and_print(PRADIXTREE_ITEM root, char * to_find){
+	fprintf(stdout, "finding name %s  ", to_find);
+	PRADIXTREE_ITEM curr = find_name(root, to_find);
 	if(curr){
 		print_reverse(curr);
 		fprintf(stdout, "\n");
 	}
 	else {
 		fprintf(stdout, "NOT FOUND\n");
+	} 
+}
+
+void find_prefix_and_print(PRADIXTREE_ITEM root, char * to_find){
+	fprintf(stdout, "finding prefix %s  ", to_find);
+	PRADIXTREE_ITEM curr = find_prefix(root, to_find);
+	if(curr){
+		print_reverse(curr);
+		fprintf(stdout, "\n");
 	}
-	
+	else {
+		fprintf(stdout, "NOT FOUND\n");
+	} 
+}
+
+int clean_trie(PRADIXTREE_ITEM root) {
+	PRADIXTREE_ITEM curr, to_clean;
+	curr = root->head;
+	while(curr){
+		to_clean = curr;
+		curr = curr->next;
+		clean_trie(to_clean);		
+	}
+	memset (root, 0, sizeof(RADIXTREE_ITEM));
+	free(root);
+	return 0;	
 }
 int main (int argc, char **argv) {
-	PMYTRIE_ITEM root = new_mytrieitem(NULL, 0, NULL);
+	PRADIXTREE_ITEM root;
+looper:
+	root = new_radixtreeitem(NULL, 0, NULL);
 	insert_child(root, "hello");
 	insert_child(root, "world");
 	insert_child(root, "he");
@@ -215,16 +258,40 @@ int main (int argc, char **argv) {
 	insert_child(root, "stop ball");
 	insert_child(root, "therein");
 	insert_child(root, "there");
-
+	insert_child(root, "123423433");
+	insert_child(root, "88888");
+	insert_child(root, "77777");
+	insert_child(root, "323256");
+	insert_child(root, "124");
+	insert_child(root, "324");
+	
+	fprintf(stdout, "----- * -----\n");
 	
 	find_child_and_print(root, "he");
 	find_child_and_print(root, "thus");
 	find_child_and_print(root, "crimean");
 	find_child_and_print(root, "stop");
 	find_child_and_print(root, "crimea");
-	
 
+	fprintf(stdout, "----- * -----\n");
+	find_prefix_and_print(root, "crimson");
+	find_prefix_and_print(root, "crimealand");
+	find_prefix_and_print(root, "thereof");
+	find_prefix_and_print(root, "theresa mae");
+	find_prefix_and_print(root, "busier");
+	find_prefix_and_print(root, "323");
+	find_prefix_and_print(root, "12464");
+	find_prefix_and_print(root, "323256323");
+	find_prefix_and_print(root, "8888555");
+	find_prefix_and_print(root, "7777755");
+	
+	fprintf(stdout, "----- * -----\n");
 	print_tree(root, 0);
+
+	clean_trie(root);
+	sleep(1);
+	goto looper;
+
 	return 0;
 	
 }
