@@ -2,6 +2,7 @@
 #include <memory.h>
 #include <unistd.h>
 #include "radixtree.h"
+#include <stdio.h>
 
 void __radixtreeitem_ctor(PRADIXTREE_ITEM new_item, PRADIXTREE_ITEM parent, char *name, int name_len) {
 	if (name_len > 1){
@@ -25,36 +26,39 @@ PRADIXTREE_ITEM new_radixtreeitem(char *name, int name_len, PRADIXTREE_ITEM pare
 	return ret; 
 }
 
-
-PRADIXTREE_ITEM radixtreeitem_add (struct radixtree_item *root, struct radixtree_item *addedchild)
+PRADIXTREE_ITEM radixtreeitem_add (struct radixtree_item *parent, struct radixtree_item *addedchild)
 {
-	if (!root->head)
+	if (!parent->head)
 	{
-		root->head = addedchild;
-		root->tail = addedchild;	
+		parent->head = addedchild;
+		parent->tail = addedchild;
 	}
 	else
 	{
-		root->tail->next = addedchild;
-		root->tail = addedchild;
+		parent->tail->next = addedchild;
+		parent->tail = addedchild;
 	}
-	addedchild->parent = root;
+	addedchild->parent = parent;
 	return addedchild;
 }
 
-PRADIXTREE_ITEM radixtreeitem_insert_head(struct radixtree_item *root, struct radixtree_item *addedchild)
+/**
+ * NAME						: radixtreeitem_insert_head
+ * DESCRIPTION		: insert and item to head (first child) of a parent tree
+ */
+PRADIXTREE_ITEM radixtreeitem_insert_head(struct radixtree_item *parent, struct radixtree_item *addedchild)
 {
-	if (!root->head)
+	if (!parent->head)
 	{
-		root->head = addedchild;
-		root->tail = addedchild;	
+		parent->head = addedchild;
+		parent->tail = addedchild;	
 	}
 	else
 	{
-		addedchild->next = root->head;
-		root->head = addedchild;
+		addedchild->next = parent->head;
+		parent->head = addedchild;
 	}
-	addedchild->parent = root;
+	addedchild->parent = parent;
 	return addedchild;
 }
 
@@ -154,7 +158,7 @@ PRADIXTREE_ITEM find_name(PRADIXTREE_ITEM parent, char *name){
 }
 
 PRADIXTREE_ITEM find_prefix(PRADIXTREE_ITEM parent, char *name){
-	PRADIXTREE_ITEM curr = parent->head;	
+	PRADIXTREE_ITEM curr = parent->head;
 	while(curr) {
 		if(curr->name[0] == name[0]){
 			if(!memcmp(curr->name, name, curr->name_len)){
@@ -170,20 +174,124 @@ PRADIXTREE_ITEM find_prefix(PRADIXTREE_ITEM parent, char *name){
 	return NULL;
 }
 
-#ifdef _RADIXTREE_TEST_
-/**
- * gcc -Wall -ggdb3 -I . radixtree.c  -o radixtree_test -D_RADIXTREE_TEST_
- */
-#include <stdio.h>
-void print_reverse(PRADIXTREE_ITEM bottom) {
-	fprintf(stdout, "%s", bottom->name);
-	if (bottom->parent){
-		fprintf(stdout, " <- ");
-		print_reverse(bottom->parent);
+int delete_node(PRADIXTREE_ITEM node) {
+	PRADIXTREE_ITEM curr, to_clean;
+	curr = node->head;
+	while(curr){
+		to_clean = curr;
+		curr = curr->next;
+		delete_node(to_clean);
 	}
+	memset (node, 0, sizeof(RADIXTREE_ITEM));
+	free(node);
+	return 1;	
 }
 
-void print_tree(PRADIXTREE_ITEM root, int tab_count){
+/**
+ * NAME						: __delete_key
+ * DESCRIPTION		: delete a key from a parent - internal function.
+ * 									recursive, if callee returns
+ * 									non null caller need to check if returning
+ * 									child 
+ * INPUT
+ * 				parent	: parent contains keys
+ * 				name		: key to delete
+ * RETURNS
+ */
+static int __delete_key(PRADIXTREE_ITEM parent, char *name){
+	PRADIXTREE_ITEM curr = parent->head;
+	PRADIXTREE_ITEM prev = NULL;
+	while(curr) {
+		if(curr->name[0] == name[0]){
+			if(!memcmp(curr->name, name, curr->name_len)){
+				if (curr->is_word && name[curr->name_len] == 0){
+					curr->is_word = 0;
+					if(curr->head == NULL){
+						//delete this, what if parent also just one child ?
+						if(prev){
+							if (parent->tail == curr){
+								parent->tail = prev;
+							}
+							prev->next= curr->next;
+							delete_node(curr);
+							return 0;
+						}
+						else {//curr is head child of parent
+							parent->head = curr->next;
+							if(curr->next){
+								delete_node(curr);
+								return 0;
+							}
+							else {
+								parent->tail = NULL;
+								delete_node(curr);
+								return 1; //grand parent need to check if its head is null
+							}
+						}
+					}
+					else {//match but not an empty, just leave it
+						return 0;
+					}
+				}
+				else {//match but we are not there yet, dig down
+					
+					//recursive but non tail call because we need to the result.
+					//if non null may be we should delete the child also
+					if (__delete_key(curr, &name[curr->name_len])){
+						if (curr->head == NULL){
+							//match and need to delete
+							if (curr->is_word){//is a word parent, so do not delete
+								return 0;
+							}
+							else {//not a word and empty, can delete
+								if (prev){
+									prev->next = curr->next;
+									if(parent->tail == curr){
+										parent->tail = prev;
+									}
+									delete_node(curr);
+									return 0;
+								}
+								else {
+									//a head
+									parent->head = curr->next;
+									if(curr->next){
+										delete_node(curr);
+										return 0;
+									}
+									else {
+										parent->tail = NULL;
+										delete_node(curr);
+										return 1; //grand parent need to check if its head is null
+									}
+								}
+							}
+						}
+						else {//not empty node, just leave it
+							return 0;
+						}
+					}
+					else {
+						return 0;
+					}
+				}
+			}
+			else {
+				return 0;
+			}
+		}
+		prev = curr;
+		curr = curr->next;
+	}
+	return 0;
+}
+
+void delete_key(PRADIXTREE_ITEM parent, char *name){
+	
+	__delete_key(parent, name);
+}
+
+void print_tree(PRADIXTREE_ITEM root, int tab_count){	
 	for(int i = 0; i < tab_count; i++){
 		fprintf(stdout, "\t");
 	}
@@ -193,6 +301,18 @@ void print_tree(PRADIXTREE_ITEM root, int tab_count){
 		print_tree(curr, tab_count + 1);
 		curr = curr->next;
 	} 
+}
+
+#ifdef _RADIXTREE_INTERNAL_TEST_
+/**
+ * gcc -Wall -ggdb3 -I . radixtree.c  -o radixtree_test -D_RADIXTREE_INTERNAL_TEST_
+ */
+void print_reverse(PRADIXTREE_ITEM bottom) {
+	fprintf(stdout, "%s", bottom->name);
+	if (bottom->parent){
+		fprintf(stdout, " <- ");
+		print_reverse(bottom->parent);
+	}
 }
 
 void find_child_and_print(PRADIXTREE_ITEM root, char * to_find){
@@ -219,18 +339,13 @@ void find_prefix_and_print(PRADIXTREE_ITEM root, char * to_find){
 	} 
 }
 
-int clean_trie(PRADIXTREE_ITEM root) {
-	PRADIXTREE_ITEM curr, to_clean;
-	curr = root->head;
-	while(curr){
-		to_clean = curr;
-		curr = curr->next;
-		clean_trie(to_clean);		
-	}
-	memset (root, 0, sizeof(RADIXTREE_ITEM));
-	free(root);
-	return 0;	
+void delete_and_print(PRADIXTREE_ITEM root, char * to_find){
+	fprintf(stdout, "delete key %s  \n", to_find);
+	delete_key(root, to_find);
+	print_tree(root, 0);
+	
 }
+
 int main (int argc, char **argv) {
 	PRADIXTREE_ITEM root;
 looper:
@@ -287,8 +402,14 @@ looper:
 	
 	fprintf(stdout, "----- * -----\n");
 	print_tree(root, 0);
-
-	clean_trie(root);
+	
+	delete_and_print(root, "crimea");
+	delete_and_print(root, "stop");
+	delete_and_print(root, "7777755");
+	delete_and_print(root, "the");
+	delete_and_print(root, "than");
+	find_child_and_print(root, "the");
+	delete_node(root);
 	sleep(1);
 	goto looper;
 

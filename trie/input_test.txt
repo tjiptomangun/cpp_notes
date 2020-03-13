@@ -1,0 +1,10 @@
+add suroboyo joyoboyo suralaya kamandaka mandalika tawabanika kasarua mandau jalalbad
+print
+add kantoro
+del kamandaka
+print
+del suralaya
+print
+del joyoboyo mandalika tawabanika
+print
+q
