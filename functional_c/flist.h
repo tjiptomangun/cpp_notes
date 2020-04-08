@@ -1,5 +1,5 @@
-#ifndef _LIST_H_
-#define _LIST_H_
+#ifndef _FLIST_H_
+#define _FLIST_H_
 #include <any.h>
 #include <option.h>
 
@@ -10,40 +10,40 @@
  * It's constructor and destructor are implemented
  * on LIST
  */
-typedef struct list_node{
-	struct list_node *next;
-	struct list_node *prev; 
+typedef struct flist_node{
+	struct flist_node *next;
+	struct flist_node *prev; 
 	ANY *wrapped_data;
-} LIST_NODE;
+} FLIST_NODE;
 /**
  * LIST is functional data structure.
  * So it has to have ANY members and methods.
  * It is a single pointer linked list with
  * two reference __s__head and tail
  */
-typedef struct list {
-	struct list *this;
+typedef struct flist {
+	struct flist *this;
 	/**
 	 * NAME			: delete
 	 * DESCRIPTION	: delete all nodes from __s__head to __s__last, and delete the list
 	 * INPUT
 	 *		in		: pointer to itself
 	 */
-	void (*delete) (struct list*);
+	void (*delete) (struct flist*);
 
 	/**
 	 * NAME			: copy
 	 * DESCRIPTION	: create a copy of this list
 	 */
-	struct list * (*copy) (struct list *);
+	struct flist * (*copy) (struct flist *);
 	/**
 	 * __s__head is the first element of this list
 	 */
-	LIST_NODE *__s__head;
+	FLIST_NODE *__s__head;
 	/**
 	 * __s__last it the __s__last element of thist list
 	 */
-	LIST_NODE *__s__last;
+	FLIST_NODE *__s__last;
 	int size;
 	/**
 	 * NAME			: prepend
@@ -53,7 +53,7 @@ typedef struct list {
 	 * RETURNS
 	 *	This list with a node added
 	 */
-	struct list * (*prepend) (struct list*, ANY *); 
+	struct flist * (*prepend) (struct flist*, ANY *); 
 	/**
 	 * NAME			: append
 	 * DESCRIPTION	: add member to end of list
@@ -62,7 +62,7 @@ typedef struct list {
 	 * RETURNS
 	 *	This list with a node added
 	 */ 
-	struct list * (*append) (struct list*, ANY *);
+	struct flist * (*append) (struct flist*, ANY *);
 	/**
 	 * NAME			: init
 	 * DESCRIPTION	: Delete the __s__last element.
@@ -71,7 +71,7 @@ typedef struct list {
 	 * RETURNS
 	 *	The new list
 	 */ 
-	struct list * (*init) (struct list*);
+	struct flist * (*init) (struct flist*);
 	/**
 	 * NAME			: tail
 	 * DESCRIPTION	: Delete the first element.
@@ -80,7 +80,7 @@ typedef struct list {
 	 * RETURNS
 	 *	The new list
 	 */ 
-	struct list * (*tail) (struct list*);
+	struct flist * (*tail) (struct flist*);
 	/**
 	 * NAME			: get
 	 * DESCRIPTION	: get the nth element from __s__head. 
@@ -92,21 +92,21 @@ typedef struct list {
 	 * RETURNS
 	 *	the nth element
 	 */ 
-	ANY * (*get)(struct list*, unsigned int);
+	ANY * (*get)(struct flist*, unsigned int);
 
 	/**
 	 * NAME			: head
 	 * DESCRIPTION	: get the first element. This is equal to get(0)
 	 *
 	 */
-	ANY * (*head)(struct list*);
+	ANY * (*head)(struct flist*);
 
 	/**
 	 * NAME			: last
 	 * DESCRIPTION	: get the last element
 	 *
 	 */
-	ANY * (*last)(struct list*);
+	ANY * (*last)(struct flist*);
 
 	/**
 	 * NAME			: fold_left
@@ -119,7 +119,7 @@ typedef struct list {
 	 * fn param1	: accumulator
 	 * fn param2	: current list item value	
 	 */ 
-	ANY * (*fold_left)(struct list* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
+	ANY * (*fold_left)(struct flist* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
 
 	/**
 	 * NAME			: fold_right
@@ -132,7 +132,7 @@ typedef struct list {
 	 * fn param1	: accumulator
 	 * fn param2	: current list item value	
 	 */ 
-	ANY * (*fold_right)(struct list* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
+	ANY * (*fold_right)(struct flist* inlist, ANY *acc, ANY *(*fn)(ANY *, ANY *));
 
 	/**
 	 * NAME			: flip
@@ -142,7 +142,7 @@ typedef struct list {
 	 * RETURN		: pointer to this list after reversed
 	 *		
 	 */
-	void (*flip)(struct list *inlist);
+	void (*flip)(struct flist *inlist);
 
 	/**
 	 * NAME			: reverse
@@ -152,7 +152,7 @@ typedef struct list {
 	 * RETURN		: pointer to new list 
 	 *		
 	 */
-	struct list* (*reverse)(struct list *inlist);
+	struct flist* (*reverse)(struct flist *inlist);
 
 	
 	/**
@@ -165,7 +165,7 @@ typedef struct list {
 	 *				  example list of type integer to list of type string
 	 * RETURNS		: new tranformed list. inlist is not mutated.
 	 */
-	struct list* (*map)(struct list *inlist, ANY* (*fn)(ANY *));
+	struct flist* (*map)(struct flist *inlist, ANY* (*fn)(ANY *));
 
 
 	/**
@@ -177,7 +177,7 @@ typedef struct list {
 	 *				  and return boolean *				  
 	 * RETURNS		: new tranformed list. inlist is not mutated.
 	 */
-	struct list* (*filter)(struct list *inlist, int (*fn)(ANY *));
+	struct flist* (*filter)(struct flist *inlist, int (*fn)(ANY *));
 
 	/**
 	 * NAME			: collect
@@ -190,7 +190,7 @@ typedef struct list {
 	 *				  to new list. If it is some_object then added
 	 * RETURNS		: new tranformed list. inlist is not mutated.
 	 */
-	struct list* (*collect)(struct list *inlist, OPTION *(*fn)(ANY *));
+	struct flist* (*collect)(struct flist *inlist, OPTION *(*fn)(ANY *));
 
 	/**	
 	 * NAME			: zip
@@ -200,7 +200,7 @@ typedef struct list {
 	 *		otherlist : the second list to zip with
 	 * 
 	 */
-	struct list* (*zip) (struct list *inlist, struct list *otherlist);
+	struct flist* (*zip) (struct flist *inlist, struct flist *otherlist);
 
 	/**
 	 * NAME			: take
@@ -209,25 +209,25 @@ typedef struct list {
 	 *		inlist  : to take
 	 *		n		: number of member to take
 	 */
-	struct list* (*take) (struct list *inlist, int n);
+	struct flist* (*take) (struct flist *inlist, int n);
 
-} LIST;
+} FLIST;
 
-LIST *new_list();
+FLIST *new_list();
 
 /**
  *list case class 
 */
 typedef struct Cons{
 	ANY *hd;
-	LIST *tl;
+	FLIST *tl;
 } CONS;
 
 /**
  * NAME			: uncons
  * DESCRIPTION	: destructure list by separating head with tail
  */
-CONS *uncons(LIST *in);
+CONS *uncons(FLIST *in);
 
 /**
  * NAME			: free_cons
@@ -240,5 +240,5 @@ void free_cons(CONS *cons);
  * NAME			: list_create
  * DESCRIPTION	: create list with its ANY* items
  */
-LIST *list_create(int num_items, ...);
+FLIST *list_create(int num_items, ...);
 #endif

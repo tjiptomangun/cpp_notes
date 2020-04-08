@@ -1,7 +1,7 @@
 all: test_list test_charstr test_key_val test_tuple mylambda1 mylambda2 mylambda3 curry1 nested_func curry2 trampoline
 
-test_list: list.c charstr.c integer.c tuple.c main.c
-	gcc -Wall -ggdb3 -I . -D_LIST_UNIT_TEST_ any.c charstr.c integer.c option.c list.c tuple.c main.c -o test_list
+test_list: flist.c charstr.c integer.c tuple.c main.c
+	gcc -Wall -ggdb3 -I . -D_FLIST_UNIT_TEST_ any.c charstr.c integer.c option.c flist.c tuple.c main.c -o test_list
 test_tuple: tuple.c charstr.c main.c
 	gcc -Wall -ggdb3 -I . -D_TUPLE_UNIT_TEST_ any.c charstr.c integer.c tuple.c main.c -o test_tuple
 test_charstr: charstr.c

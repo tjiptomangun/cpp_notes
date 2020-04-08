@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <memory.h>
 #include <stdarg.h> 
-#include "list.h"
+#include "flist.h"
 #include "any.h"
 #include "tuple.h"
 
@@ -15,9 +15,9 @@
  *		next	: the successor of this new node
  *		wrapped	: the data wrapped by this node
  */
-static LIST_NODE* __new_list_node(ANY* wrapped, LIST_NODE *prev, LIST_NODE *next) {
+static FLIST_NODE* __new_list_node(ANY* wrapped, FLIST_NODE *prev, FLIST_NODE *next) {
 	if (wrapped){
-		LIST_NODE *ret = (LIST_NODE *) calloc (1, sizeof (LIST_NODE));
+		FLIST_NODE *ret = (FLIST_NODE *) calloc (1, sizeof (FLIST_NODE));
 		if (wrapped != NULL)
 			ret->wrapped_data = wrapped;
 		if (prev) {
@@ -38,7 +38,7 @@ static LIST_NODE* __new_list_node(ANY* wrapped, LIST_NODE *prev, LIST_NODE *next
  * NAME			: __delete_list_node
  * DESCRIPTION	: delete the wrapped data, detach from other member
  */
-static void __delete_list_node(LIST *ls, LIST_NODE *node) {
+static void __delete_list_node(FLIST *ls, FLIST_NODE *node) {
 	if (node){
 		if (node->wrapped_data){
 			node->wrapped_data->delete(node->wrapped_data);
@@ -68,7 +68,7 @@ static void __delete_list_node(LIST *ls, LIST_NODE *node) {
  * DESCRIPTION	: detach from other member
  */
 /*
-static LIST_NODE* __detach_list_node(LIST_NODE *node) {
+static FLIST_NODE* __detach_list_node(FLIST_NODE *node) {
 	if (node){
 		if (node->prev){
 			node->prev->next = node->next;
@@ -87,7 +87,7 @@ static LIST_NODE* __detach_list_node(LIST_NODE *node) {
  * NAME			: __release_wrapped_data
  * DESCRIPTION	: release wrapped_data
  */
-static ANY* __release_wrapped_data(LIST_NODE *node) {
+static ANY* __release_wrapped_data(FLIST_NODE *node) {
 	ANY *ret = NULL;
 	if (node && node->wrapped_data){
 		ret = node->wrapped_data;
@@ -104,14 +104,14 @@ static ANY* __release_wrapped_data(LIST_NODE *node) {
  * NAME			: __release_wrapped_and_delete
  * DESCRIPTION	: release wrapped data in a node and delete the node
  */
-static ANY* __release_wrapped_and_delete(LIST *ls, LIST_NODE *node){
+static ANY* __release_wrapped_and_delete(FLIST *ls, FLIST_NODE *node){
 	ANY *ret = __release_wrapped_data(node);
 	__delete_list_node(ls, node);
 	return ret;
 }
 
-static LIST *__list_release_all_wrapped(LIST *ls) {
-	LIST_NODE *curr = ls->__s__head;
+static FLIST *__list_release_all_wrapped(FLIST *ls) {
+	FLIST_NODE *curr = ls->__s__head;
 	while(curr){
 		curr->wrapped_data = NULL;
 		curr = curr->next;
@@ -124,7 +124,7 @@ static LIST *__list_release_all_wrapped(LIST *ls) {
  * DESCRIPTION	: return wrapped data
  */
 /*
-static ANY *__unwrap_list_node(LIST_NODE *node){
+static ANY *__unwrap_list_node(FLIST_NODE *node){
 	if(node && node->wrapped_data)
 		return node->wrapped_data;
 
@@ -141,9 +141,9 @@ static ANY *__unwrap_list_node(LIST_NODE *node){
  *	RETURNS
  *		the inlist
  */
-static LIST *__prepend_list(LIST*inlist, ANY *indata) {
+static FLIST *__prepend_list(FLIST*inlist, ANY *indata) {
 	if (inlist && indata){
-		LIST_NODE *new_node = __new_list_node(indata, NULL, inlist->__s__head);
+		FLIST_NODE *new_node = __new_list_node(indata, NULL, inlist->__s__head);
 		inlist->__s__head = new_node;
 		if (inlist->__s__last == NULL)
 			inlist->__s__last = new_node;
@@ -161,9 +161,9 @@ static LIST *__prepend_list(LIST*inlist, ANY *indata) {
  *	RETURNS
  *		the inlist
  */
-static LIST *__append_list(LIST*inlist, ANY *indata) {
+static FLIST *__append_list(FLIST*inlist, ANY *indata) {
 	if(inlist && indata){
-		LIST_NODE *new_node = __new_list_node(indata, inlist->__s__last, NULL);
+		FLIST_NODE *new_node = __new_list_node(indata, inlist->__s__last, NULL);
 		inlist->__s__last = new_node;
 		if (inlist->__s__head == NULL)
 			inlist->__s__head = new_node;
@@ -175,8 +175,8 @@ static LIST *__append_list(LIST*inlist, ANY *indata) {
  * NAME			: __init_list
  * DESCRIPTION	: delete the __s__last element of given list
  */
-static LIST *__init_list(LIST *inlist) {
-	LIST_NODE *temp;
+static FLIST *__init_list(FLIST *inlist) {
+	FLIST_NODE *temp;
 	if (inlist && inlist->__s__last){
 		temp = inlist->__s__last->prev;
 		__delete_list_node(inlist, inlist->__s__last);
@@ -191,8 +191,8 @@ static LIST *__init_list(LIST *inlist) {
  * NAME			: __tail_list
  * DESCRIPTION	: delete first element of given list
  */
-static LIST *__tail_list(LIST *inlist){
-	LIST_NODE *temp;
+static FLIST *__tail_list(FLIST *inlist){
+	FLIST_NODE *temp;
 	if(inlist && inlist->__s__head){
 		temp = inlist->__s__head->next;
 		__delete_list_node(inlist, inlist->__s__head);
@@ -208,7 +208,7 @@ static LIST *__tail_list(LIST *inlist){
  * DESCRIPTION	: delete all list node and list node data (using __init_list).
  *				  free this list
  */
-static void __delete_list(LIST *inlist) { 
+static void __delete_list(FLIST *inlist) { 
 	while(inlist && inlist->__s__head){
 		__init_list(inlist);
 	}
@@ -235,9 +235,9 @@ static void __delete_list(LIST *inlist) {
 	free(inlist);
 }
 
-static ANY * __get_nth(LIST *inlist, unsigned int ndx) {
+static ANY * __get_nth(FLIST *inlist, unsigned int ndx) {
 	int i = 0;
-	LIST_NODE *curr = inlist->__s__head;
+	FLIST_NODE *curr = inlist->__s__head;
 	if (ndx >= inlist->size)	
 		return NULL;
 	while(i < ndx){
@@ -250,23 +250,23 @@ static ANY * __get_nth(LIST *inlist, unsigned int ndx) {
 		return curr->wrapped_data->copy(curr->wrapped_data);
 }
 
-static ANY * __head(LIST *inlist) {
-	LIST_NODE *curr = inlist->__s__head;
+static ANY * __head(FLIST *inlist) {
+	FLIST_NODE *curr = inlist->__s__head;
 	if(!curr)
 		return NULL;
 	else
 		return curr->wrapped_data->copy(curr->wrapped_data);
 } 
 
-static ANY * __last(LIST *inlist) {
-	LIST_NODE *curr = inlist->__s__last;
+static ANY * __last(FLIST *inlist) {
+	FLIST_NODE *curr = inlist->__s__last;
 	if(!curr)
 		return NULL;
 	else
 		return curr->wrapped_data->copy(curr->wrapped_data);
 }
 
-static ANY * __i_fold_left(LIST_NODE *node, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
+static ANY * __i_fold_left(FLIST_NODE *node, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	ANY *res;
 	if (node){
 		res = fn(acc, node->wrapped_data);	
@@ -277,7 +277,7 @@ static ANY * __i_fold_left(LIST_NODE *node, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	}
 }
 
-static ANY * __fold_left(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
+static ANY * __fold_left(FLIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	if (inlist->size == 0){
 		return acc;
 	}
@@ -287,7 +287,7 @@ static ANY * __fold_left(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	
 }
 
-static ANY * __i_fold_right(LIST_NODE *node, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
+static ANY * __i_fold_right(FLIST_NODE *node, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	if (node){
 		return fn(__i_fold_right(node->next, acc, fn),node->wrapped_data);	
 	}
@@ -296,7 +296,7 @@ static ANY * __i_fold_right(LIST_NODE *node, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	}
 }
 
-static ANY * __fold_right(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
+static ANY * __fold_right(FLIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	if (inlist->size == 0){
 		return acc;
 	}
@@ -306,12 +306,12 @@ static ANY * __fold_right(LIST *inlist, ANY *acc, ANY *(*fn)(ANY*, ANY*)){
 	}
 }
 
-static void __flip(LIST *inlist) {
-	LIST_NODE *curr = inlist->__s__head;
-	LIST_NODE *hd = inlist->__s__head;
-	LIST_NODE *tl = inlist->__s__last;
-	LIST_NODE *next;
-	LIST_NODE *prev;
+static void __flip(FLIST *inlist) {
+	FLIST_NODE *curr = inlist->__s__head;
+	FLIST_NODE *hd = inlist->__s__head;
+	FLIST_NODE *tl = inlist->__s__last;
+	FLIST_NODE *next;
+	FLIST_NODE *prev;
 	while(curr != NULL){
 		next = curr->next;
 		prev = curr->prev;
@@ -323,9 +323,9 @@ static void __flip(LIST *inlist) {
 	inlist->__s__head = tl; 
 }
 
-static LIST *__reverse(LIST *inlist){
-	LIST *cp = inlist->copy(inlist);
-	LIST *ret = (LIST *)__fold_left(cp, (ANY *)new_list(), (ANY * (*) (ANY *, ANY *))__prepend_list);
+static FLIST *__reverse(FLIST *inlist){
+	FLIST *cp = inlist->copy(inlist);
+	FLIST *ret = (FLIST *)__fold_left(cp, (ANY *)new_list(), (ANY * (*) (ANY *, ANY *))__prepend_list);
 	__list_release_all_wrapped(cp);
 	cp->delete(cp);
 	return ret;
@@ -336,7 +336,7 @@ typedef struct map_struct{
 	struct map_struct *this;
 	void (*delete) (struct map_struct*);
 	struct map_struct* (*copy) (struct map_struct *);
-	LIST	*acc;
+	FLIST	*acc;
 	ANY * (*fn)(ANY *);
 }MAP_STRUCT;
 
@@ -353,7 +353,7 @@ typedef struct filter_struct{
 	struct filter_struct *this;
 	void (*delete) (struct map_struct*);
 	struct map_struct* (*copy) (struct map_struct *);
-	LIST	*acc;
+	FLIST	*acc;
 	int  (*fn)(ANY *);
 }FILTER_STRUCT;
 
@@ -378,8 +378,8 @@ static FILTER_STRUCT* __filter_helper(FILTER_STRUCT *instruct, ANY *in){
  * RETURNS		: new tranformed list. inlist is not mutated.
  */
 
-static LIST *__map(LIST *inlist, ANY * (*fn)(ANY *)){	
-	LIST *nl = new_list();
+static FLIST *__map(FLIST *inlist, ANY * (*fn)(ANY *)){	
+	FLIST *nl = new_list();
 	MAP_STRUCT ms;
 	ms.acc = nl;
 	ms.fn = fn;
@@ -400,8 +400,8 @@ static LIST *__map(LIST *inlist, ANY * (*fn)(ANY *)){
  *				  and return boolean *				  
  * RETURNS		: new tranformed list. inlist is not mutated.
  */
-static LIST * __filter(LIST *inlist, int (*fn)(ANY *)){
-	LIST *nl = new_list();
+static FLIST * __filter(FLIST *inlist, int (*fn)(ANY *)){
+	FLIST *nl = new_list();
 	FILTER_STRUCT fs;
 	fs.acc = nl;
 	fs.fn = fn;
@@ -416,7 +416,7 @@ typedef struct collect_struct{
 	struct collect_struct *this;
 	void (*delete) (struct collect_struct*);
 	struct collect_struct* (*copy) (struct collect_struct *);
-	LIST	*acc;
+	FLIST	*acc;
 	OPTION *(*fn)(ANY *);
 }COLLECT_STRUCT; 
 
@@ -435,8 +435,8 @@ static COLLECT_STRUCT* __collect_helper(COLLECT_STRUCT *instruct, ANY *in){
 	return instruct;
 } 
 
-static LIST *__collect(LIST *inlist, OPTION* (*fn)(ANY *)){	
-	LIST *nl = new_list();
+static FLIST *__collect(FLIST *inlist, OPTION* (*fn)(ANY *)){	
+	FLIST *nl = new_list();
 	COLLECT_STRUCT ms;
 	ms.acc = nl;
 	ms.fn = fn;
@@ -448,7 +448,7 @@ static LIST *__collect(LIST *inlist, OPTION* (*fn)(ANY *)){
 	return nl;
 }
 
-static LIST * __zip_helper(LIST *outlist, LIST_NODE *n1, LIST_NODE *n2) {
+static FLIST * __zip_helper(FLIST *outlist, FLIST_NODE *n1, FLIST_NODE *n2) {
 	TUPLE_2 *t2;
 	if (n1 && n2) {
 		t2 = new_tuple2(n1->wrapped_data, n2->wrapped_data);	
@@ -460,8 +460,8 @@ static LIST * __zip_helper(LIST *outlist, LIST_NODE *n1, LIST_NODE *n2) {
 	}
 }
 
-static LIST *__zip(LIST *e0l, LIST *e1l) {
-	LIST *nl = new_list();
+static FLIST *__zip(FLIST *e0l, FLIST *e1l) {
+	FLIST *nl = new_list();
 	if (nl) {
 		return __zip_helper(nl, e0l->__s__head, e1l->__s__head);
 	}
@@ -470,8 +470,8 @@ static LIST *__zip(LIST *e0l, LIST *e1l) {
 }
 
 
-static LIST *copy (LIST *in) {
-	LIST *out = new_list();
+static FLIST *copy (FLIST *in) {
+	FLIST *out = new_list();
 	ANY *item;
 	int i;
 	if (out) {
@@ -499,7 +499,7 @@ static LIST *copy (LIST *in) {
 	return out;
 }
 
-static LIST *__take_n_helper(LIST_NODE *in, int n, LIST *out) {
+static FLIST *__take_n_helper(FLIST_NODE *in, int n, FLIST *out) {
 	if (n > 0 && in) {
 		out = out->append(out, in->wrapped_data->copy(in->wrapped_data));
 		return __take_n_helper(in->next, n - 1, out);
@@ -508,8 +508,8 @@ static LIST *__take_n_helper(LIST_NODE *in, int n, LIST *out) {
 
 }
 
-static LIST *__take_n(LIST *in, int n) {
-	LIST *out = NULL;
+static FLIST *__take_n(FLIST *in, int n) {
+	FLIST *out = NULL;
 	if (in->size > 0 && (out = new_list())){
 		return __take_n_helper(in->__s__head, n < in->size ? n : in->size, out);
 	}
@@ -518,8 +518,8 @@ static LIST *__take_n(LIST *in, int n) {
 	}
 }
 
-LIST *new_list() {
-	LIST *ret = (LIST *) calloc(1, sizeof(LIST));
+FLIST *new_list() {
+	FLIST *ret = (FLIST *) calloc(1, sizeof(FLIST));
 	ret->this = ret;
 	ret->delete = __delete_list; 
 	ret->__s__head = NULL;
@@ -545,14 +545,14 @@ LIST *new_list() {
 	return ret;
 }
 
-LIST *cons(ANY *hd, LIST *tl){
+FLIST *cons(ANY *hd, FLIST *tl){
 	if (tl)
 		tl->prepend(tl, hd);
 	
 	return tl;
 }
 
-CONS *uncons(LIST *in){
+CONS *uncons(FLIST *in){
 	ANY *hd;
 	CONS *nc = (CONS *) calloc(1, sizeof(CONS));
 	if (!nc)
@@ -573,10 +573,10 @@ void free_cons(CONS *cons) {
 	free(cons);
 }
 
-LIST *list_create(int num_items, ...) {
+FLIST *list_create(int num_items, ...) {
 	int i;
 	va_list ap;
-	LIST *list = new_list();
+	FLIST *list = new_list();
 	ANY *cur;
 	if (list){
 		va_start(ap, num_items);
@@ -589,7 +589,7 @@ LIST *list_create(int num_items, ...) {
 	return list;
 }
 
-#ifdef _LIST_UNIT_TEST_
+#ifdef _FLIST_UNIT_TEST_
 #include <getopt.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -597,14 +597,14 @@ LIST *list_create(int num_items, ...) {
 #include "charstr.h"
 void create_list(){
 	printf("-create list\n");
-	LIST *t = new_list();
+	FLIST *t = new_list();
 	assert(t != NULL);
 	t->delete(t);
 }
 
 void prepend_list(){
 	printf("-prepend list\n");
-	LIST *t = new_list();
+	FLIST *t = new_list();
 	unsigned char *h1, *t1;
 	unsigned char *h2, *t2;
 	assert(t != NULL);
@@ -624,7 +624,7 @@ void prepend_list(){
 
 void append_list(){
 	printf("-append list\n");
-	LIST *t = new_list();
+	FLIST *t = new_list();
 	unsigned char *h1, *t1;
 	unsigned char *h2, *t2;
 	assert(t != NULL);
@@ -644,7 +644,7 @@ void append_list(){
 
 void init_list(){
 	printf("-init list\n");
-	LIST *t = new_list();
+	FLIST *t = new_list();
 	unsigned char  *t1;
 	unsigned char  *t2;
 	unsigned char  *t3;
@@ -667,7 +667,7 @@ void init_list(){
 
 void tail_list(){
 	printf("-tail list\n");
-	LIST *t = new_list();
+	FLIST *t = new_list();
 	unsigned char *t1;
 	unsigned char *t2;
 	unsigned char *t3;
@@ -689,10 +689,10 @@ void tail_list(){
 }
 void list_get(){
 	printf("-list_get\n");
-	LIST *t = new_list();
-	LIST_NODE *t2;
-	LIST_NODE *t3;
-	LIST_NODE *t4;
+	FLIST *t = new_list();
+	FLIST_NODE *t2;
+	FLIST_NODE *t3;
+	FLIST_NODE *t4;
 	CHARSTR *c1;
 	assert(t != NULL);
 	t->append(t, (ANY *)new_charstr("hello"));
@@ -716,11 +716,11 @@ void list_get(){
 }
 void head_last(){
 	printf("-head_last\n");
-	LIST *t = new_list();
-	LIST_NODE *t1;
-	LIST_NODE *t2;
-	LIST_NODE *t3;
-	LIST_NODE *t4;
+	FLIST *t = new_list();
+	FLIST_NODE *t1;
+	FLIST_NODE *t2;
+	FLIST_NODE *t3;
+	FLIST_NODE *t4;
 	CHARSTR *c1;
 	assert(t != NULL);
 	t->append(t, (ANY *)new_charstr("hello"));
@@ -751,7 +751,7 @@ Integer *add_str_length(Integer *in, CHARSTR *sin) {
 
 void fold_left() {
 	printf("-fold_left\n");
-	LIST *l = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+	FLIST *l = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
 	Integer *res = (Integer *) l->fold_left(l, (ANY *)new_integer(0), (ANY * (*) (ANY *, ANY *)) add_str_length);
 	assert(res->value == 21);
@@ -762,7 +762,7 @@ void fold_left() {
 
 void fold_right() {
 	printf("-fold_right\n");
-	LIST *l = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+	FLIST *l = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
 	Integer *res = (Integer *) l->fold_right(l, (ANY *)new_integer(0), (ANY * (*) (ANY *, ANY *)) add_str_length);
 	assert(res->value == 21);
@@ -772,19 +772,19 @@ void fold_right() {
 
 void copy_test() {
 	printf("-copy_test\n");
-	LIST *inlist = list_create(11, (ANY *)new_charstr("Hello"), (ANY *)new_charstr("world"), 
+	FLIST *inlist = list_create(11, (ANY *)new_charstr("Hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"), 
 		(ANY *)new_charstr("!"), (ANY *)new_charstr("never"), (ANY *)new_charstr("forget"),
 		(ANY *)new_charstr("your"), (ANY *)new_charstr("beginner's"), (ANY *)new_charstr("spirit"));
-	LIST *rev = inlist->copy(inlist);
+	FLIST *rev = inlist->copy(inlist);
 	assert(inlist->size == rev->size);
 	inlist->delete(inlist);
 	rev->delete(rev);
 } 
 
 void reverse() {
-	LIST *nl;
-	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+	FLIST *nl;
+	FLIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
 	CHARSTR *st;
 	printf("-reverse\n"); 
@@ -801,7 +801,7 @@ void reverse() {
 
 void flip() {
 	printf("-flip\n"); 
-	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+	FLIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
 	inlist->flip(inlist);
 	CHARSTR *st = (CHARSTR *)inlist->head(inlist);
@@ -824,9 +824,9 @@ int filter_fun(CHARSTR *in) {
 
 void map() {
 	printf("-map\n"); 
-	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+	FLIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-	LIST *outlist = inlist->map(inlist, (ANY *(*)(ANY *)) char_len);
+	FLIST *outlist = inlist->map(inlist, (ANY *(*)(ANY *)) char_len);
 
 	Integer *res = (Integer *)outlist->get(outlist, 3);
 	assert(res->value == 5);
@@ -841,9 +841,9 @@ void map() {
 
 void filter() {
 	printf("-filter\n"); 
-	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+	FLIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-	LIST *outlist = inlist->filter(inlist, (int (*)(ANY *)) filter_fun);
+	FLIST *outlist = inlist->filter(inlist, (int (*)(ANY *)) filter_fun);
 	assert(outlist->size == 3);
 
 	CHARSTR *res = (CHARSTR *)outlist->get(outlist, 2);
@@ -864,9 +864,9 @@ OPTION *collect_fun(CHARSTR *in) {
 
 void collect_test() {
 	printf("-collect_test\n");
-	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+	FLIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-	LIST *outlist = inlist->collect(inlist, (OPTION *(*)(ANY *)) collect_fun);
+	FLIST *outlist = inlist->collect(inlist, (OPTION *(*)(ANY *)) collect_fun);
 	CHARSTR *out = (CHARSTR *)outlist->head(outlist);
 	assert(!strcmp(out->data, "hello"));
 	out->delete(out);
@@ -880,11 +880,11 @@ void zip_test() {
 	CHARSTR *str0;
 	CHARSTR *str1;
 	TUPLE_2 *t1, *t2;
-	LIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
+	FLIST *inlist = list_create(5, (ANY *)new_charstr("hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"));
-	LIST *inlist2 = list_create(4, (ANY *)new_charstr("hallo"), (ANY *)new_charstr("dunia"), 
+	FLIST *inlist2 = list_create(4, (ANY *)new_charstr("hallo"), (ANY *)new_charstr("dunia"), 
 		(ANY *)new_charstr("milik"), (ANY *)new_charstr("pemberani"));
-	LIST *outlist = inlist->zip(inlist, inlist2);
+	FLIST *outlist = inlist->zip(inlist, inlist2);
 	assert(outlist->size == 4); 
 	str0 = (CHARSTR *)(t1 = (TUPLE_2 *)outlist->get(outlist, 0))->e0;
 	str1 = (CHARSTR *)(t2 = (TUPLE_2 *)outlist->get(outlist, 0))->e1;
@@ -907,15 +907,15 @@ void take_test() {
 	printf("-take_test\n");
 	CHARSTR * c1;
 	TUPLE_2 * t1;
-	LIST * outlist;
-	LIST * zipped;
+	FLIST * outlist;
+	FLIST * zipped;
 
-	LIST *inlist = list_create(11, (ANY *)new_charstr("Hello"), (ANY *)new_charstr("world"), 
+	FLIST *inlist = list_create(11, (ANY *)new_charstr("Hello"), (ANY *)new_charstr("world"), 
 		(ANY *)new_charstr("of"), (ANY *)new_charstr("brave"), (ANY *)new_charstr("soul"), 
 		(ANY *)new_charstr("!"), (ANY *)new_charstr("never"), (ANY *)new_charstr("forget"),
 		(ANY *)new_charstr("your"), (ANY *)new_charstr("beginner's"), (ANY *)new_charstr("spirit"));
 
-	LIST *inlist2 = list_create(10, (ANY *)new_charstr("hallo"), (ANY *)new_charstr("dunia"), 
+	FLIST *inlist2 = list_create(10, (ANY *)new_charstr("hallo"), (ANY *)new_charstr("dunia"), 
 		(ANY *)new_charstr("milik"), (ANY *)new_charstr("pemberani"), (ANY *)new_charstr("jangan"),
 		(ANY *)new_charstr("pernah"), (ANY *)new_charstr("lupakan"), (ANY *)new_charstr("semangatmu"),
 		(ANY *)new_charstr("yang"), (ANY *)new_charstr("permulaan"));
