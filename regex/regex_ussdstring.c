@@ -29,6 +29,9 @@ int main (int argc, char **argv) {
   char *string4 = "*123**";
   char *string5 = "*123";
   char *string6 = "*AAA*123432#";
+  char *string7 = "*998*";
+  char *string8 = "*889*111";
+  char *string9 = "*8^";
 
   regcheck(string1);
   regcheck(string2);
@@ -36,5 +39,8 @@ int main (int argc, char **argv) {
   regcheck(string4);
   regcheck(string5);
   regcheck(string6);
+  regcheck(string7);
+  regcheck(string8);
+  regcheck(string9);
 }
                           
