@@ -270,7 +270,102 @@ unsigned int gsm_to_basic_char_ext[] = {
 	
 }
 
+unsigned char ascii_to_gsm_charset[] {
+                // basic and ext gsm charset
+    NPC7,       // 1	start of heading [SOH]                  
+    NPC7,       // 2	start of text [STX]                     
+    NPC7,       // 3	end of text [ETX]                       
+    NPC7,       // 4	end of transmission [EOT]               
+    NPC7,       // 5	enquiry [ENQ]                           
+    NPC7,       // 6	acknowledge [ACK]                       
+    NPC7,       // 7	bell [BEL]                              
+    NPC7,       // 8	backspace [BS]                          
+    NPC7,       // 9	horizontal tab [HT]                     	
+    0x0A,	// 10	LF
+    NPC7,	// 11	VT Vertical Tab
+    0x1B0A,	// 12	Form Feed
+    0x0D,	// 13	CR
+    NPC7,       // 14   shift out [SO]                          
+    NPC7,       // 15   shift in [SI]                           
+    NPC7,       // 16   data link escape [DLE]                  
+    NPC7,       // 17   device control 1 [DC1]                  
+    NPC7,       // 18   device control 2 [DC2]                  
+    NPC7,       // 19   device control 3 [DC3]                  
+    NPC7,       // 20   device control 4 [DC4]                  
+    NPC7,       // 21   negative acknowledge [NAK]              
+    NPC7,       // 22   synchronous idle [SYN]                  
+    NPC7,       // 23   end of trans. block [ETB]               
+    NPC7,       // 24   cancel [CAN]                            
+    NPC7,       // 25   end of medium [EM]                      
+    NPC7,       // 26   substitute [SUB]                        
+    NPC7,       // 27   escape [ESC]                            
+    NPC7,       // 28   file separator [FS]                     
+    NPC7,       // 29   group separator [GS]                    
+    NPC7,       // 30   record separator [RS]                   
+    NPC7,       // 31   unit separator [US]                     
+    32,         // 32      space                                   
+    33,         // 33    ! exclamation mark                        
+    34,         // 34    " double quotation mark                   
+    35,         // 35    # number sign                             
+    2,          // 36    $ dollar sign                             
+    37,         // 37    % percent sign                            
+    38,         // 38    & ampersand                               
+    39,         // 39    ' apostrophe                              
+    40,         // 40    ( left parenthesis                        
+    41,         // 41    ) right parenthesis                       
+    42,         // 42    * asterisk                                
+    43,         // 43    + plus sign                               
+    44,         // 44    , comma                                   
+    45,         // 45    - hyphen                                  
+    46,         // 46    . period                                  
+    47,         // 47    / slash,                                  
+    48,         // 48    0 digit 0                                 
+    49,         // 49    1 digit 1                                 
+    50,         // 50    2 digit 2                                 
+    51,         // 51    3 digit 3                                 
+    52,         // 52    4 digit 4                                 
+    53,         // 53    5 digit 5                                 
+    54,         // 54    6 digit 6                                 
+    55,         // 55    7 digit 7                                 
+    56,         // 56    8 digit 8                                 
+    57,         // 57    9 digit 9                                 
+    58,         // 58    : colon                                   
+    59,         // 59    ; semicolon                               
+    60,         // 60    < less-than sign                          
+    61,         // 61    = equal sign                              
+    62,         // 62    > greater-than sign                       
+    63,         // 63    ? question mark                           
+    0,          // 64    @ commercial at sign                      
+    65,         // 65    A uppercase A                             
+    66,         // 66    B uppercase B                             
+    67,         // 67    C uppercase C                             
+    68,         // 68    D uppercase D                             
+    69,         // 69    E uppercase E                             
+    70,         // 70    F uppercase F                             
+    71,         // 71    G uppercase G                             
+    72,         // 72    H uppercase H                             
+    73,         // 73    I uppercase I                             
+    74,         // 74    J uppercase J                             
+    75,         // 75    K uppercase K                             
+    76,         // 76    L uppercase L                             
+    77,         // 77    M uppercase M                             
+    78,         // 78    N uppercase N                             
+    79,         // 79    O uppercase O                             
+    80,         // 80    P uppercase P                             
+    81,         // 81    Q uppercase Q                             
+    82,         // 82    R uppercase R                             
+    83,         // 83    S uppercase S                             
+    84,         // 84    T uppercase T                             
+    85,         // 85    U uppercase U                             
+    86,         // 86    V uppercase V                             
+    87,         // 87    W uppercase W                             
+    88,         // 88    X uppercase X                             
+    89,         // 89    Y uppercase Y                             
+    90,         // 90    Z uppercase Z                             
 
+
+    
+}
 
 
 
