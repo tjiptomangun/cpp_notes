@@ -220,7 +220,7 @@ static PL_ITEM  __list_detach (PLIST plist, PL_ITEM detached)
 			if (detached == plist->currptr)
 				plist->currptr = plist->currptr->next;
 			return NULL;
-    }
+		}
 		curr = curr->next;
 	} 
 	return detached;
@@ -481,19 +481,19 @@ PPROPERTY newproperty2 (char *name, char *value)
 int __stack_ptr_init (PSTACK_PTR p)
 {
 	p->top  = -1;
-	memset (p->c, 0, 100 * sizeof(void *));
+	memset (p->c, 0, MAX_STACKPTR * sizeof(void *));
 	return 0;
-} 
+}
 
 int __stack_ptr_push (PSTACK_PTR p, void * v)
 {
-	if (p->top >= 100)
+	if (p->top >= MAX_STACKPTR)
 		return -1;
 	p->top++; 
 	p->c[p->top] = v;
 	return 0;
-
 }
+
 void * __stack_ptr_pop (PSTACK_PTR p)
 {
 	void *ret;
@@ -883,18 +883,28 @@ static int __treeitem_listdelete(struct tree_item *root)
 }
 
 /*
- * NAME 	: __treeitem_detach
- * DESCRIPTION 	: detach specified list item
- * RETURNS	: 0 if success 
- *		  supplied pointer if it is not in the list
+ * NAME 									: __treeitem_detach
+ * DESCRIPTION 						: detach specified list item
+ * RETURNS								: 
+ * 					NULL					: if success 
+ *	 pointer to detached 	: if not found
  */
 static PTREE_ITEM  __treeitem_detach(struct tree_item *root, struct tree_item *detached)
 {
 	PTREE_ITEM curritem = root->head;
+	PTREE_ITEM prev = NULL;
 	while (curritem)
 	{
-		if (detached == curritem)
+		if (detached == curritem) {
+			if (prev){
+				prev->next = curritem->next;
+			}
+			else {
+				root->head = curritem->next;
+			}
 			return NULL;
+		}
+		prev = curritem;
 		curritem = curritem->next;
 	}
 	return detached;

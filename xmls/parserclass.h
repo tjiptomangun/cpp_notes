@@ -97,10 +97,12 @@ typedef struct property
 extern PPROPERTY newproperty (char *name);
 extern PPROPERTY newproperty2 (char *name, char *value);
 
+#define MAX_STACKPTR 3000
+
 typedef struct stack_ptr
 {
 	int top;
-	void * c[100];
+	void * c[MAX_STACKPTR];
 	int (* init)(struct stack_ptr *);
 	int (* push) (struct stack_ptr *, void *);
 	void * (* pop) (struct stack_ptr *);

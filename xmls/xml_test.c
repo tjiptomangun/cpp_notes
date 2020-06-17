@@ -2,6 +2,9 @@
 #include <string.h>
 #include "yxml.h"
 #include "xmls.h"
+#include <time.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 
 #define bool unsigned int
@@ -14,7 +17,7 @@
 char *gup_profile_multi_res = "<!-- IMSI1 -->\
 	<entry dn=\"subdata=profile,ds=gup,subdata=services,msisdn=66818010400,dc=MSISDN,dc=C-NTDB\">\
 		<attr name=\"imsi\">\
-			<val value=\"520011893780810|\"></val>\
+			<val value=\"520011893780810\"></val>\
 		</attr>\
 		<attr name=\"msisdn\">\
 			<val value=\"66818010400\"></val>\
@@ -28,6 +31,64 @@ char *gup_profile_multi_res = "<!-- IMSI1 -->\
 		<attr name=\"imsi\">\
 			<val value=\"520010991818108\"></val>\
 		</attr>\
+		<attr name=\"msisdn\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+		<attr name=\"mscAddress\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+	</entry>";
+
+	char *gup_profile_multi_multi= "<!-- IMSI1 -->\
+	<entry dn=\"subdata=profile,ds=gup,subdata=services,msisdn=66818010400,dc=MSISDN,dc=C-NTDB\">\
+		<attr name=\"imsi\">\
+			<val value=\"520011893780810\"></val>\
+		</attr>\
+		<attr name=\"msisdn\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+		<attr name=\"mscAddress\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+	</entry>\
+<!-- IMSI2 -->\
+	<entry dn=\"subdata=profile,ds=gup,subdata=services,msisdn=66818010400,dc=MSISDN,dc=C-NTDB\">\
+		<attr name=\"imsi\">\
+			<val value=\"520010991818108\"></val>\
+		</attr>\
+		<attr name=\"msisdn\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+		<attr name=\"mscAddress\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+	</entry>\
+<!-- IMSI3 -->\
+	<entry dn=\"subdata=profile,ds=gup,subdata=services,msisdn=66818010400,dc=MSISDN,dc=C-NTDB\">\
+		<attr name=\"imsi\">\
+			<val value=\"520010991813333\"></val>\
+		</attr>\
+		<attr name=\"msisdn\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+		<attr name=\"mscAddress\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+	</entry>\
+<!-- IMSI4 -->\
+	<entry dn=\"subdata=profile,ds=gup,subdata=services,msisdn=66818010400,dc=MSISDN,dc=C-NTDB\">\
+		<attr name=\"imsi\">\
+			<val jounds=\"520010991813333\"></val>\
+		</attr>\
+		<attr name=\"msisdn\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+		<attr name=\"mscAddress\">\
+			<val value=\"66818010400\"></val>\
+		</attr>\
+	</entry>\
+<!-- IMSI5 -->\
+	<entry dn=\"subdata=profile,ds=gup,subdata=services,msisdn=66818010400,dc=MSISDN,dc=C-NTDB\">\
 		<attr name=\"msisdn\">\
 			<val value=\"66818010400\"></val>\
 		</attr>\
@@ -103,6 +164,9 @@ bool test_xml_attrib() {
   findet = xml_find_attribute(srism_ok, "SS7AP/SCCP/CGPA/GTITLE", "addr", buff, 1024);
   assertion = assertion && (!strcmp(buff, "66818110002"));
   assertion = assertion && (strcmp(buff, "66818110001"));
+  memset(buff, 0, sizeof(buff));
+  findet = xml_find_attribute(srism_ok, "SS7AP/TCAP/COMPONENT/DATA", "value", buff, 10);
+  assertion = assertion && (!strcmp(buff, "3020040825"));
 
 
   return assertion; 
@@ -135,6 +199,39 @@ void print_assertion(bool assertion) {
     printf("%s\n", KNRM);
 }
 
+int process_attrib_imsi(char *xml_string) {
+  char buff[100] = {0};
+  if (xml_find_attribute(xml_string, "attr", "name", buff, sizeof(buff)) && !strcmp(buff, "imsi")) {
+    buff[0] = 0;
+    if (xml_find_content(xml_string, "attr/val", buff, sizeof(buff))) {
+      fprintf(stdout, "imsi value = %s\n", buff);
+      return 1;
+    }
+    else {
+      fprintf(stdout, "imsi empty\n");
+      return 0;
+    }
+  }
+  return 1;
+}
+int process_attrib(char *xml_string) {
+  int num_found = xml_foreach_element(xml_string, "entry/attr", process_attrib_imsi);
+  fprintf(stdout, "process_attrib num_found attribs = %d \n", num_found);
+  print_assertion(num_found == 3);
+  return 1;
+}
+
+bool process_multi_elem(char *xml_string) {
+  int num_found ;
+  num_found = xml_foreach_element(xml_string, "entry", process_attrib);
+  fprintf(stdout,  "num_found entries =%d \n", num_found);
+  print_assertion(num_found == 5);
+  return 1;
+}
+
+
+
+int open_file_xml(char *fname);
 int main (int argc, char **argv) {
     fprintf(stdout, "test_xml_attrib  ");
     print_assertion(test_xml_attrib());
@@ -142,5 +239,114 @@ int main (int argc, char **argv) {
     print_assertion(test_xml_elem());
     fprintf(stdout, "test_xml_iterator ");
     print_assertion(test_xml_iterator());
+    fprintf(stdout, "process_multi_elem\n");
+    process_multi_elem(gup_profile_multi_multi);
+    open_file_xml("test.xml");
     return 0;
+}
+
+
+#include <errno.h>
+
+int file_size(FILE *fin) {
+  int nPos,nFSize;
+  nPos=ftell(fin);
+  fseek(fin,0L,SEEK_END);
+  nFSize=ftell(fin);
+  fseek(fin,nPos,SEEK_SET);
+  return nFSize;
+}
+
+int process_elem_ussd_spam(char *xml_string) {
+  char buff[100] = {0};
+  xml_find_content(xml_string, "ussdSpamBlacklist", buff, sizeof(buff));
+  fprintf(stdout, "%s,", buff);
+  return 1;
+}
+
+int process_elem_exceptional(char *xml_string) {
+  char buff[100] = {0};
+  xml_find_content(xml_string, "exceptionalSmscMoList", buff, sizeof(buff));
+  fprintf(stdout, "%s,", buff);
+  return 1;
+}
+
+int process_elem_bypassroam(char *xml_string) {
+  char buff[100] = {0};
+  xml_find_content(xml_string, "smsByPassRoaming", buff, sizeof(buff));
+  fprintf(stdout, "%s,", buff);
+  return 1;
+}
+
+typedef struct {
+	int curr_length;
+	int max_size;
+  int count;
+	char *accums;
+} collected_content;
+
+int collect_content(char *xml_string, collected_content *collected) {
+  char output[1000] = {0};
+  int nlen = 0;
+  if (xml_find_content(xml_string, "ussdSpamBlacklist", output, sizeof(output))) {
+    if (((nlen = strlen(output)+1) + collected->curr_length ) > collected->max_size){
+      
+      fprintf(stdout, ">>>>>>\nnum elems = %d\n%s\n>>>>>\n", collected->count, collected->accums);
+      return 0;
+    }
+    else if (collected->curr_length) {
+        strcat(collected->accums, ",");
+        strcat(collected->accums, output);
+        collected->curr_length += nlen+1;
+        collected->count++;
+    }else {
+        strcat(collected->accums, output);
+        collected->curr_length += nlen;
+        collected->count++;
+    }
+  }
+  return 1;
+}
+
+int open_file_xml(char *fname) {
+  FILE *fp = fopen(fname, "r");
+  ssize_t n_read = 0;
+  ssize_t n_buff = 0;
+  collected_content collector;
+  char string_out [100] = {0};
+  memset(&collector, 0, sizeof(collector));
+  collector.max_size = sizeof(string_out);
+  collector.accums = string_out;
+  
+  if (!fp) {
+    fprintf(stderr, "error opening file %s\n error = %d", fname, errno);
+    perror("error: ");
+    return 0;
+  }
+  else {
+    int fsz = file_size(fp);
+    char * holder = calloc(fsz + 1, sizeof(char));
+    char *ptrh = holder;    
+    do {
+      ptrh+=n_read;
+      n_read = fread(ptrh, 1, 32, fp);
+      n_buff += n_read;
+      //fprintf(stdout, "n_read = %zd n_buff = %zd\n", n_read, n_buff);
+    }while(n_read == 32 && n_buff < fsz);
+    //fprintf(stdout, "holder = %s\n", holder);
+    fclose(fp);
+    fprintf(stdout, "ussdSpamBlacklist\n");
+    xml_foreach_element(holder, "configuration/warm/ussdSpamBlacklist", process_elem_ussd_spam);
+    fprintf(stdout, "\n");
+    fprintf(stdout, "exceptionalSmscMoList\n");
+    xml_foreach_element(holder, "configuration/warm/exceptionalSmscMoList", process_elem_exceptional);
+    fprintf(stdout, "\n");
+    fprintf(stdout, "smsByPassRoaming\n");
+    xml_foreach_element(holder, "configuration/warm/smsByPassRoaming", process_elem_bypassroam);
+    fprintf(stdout, "\n");
+    xml_collect_elements(holder, "configuration/warm/ussdSpamBlacklist", (int (*) (char *, void *))collect_content, (void *)&collector);
+    fprintf(stdout, "\n");
+    free(holder);
+    return 1;
+  }
 }
