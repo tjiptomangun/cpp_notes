@@ -637,7 +637,7 @@ int pack_gsm7_bit(unsigned char *pinput, unsigned char *output, int input_length
 			cidx ++;
 		}
 		else if (cidx % 7 == 6) {
-			output[odx] = input[idx];
+			output[odx] = input[cidx];
 			buf = input[cidx + 1] & 0x7F;
 			buf <<=1;
 			output[odx] |= buf;	
@@ -649,9 +649,7 @@ int pack_gsm7_bit(unsigned char *pinput, unsigned char *output, int input_length
 			idx ++;
 			cidx = 0;
 			
-		}
-
-
+		} 
 		fprintf(stdout, "len  = %d ==> ", odx + 1);
 		for (int oo = 0; oo < odx + 1; oo++) {
 			fprintf(stdout, "%02X ", output[oo]);
@@ -661,10 +659,63 @@ int pack_gsm7_bit(unsigned char *pinput, unsigned char *output, int input_length
 	return odx;
 }
 
-void test_packed_gsm_7(char *input_01) {
+/**
+ * NAME					: unpack_gsm7_bit
+ * DESCRIPTION			: unpack pdu packed
+ * INPUT
+ *		pinput			: input byte stream
+ *		input_length	: number of input in septet
+ * OUTPUT
+ *		output			: where to store output
+ *		output_buf_max	: maximum number of bytes to store output
+ * RETURNS
+ *		<= 0			: error
+ *		>0				: length of bytes copied
+ *	
+ */
+int unpack_gsm7_bit(unsigned char *input, unsigned char *output, unsigned int input_length, int output_buf_max) {
+	int m = input_length;
+	int n = ((m + 1) * 7) >> 3;
+	int padd = n % 7;
+	while (m >= 0) {
+		int o_m = m - 1;
+		int i_n = n - 1;
+		if (padd) {
+			output[o_m] = input[i_n];
+			output[o_m] <<= (padd - 1);
+			output[o_m] &= 0x7F; 
+			output[o_m] |= (input[i_n - 1] >> (8 - (padd - 1)));
+		}
+		else {
+			output[o_m] = input[i_n];
+			output[o_m] >>=1;
+			output[o_m] &= 0x7F;
+			m-= 1;
+			o_m-= 1;
+			unsigned char tmp;
+			output[o_m] = input[i_n];
+			output[o_m] <<= 6;
+			output[o_m] &= 0x7F;
+			tmp = input[i_n - 1] >> (8 - 6);
+			output[o_m] |= tmp;
+		}
+		m--;
+		n = ((m + 1) * 7) >> 3;
+		padd = n % 7;
+	}
+	fprintf(stdout, "unpacked len  = %d ==> ", input_length);
+	for (int oo = 0; oo < input_length; oo++) {
+		fprintf(stdout, "%02X ", output[oo]);
+	}
+	fprintf(stdout, "\n");
+	return input_length;
+}
+
+void test_pack_unpack_gsm_7(char *input_01) {
 	unsigned char out_gsm7[300] = {0};
 	unsigned char out_ascii[300] = {0};
 	unsigned char out_gsm7packed[300] = {0};
+	unsigned char out_gsm7unpacked[300] = {0};
 	//char *input_01 = "Hello World!\n1234^{}£¥\xE0Z|";
 	//char *input_01 = "ABCDEFGHIJK";
 	int length_out = ascii_to_gsm7((unsigned char *)input_01, out_gsm7, strlen((char *)input_01), 300);
@@ -678,6 +729,8 @@ void test_packed_gsm_7(char *input_01) {
 	length_out = gsm7_to_ascii(out_gsm7, out_ascii, length_out, 300);
 	print_bytes(out_ascii, length_out);
 	length_out = pack_gsm7_bit(out_gsm7, out_gsm7packed, gsm7_length, 300);
+	length_out = unpack_gsm7_bit(out_gsm7packed, out_gsm7unpacked, gsm7_length, 300);
+	
 }
 
 
@@ -689,7 +742,17 @@ int main(int argc,	char **argv) {
 
 	for (i = 1; i <= len; i++) {
 		memcpy(buff, in_char, i); 
-		test_packed_gsm_7(buff);
+		test_pack_unpack_gsm_7(buff);
+		memset (buff, 0, sizeof(buff));
+		fprintf(stdout, "====================================\n");
+	}
+
+	memset(buff, 0, sizeof(buff));
+	char *in_char2 = "Hello World of Pdu !!!!";
+	len = strlen(in_char2);
+	for (i = 1; i <= len; i++) {
+		memcpy(buff, in_char2, i); 
+		test_pack_unpack_gsm_7(buff);
 		memset (buff, 0, sizeof(buff));
 		fprintf(stdout, "====================================\n");
 	}
