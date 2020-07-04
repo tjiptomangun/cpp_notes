@@ -580,75 +580,37 @@ void print_bytes(unsigned char * in, int inlength) {
 
 int pack_gsm7_bit(unsigned char *pinput, unsigned char *output, int input_length, int output_buf_max) {
 	int odx = 0;
-	int idx;
-	int cidx = 0;
+	int idx; 
+	unsigned char mask[] = {0, 1, 3, 7, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF};
 	unsigned char buf;
 	unsigned char *input = pinput;
-	for (idx = 0; idx < input_length && odx < output_buf_max; idx++, odx++) {
-		buf^=buf;
-		fprintf(stdout, "cidx = %d  idx  = %d input[cidx] = %02X pinput[idx] = %02X input[cidx + 1] = %02X pinput[idx + 1] = %02X ==> ",
-			cidx, idx, input[cidx], pinput[idx], input[cidx + 1], pinput[idx + 1]);
-		if (cidx %7 ==  0) {
-			output[odx] = input[cidx];
-			buf = input[cidx + 1] & 0x01;
-			buf <<=7;
+	int i_g;//the 1 to 7 byte counter
+
+	for (i_g = 1, idx = 0; idx < input_length && odx < output_buf_max; idx++, odx++, i_g++) {
+		buf^=buf; 
+		int bor = i_g %7;//borrowed from next byte
+		int shl = 8 - bor;
+		int shr = bor - 1;
+		printf("i_g = %d input[%d] = %02X ", i_g, idx, input[idx]);
+		if (bor) {
+			output[odx] = input[idx];
+			output[odx] >>= shr;
+			output[odx] &= mask[8-bor];
+			unsigned char buf = input[idx + 1];
+			buf &= mask[bor];
+			buf <<= shl;
 			output[odx] |= buf;
-			input[cidx + 1] >>= 1;
-			cidx ++;
 		}
-		else if (cidx % 7 == 1) {
-			output[odx] = input[cidx];
-			buf = input[cidx + 1] & 0x03;
-			buf <<=6;
-			output[odx] |= buf;	
-			input[cidx + 1] >>= 2; 
-			cidx ++;
-		}
-		else if (cidx % 7 == 2) {
-			output[odx] = input[cidx];
-			buf = input[cidx + 1] & 0x07;
-			buf <<=5;
-			output[odx] |= buf;	
-			input[cidx + 1] >>= 3; 
-			cidx ++;
-		}
-		else if (cidx % 7 == 3) {
-			output[odx] = input[cidx];
-			buf = input[cidx + 1] & 0x0F;
-			buf <<=4;
-			output[odx] |= buf;	
-			input[cidx + 1] >>= 4; 
-			cidx ++;
-		}
-		else if (cidx % 7 == 4) {
-			output[odx] = input[cidx];
-			buf = input[cidx + 1] & 0x1F;
-			buf <<=3;
-			output[odx] |= buf;	
-			input[cidx + 1] >>= 5; 
-			cidx ++;
-		}
-		else if (cidx % 7 == 5) {
-			output[odx] = input[cidx];
-			buf = input[cidx + 1] & 0x3F;
-			buf <<=2;
-			output[odx] |= buf;	
-			input[cidx + 1] >>= 6; 
-			cidx ++;
-		}
-		else if (cidx % 7 == 6) {
-			output[odx] = input[cidx];
-			buf = input[cidx + 1] & 0x7F;
+		else {
+			output[odx] = input[idx];
+			output[odx] >>= 6;
+			output[odx] &= mask[1];
+			unsigned char buf = input[idx + 1];
+			buf &= mask[7];
 			buf <<=1;
-			output[odx] |= buf;	
-			input[cidx + 1] >>= 7;
-			// input cidx+1(7) is empty now
-			// just move input one byte
-			// reset cidx to 0;
-			input  = &pinput[idx+2];
-			idx ++;
-			cidx = 0;
-			
+			output[odx] |= buf;
+			idx++; 
+			i_g = 0;
 		} 
 		fprintf(stdout, "len  = %d ==> ", odx + 1);
 		for (int oo = 0; oo < odx + 1; oo++) {
@@ -687,11 +649,13 @@ int unpack_gsm7_bit(unsigned char *input, unsigned char *output, unsigned int in
 			output[o_m] |= (input[i_n - 1] >> (8 - (padd - 1)));
 		}
 		else {
-			output[o_m] = input[i_n];
-			output[o_m] >>=1;
-			output[o_m] &= 0x7F;
-			m-= 1;
-			o_m-= 1;
+			if(! o_m %2 ){
+				output[o_m] = input[i_n];
+				output[o_m] >>=1;
+				output[o_m] &= 0x7F;
+				m-= 1;
+				o_m-= 1;
+			}
 			unsigned char tmp;
 			output[o_m] = input[i_n];
 			output[o_m] <<= 6;
