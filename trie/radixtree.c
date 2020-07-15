@@ -1,3 +1,6 @@
+/**
+ * author : henky <hanky.acbb@telogic.com.sg>
+ */
 #include <stdlib.h>
 #include <memory.h>
 #include <unistd.h>
