@@ -590,7 +590,7 @@ void print_bytes(unsigned char * in, int inlength) {
  *					  can store *	
  * OUTPUT
  *  output			: variable to store result
- * RETURNS			: number of bytes in output
+ * RETURNS			: number of septet in output
 */
 int pack_gsm7_bit(unsigned char *pinput, unsigned char *output, int input_length, int output_buf_max) {
 	int odx = 0;
@@ -626,15 +626,100 @@ int pack_gsm7_bit(unsigned char *pinput, unsigned char *output, int input_length
 			idx++; 
 			i_g = 0;
 		} 
-/*
-		fprintf(stdout, "len  = %d ==> ", odx + 1);
-		for (int oo = 0; oo < odx + 1; oo++) {
-			fprintf(stdout, "%02X ", output[oo]);
-		}
-		fprintf(stdout, "\n");
-*/
 	}
-	return odx;
+	return input_length;
+}
+
+/**
+ * concatenated sms message part info
+ */
+typedef struct concat_part_info {
+	int				num_mr;
+	int				mr;
+	int				num_parts;
+	int				part_no;
+}CONCAT_PART_INFO, *PCONCAT_PART_INFO;
+
+/**
+ * NAME						: pack_gsm7_with_header
+ * DESCRIPTION				: pack a given unpack gsm7 into packed gsm7 with header
+ * INPUT
+ *			udh_info		: pointer to structure of udh info
+ *			input			: input byte stream
+ *			input_length	: number of input in septet
+ *			output_buf_max  : number of bytes output can store
+ *	OUTPUT
+ *			output			: where to store output
+ * RETURNS
+ *				> 0			: length of septets copied to output
+ *				0			: in case of any error like invalid pudh_info
+ *
+ */
+int pack_gsm7_with_header(PCONCAT_PART_INFO pudh_info, unsigned char *input, unsigned char *output, unsigned int input_length, int output_buf_max){
+	int output_length = 0;
+	int tmp_input_length  = input_length;
+	unsigned short tmp = 0x00;
+	unsigned char *p_output = output;
+	unsigned char *p_input = input;
+	if (!pudh_info){
+		return 0;
+	}
+	else if (pudh_info->num_mr < 1 || pudh_info->num_mr > 2){
+		return 0;
+	}
+	else {
+		if (pudh_info->num_mr == 1){
+			//UDHL
+			*p_output = 0x05;
+			p_output ++;
+			//IEI
+			*p_output = 0x00;
+			p_output ++;
+			//IEDL
+			*p_output = 0x03;
+			p_output ++;
+			//MR
+			*p_output = (unsigned char)(pudh_info->mr & 0xFF);
+			p_output ++;
+			*p_output = (unsigned char)(pudh_info->num_parts & 0x0FF);
+			p_output ++;
+			*p_output = (unsigned char)(pudh_info->part_no & 0x0FF);
+			p_output ++;
+			output_length = 8;
+			*p_output = *p_input;
+			*p_output<<=1;
+			p_output++;
+			p_input++;
+			tmp_input_length-=1;
+		}
+		else if(pudh_info->num_mr == 2){
+			//UDHL
+			*p_output = 0x06;
+			p_output ++;
+			//IEI
+			*p_output = 0x08;
+			p_output ++;
+			//IEDL
+			*p_output = 0x04;
+			p_output ++;
+			//MR
+			tmp = pudh_info->mr & 0x00FF00;
+			tmp >>= 8;
+			*p_output = (unsigned char)(tmp & 0xFF);
+			p_output ++;
+			*p_output = (unsigned char) (pudh_info->mr & 0xFF);
+			p_output ++;
+			*p_output = (unsigned char)(pudh_info->num_parts & 0x0FF);
+			p_output ++;
+			*p_output = (unsigned char)(pudh_info->part_no & 0x0FF);
+			p_output ++;
+			output_length = 8;
+		}
+
+		output_length+=pack_gsm7_bit(p_input, p_output, tmp_input_length, output_buf_max - output_length);
+		return output_length;
+
+	}
 }
 
 /**
@@ -657,7 +742,7 @@ int unpack_gsm7_bit(unsigned char *input, unsigned char *output, unsigned int in
 	int m = input_length;
 	int n = ((m + 1) * 7) >> 3;
 	int padd = n % 7;
-	while (m >= 0) {
+	while (m >= 1) {
 		int o_m = m - 1;
 		int i_n = n - 1;
 		if (padd) {
@@ -684,6 +769,7 @@ int unpack_gsm7_bit(unsigned char *input, unsigned char *output, unsigned int in
 		m--;
 		n = ((m + 1) * 7) >> 3;
 		padd = n % 7;
+		//fprintf(stdout, "[o_m] = %d output [-1] = %02X\n",o_m,  output[-1]);
 	}
 /*
 	fprintf(stdout, "unpacked len  = %d ==> ", input_length);
@@ -692,14 +778,86 @@ int unpack_gsm7_bit(unsigned char *input, unsigned char *output, unsigned int in
 	}
 	fprintf(stdout, "\n");
 */
+
 	return input_length;
 }
+/**
+ * NAME					: unpack_gsm7_bit with udh
+ * DESCRIPTION			: unpack udh and packed gsm 7 bit data
+ * INPUT
+ *		input			: input stream
+ *		input length	: length of input stream in septet
+ *		output_buf_max	: number of bytes output can store
+ * OUTPUT
+ *		output			: output to store the output string
+ *		out_concat_info : udh info
+ * RETURNS				: number of bytes copiedin  output
+ */
+int unpack_gsm7_bit_with_header(unsigned char *input, unsigned char *output, unsigned int input_length, int output_buf_max, PCONCAT_PART_INFO out_concat_info) {
+
+	unsigned char *pinput = input;
+	unsigned char *poutput = output;
+	PCONCAT_PART_INFO pinfo = out_concat_info;	
+	int outlength = 0;
+	if((*pinput) == 0x05){//UDHL
+		pinfo->num_mr = 1;
+		pinput ++; 
+		//IEI = 0x00
+		pinput ++; 
+		//IEDL= 0x03
+		pinput ++;
+		pinfo->mr = (int) (*pinput);
+		pinput ++;
+		pinfo->num_parts = (int) (*pinput);
+		pinput ++;
+		pinfo->part_no = (int) (*pinput); 
+		pinput ++;
+		//fprintf(stdout, "pinput %02X\n", *pinput);
+		*poutput = *pinput; //one input
+		(*poutput) >>=1;
+		//fprintf(stdout, "poutput %02X\n", *poutput);
+		poutput ++;
+		outlength += 1;
+		pinput ++;
+	}
+	else {
+		pinfo->num_mr = 2;
+		pinput ++; //IEI = 0x00
+		pinput ++; //IEDL= 0x03
+		pinput ++;
+		pinfo->mr = (int) (*pinput) & 0x0F;
+		pinfo->mr <<= 8;
+		pinput ++;
+		pinfo->mr |= (int) (*pinput) & 0x0F;
+		pinput ++;
+		pinfo->num_parts = (int) (*pinput);
+		pinput ++;
+		pinfo->part_no = (int) (*pinput); 
+		pinput ++;
+	}
+/*
+	fprintf(stdout, "pinput %02X\n", *pinput);
+	fprintf(stdout, "poutput %02X\n", *poutput);
+	fprintf(stdout, "output %02X\n", *output);
+*/
+	outlength += unpack_gsm7_bit(pinput, poutput, input_length - 8, output_buf_max - outlength); 
+/*
+	fprintf(stdout, "pinput %02X\n", *pinput);
+	fprintf(stdout, "poutput %02X\n", *poutput);
+	fprintf(stdout, "output %02X\n", *output);
+*/
+	return outlength; 
+}
+
 
 void test_pack_unpack_gsm_7(char *input_01) {
 	unsigned char out_gsm7[300] = {0};
 	unsigned char out_ascii[300] = {0};
 	unsigned char out_gsm7packed[300] = {0};
 	unsigned char out_gsm7unpacked[300] = {0};
+	unsigned char out_gsm7packed_with_header[300] = {0};
+	unsigned char out_gsm7unpacked_with_header[300] = {0};
+	CONCAT_PART_INFO udh_info;
 	//char *input_01 = "Hello World!\n1234^{}£¥\xE0Z|";
 	//char *input_01 = "ABCDEFGHIJK";
 	fprintf(stdout, "input\n%s\n", input_01); 
@@ -711,20 +869,32 @@ void test_pack_unpack_gsm_7(char *input_01) {
 	fprintf(stdout, "output gsm hex\n");
 	print_bytes(out_gsm7, length_out);
 	length_out = pack_gsm7_bit(out_gsm7, out_gsm7packed, gsm7_length, 300);
+	length_out = ((length_out+1) * 7)>>3;
 	fprintf(stdout, "packed gsm hex\n");
 	print_bytes(out_gsm7packed, length_out);
-	fprintf(stdout, "reverse\n");
 	length_out = unpack_gsm7_bit(out_gsm7packed, out_gsm7unpacked, gsm7_length, 300);
 	fprintf(stdout, "unpacked gsm hex\n");
 	print_bytes(out_gsm7unpacked, length_out); 
 	length_out = gsm7_to_ascii(out_gsm7, out_ascii, length_out, 300);
 	print_bytes(out_ascii, length_out);
 	fprintf(stdout, "out_ascii\n%s\n", out_ascii); 
-	
-}
-
-
-
+	memset(&udh_info, 0, sizeof(udh_info));
+	udh_info.num_mr = 1;
+	udh_info.mr = 20;
+	udh_info.num_parts = 1;
+	udh_info.part_no = 0;
+	int packed_length = pack_gsm7_with_header(&udh_info, (unsigned char *)input_01, 
+		out_gsm7packed_with_header, strlen(input_01), sizeof(out_gsm7packed_with_header));
+	fprintf(stdout, "out_packed_with_header\n"); 
+	int packed_bytes = ((packed_length + 1)* 7)>>3;
+	print_bytes(out_gsm7packed_with_header, packed_bytes); 
+	int unpacked_length = unpack_gsm7_bit_with_header(out_gsm7packed_with_header, out_gsm7unpacked_with_header, packed_length, 
+		sizeof(out_gsm7unpacked_with_header), &udh_info);
+	fprintf(stdout, "out_unpacked_with_header\n"); 
+	print_bytes(out_gsm7unpacked_with_header, unpacked_length); 
+	fprintf(stdout, "num_mr = %d, mr = %d, num_parts = %d, part_no = %d\n", 
+		udh_info.num_mr, udh_info.mr, udh_info.num_parts, udh_info.part_no);
+} 
 
 int main(int argc,	char **argv) {
 	char *in_char = "ABCDEFGHIJKLMN";
@@ -751,7 +921,7 @@ int main(int argc,	char **argv) {
 		fprintf(stdout, "====================================\n");
 	//}
 	memset(buff, 0, sizeof(buff));
-	char *in_char3 = "@da $ ka{~\\u}|^";
+	char *in_char3 = "boss @da $ ka{~\\u}|^";
 	len = strlen(in_char3);
 	memcpy(buff, in_char3, len); 
 	test_pack_unpack_gsm_7(buff);
