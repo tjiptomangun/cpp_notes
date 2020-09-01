@@ -330,7 +330,6 @@ typedef struct primlist
 	PPRIML_ITEM tail;
 	PPRIML_ITEM currptr;
 	int count;
-	void (*add) (struct primlist *, PPRIML_ITEM);
 	PPRIML_ITEM (*take) (struct primlist *);
 	PPRIML_ITEM (*get_first_child) (struct primlist *); 
 	PPRIML_ITEM (*get_next_child) (struct primlist *); 
@@ -340,7 +339,7 @@ typedef struct primlist
 	void *(*get_data) (struct primlist *); 
 
 	/**
-	 * NAME						: add_sorted
+	 * NAME						: add_element
 	 * DESCRIPTION		: add an item sorted
 	 * INPUT
 	 * 		1st_arg			: the list where item to add
@@ -349,16 +348,19 @@ typedef struct primlist
 	 * 									if fnparam1 position before fnparam2 returns value <=-1
 	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
 	 * 									if fnparam1 position after fnparam2 returns value >= 1
-	 * 									2nd_arg  will be passed as fnparam1
-	 * 									if this functions return 0 then old value will be replaced with this new one
+	 * 									2nd_arg  will be passed as fnparam1.
+	 * 									if this functions return 0 then old value will be replaced with this new one.
+	 * 									if there is no sorting rule available, just provide with function that returns 1
+	 * 									if not match , and 0 if match. So it will always added to tail.
 	 * RETURNS
 	 * 				1st_arg	: success
 	 * 				NULL		: failed to add
+
 	 */
-	struct primlist * (*add_sorted) (struct primlist *, PPRIML_ITEM, int (*) (void *, void *));
+	struct primlist * (*add_element) (struct primlist *, PPRIML_ITEM, int (*) (void *, void *));
 
 	/**
-	 * NAME						: delete_sorted
+	 * NAME						: remove_element
 	 * DESCRIPTION		: delete an item from a sorted list
 	 * INPUT
 	 * 		1st_arg			: the list where item to add
@@ -367,13 +369,15 @@ typedef struct primlist
 	 * 									if fnparam1 position before fnparam2 returns value <=-1
 	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
 	 * 									if fnparam1 position after fnparam2 returns value >= 1
-	 * 									2nd_arg  will be passed as fnparam1
-	 * 									if this functions return 0 then old value will be replaced with this new one
+	 * 									2nd_arg  will be passed as fnparam1.
+	 * 									if this functions return 0 then old value will be replaced with this new one.
+	 * 									if there is no sorting rule available, just provide with function that returns 1
+	 * 									if not match , and 0 if match. So it will always find to end of list.
 	 * RETURNS
 	 * 				1st_arg	: success
 	 * 				NULL		: failed to delete
 	 */
-	struct primlist * (*delete_sorted) (struct primlist *, void *, int (*) (void *, void *));
+	struct primlist * (*remove_element) (struct primlist *, void *, int (*) (void *, void *));
 
 	/**
 	 * NAME						: collect
@@ -424,6 +428,46 @@ typedef struct primtree_item
 	int (*add)(struct primtree_item *, struct primtree_item *);
 	struct primtree_item * (*detach_head) (struct primtree_item *);
 	struct primtree_item * (*detach_node) (struct primtree_item *, struct primtree_item *);
+	/**
+	 * NAME						: add_element
+	 * DESCRIPTION		: add an item sorted
+	 * INPUT
+	 * 		1st_arg			: the tree where item to add
+	 * 		2nd_arg			: item to add
+	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 									if fnparam1 position before fnparam2 returns value <=-1.
+	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists).
+	 * 									if fnparam1 position after fnparam2 returns value >= 1.
+	 * 									2nd_arg  will be passed as fnparam1.
+	 * 									if this functions return 0 then old value will be replaced with this new one.
+	 * 									if there is no sorting rule available, just provide with function that returns 1
+	 * 									if not match , and 0 if match. So it will always find to end of list.
+	 * RETURNS
+	 * 				1st_arg	: success
+	 * 				NULL		: failed to add
+	 */
+	struct primtree_item * (*add_element) (struct primtree_item *, struct primtree_item *, int (*) (void *, void *));
+	
+	/**
+	 * NAME						: remove_element
+	 * DESCRIPTION		: delete an item from a sorted tree
+	 * INPUT
+	 * 		1st_arg			: the tree where item to add
+	 * 		2nd_arg			: item to add
+	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 									if fnparam1 position before fnparam2 returns value <=-1
+	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
+	 * 									if fnparam1 position after fnparam2 returns value >= 1
+	 * 									2nd_arg  will be passed as fnparam1.
+	 * 									if this functions return 0 then old value will be replaced with this new one.
+	 * 									if there is no sorting rule available, just provide with function that returns 1
+	 * 									if not match , and 0 if match. So it will always find to end of list.
+	 * RETURNS
+	 * 				1st_arg	: success
+	 * 				NULL		: failed to delete
+	 */
+	struct primtree_item * (*remove_element) (struct primtree_item *, void *, int (*) (void *, void *));
+
 	/**
 	 * get first child that match condition in second parameter function
 	 */

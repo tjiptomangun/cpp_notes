@@ -1345,27 +1345,6 @@ PPRIML_ITEM newpriml_item ()
 }
 
 /**
- * NAME		: __primlist_add
- * DESCRIPTION	: static function that add time to list class 
- */
-static void __primlist_add (PPRIMLIST plist, PPRIML_ITEM add)
-{
-	if (plist->head == NULL)
-	{
-		plist->head = add;
-		plist->tail = plist->head; 
-		plist->count++;
-	}
-	else
-	{
-		plist->tail->next = add;
-		plist->tail = add; 
-		plist->count++;
-	}
-	plist->tail->next = NULL;
-}
-
-/**
  * NAME		: __primlist_detach
  * DESCRIPTION	: detach a specified list item
  * RETURNS	: 0 if success
@@ -1463,7 +1442,7 @@ static int __primlist_collect(struct primlist * in, int  (*filter_fn) (void *), 
 }
 
 
-static PPRIMLIST __primlist_add_sorted(PPRIMLIST node, PPRIML_ITEM added, int (*cmp) (void *, void *)) {
+static PPRIMLIST __primlist_add_element(PPRIMLIST node, PPRIML_ITEM added, int (*cmp) (void *, void *)) {
 	PPRIML_ITEM curr = node->head;
 	PPRIML_ITEM prev= NULL;
 	void *curr_data = NULL;
@@ -1492,11 +1471,13 @@ static PPRIMLIST __primlist_add_sorted(PPRIMLIST node, PPRIML_ITEM added, int (*
 			if (!node->tail) {
 				node->tail = added;
 			}
+			node->count++;
 		}
 		//add to tail
 		else if (res > 0) {
 			prev->next = added;
 			node->tail = added;
+			node->count++;
 		}
 		else if (res == 0) {
 			tmp = curr;
@@ -1510,6 +1491,7 @@ static PPRIMLIST __primlist_add_sorted(PPRIMLIST node, PPRIML_ITEM added, int (*
 		else if (res < 0) {
 			added->next = curr;
 			prev->next = added;
+			node->count++;
 		}
 		
 	}
@@ -1522,7 +1504,7 @@ static PPRIMLIST __primlist_add_sorted(PPRIMLIST node, PPRIML_ITEM added, int (*
 	
 }
 
-static PPRIMLIST __primlist_delete_sorted(PPRIMLIST node, void *deleted, int (*cmp) (void *, void *)) {
+static PPRIMLIST __primlist_remove_element(PPRIMLIST node, void *deleted, int (*cmp) (void *, void *)) {
 	PPRIML_ITEM curr = node->head;
 	PPRIML_ITEM prev= NULL;
 	void *curr_data = NULL;
@@ -1544,6 +1526,7 @@ static PPRIMLIST __primlist_delete_sorted(PPRIMLIST node, void *deleted, int (*c
 			}
 			node->head = node->head->next;
 			tmp->delete(tmp);
+			node->count--;
 		}
 		else {
 			if (curr == node->tail)  {
@@ -1552,6 +1535,7 @@ static PPRIMLIST __primlist_delete_sorted(PPRIMLIST node, void *deleted, int (*c
 			tmp = curr;
 			prev->next = curr->next;
 			tmp->delete(tmp);
+			node->count--;
 		}
 	}
 	else {
@@ -1568,7 +1552,6 @@ static PPRIMLIST __primlist_ctor(PPRIMLIST plist) {
 		__priml_item_ctor(&plist->priml_item);
 		plist->currptr = NULL;
 		plist->count = 0;
-		plist->add = __primlist_add;
 		plist->take = __primlist_take;
 		plist->get_first_child = __primlist_getfirstchild;
 		plist->get_next_child= __primlist_getnextchild;
@@ -1579,8 +1562,8 @@ static PPRIMLIST __primlist_ctor(PPRIMLIST plist) {
 		plist->delete = __primlist_delete;
 		plist->get_data = (void * (*) (PPRIMLIST)) __priml_item_get_data;
 		plist->collect = __primlist_collect;
-		plist->add_sorted = __primlist_add_sorted;
-		plist->delete_sorted = __primlist_delete_sorted;
+		plist->add_element = __primlist_add_element;
+		plist->remove_element = __primlist_remove_element;
 	}
 	return plist;
 }
@@ -1726,6 +1709,7 @@ static int __primtreeitem_collect(PPRIMTREE_ITEM in, int  (*filter_fn) (void *),
 	}
 	return counter;
 }
+
 static PPRIMTREE_ITEM __primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
 	if (pitem) {
 		__primlist_ctor(&pitem->list);
@@ -1909,7 +1893,9 @@ void primtreeitem_print(PPRIMTREE_ITEM item, int ident) {
 		}
 	}
 }
+
 int fn_compare_map_value(map_struct *in, map_struct *out);
+
 int xmls_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree){
 	char *doc_p = xml_string;
 	PRIMTREE_ITEM *tree_active= root_tree;
@@ -1958,7 +1944,7 @@ int xmls_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree){
 				memset(tmp, 0, sizeof(tmp));
 				new_item = newpriml_item();
 				new_item->set_data(new_item, map_active);
-				tree_active->list.add_sorted(&tree_active->list, new_item, (int (*) (void *, void *))fn_compare_map_value);
+				tree_active->list.add_element(&tree_active->list, new_item, (int (*) (void *, void *))fn_compare_map_value);
 				map_active = NULL;
 				break;
 				
@@ -2101,22 +2087,59 @@ PPRIMTREE_ITEM xmlt_find_element(PPRIMTREE_ITEM node, char *path_to_find){
 			return xmlt_find_element(next_tree, p_path);
 		}
 }
+/*first implement tree add sorted*/
+PPRIMTREE_ITEM xmlt_add_element(PPRIMTREE_ITEM node, char *path_to_find){
+		char *p_path = path_to_find;
+	char *start_path = NULL, *end_path = NULL;
 
+	char elem_name[100] = {0};
+	PPRIMTREE_ITEM next_tree;
+
+		while(*p_path == ' '){
+			p_path ++;
+		}
+
+		start_path = p_path;
+		while (*p_path != 0 && *p_path != '/' && *p_path != ' '){
+			p_path ++;
+		}
+
+		/* empty path or end of string */
+		if (start_path == p_path){
+			return node;
+		}
+
+		end_path = p_path;
+
+		while (*p_path == ' ')
+			p_path ++;
+
+		if (*p_path == '/')
+			p_path ++;
+
+		strncpy(elem_name, start_path, end_path - start_path);
+		
+		
+
+	
+}
 void usage(char *app) {
 	fprintf (stdout, "usage : %s -s xml_string f:g:p\n\
 					  %s -h\n\
 					 -i -- string input: input to parse xml\n\
 					 -p -- print current active tree\n\
-					 -f         :find element , to find and element, parameter is path_to_the element\n\
-					 -c --collect an attribute(pointer to an attribute), parameter is path_to_element/attribute\n\
+					 -f          :find element , to find and element, parameter is path_to_the element\n\
 					 -s --serialize : print current tree to xml format\n\
 					 -t --top: set root as active element\n\
-					 -m --memtest : memory leak test, loop create update and delete test\n\
-					 -u --unittest : perform unit test\n\
 					 -r --remove : remove an attribute from current active tree\n\
 					 -d          : delete active element. Active element is change to root.\n\
-					 -a          : add an attribute to active element, the format is attributename=attributevalue\
-					 -h --help: this help\n"
+					 -a          : add an attribute to active element, the format is attributename=attributevalue\n\
+					 -i          : insert and element to current active tree\n\
+					 -h --help: this help\n\
+					 -c --collect an attribute(pointer to an attribute), parameter is path_to_element/attribute\n\
+					 -m --memtest : memory leak test, loop create update and delete test\n\
+					 -u --unittest : perform unit test\n\
+						"
 					 , app, app);
 }
 
@@ -2207,7 +2230,7 @@ int main (int argc, char **argv) {
 					}
 					name = buff;
 					map_set_name(active_map, name);
-					active_tree->list.delete_sorted(&active_tree->list, active_map, (int (*) (void *, void *))fn_compare_map_value);
+					active_tree->list.remove_element(&active_tree->list, active_map, (int (*) (void *, void *))fn_compare_map_value);
 					
 				}
 				break;
@@ -2244,7 +2267,7 @@ int main (int argc, char **argv) {
 					name = buff;
 					map_set_name(active_map, name);
 					new_item->set_data(new_item, active_map);
-					active_tree->list.add_sorted(&active_tree->list, new_item, (int (*) (void *, void *))fn_compare_map_value);
+					active_tree->list.add_element(&active_tree->list, new_item, (int (*) (void *, void *))fn_compare_map_value);
 					
 				}
 				break;
