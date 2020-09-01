@@ -1275,27 +1275,13 @@ static int __primclass_delete (PPRIMCLASS p)
 	return 0;
 }
 
-static int __primclass_printattributes(PPRIMCLASS p, int ident)
-{
-	print_identation (ident);
-	fprintf (stdout, "\n");
-	return 0;
-}
-
 PPRIMCLASS __newprimclass ()
 {
 	PPRIMCLASS pclass = (PPRIMCLASS) calloc (1, sizeof (PRIMCLASS));
 	pclass->this = pclass;
 	pclass->type = PRIMCLASS_PRIMCLASS;
-	pclass->printattributes = __primclass_printattributes; 
 	pclass->delete = __primclass_delete; 
 	return pclass;
-}
-
-
-static int __priml_item_printattributes(PPRIML_ITEM p, int ident)
-{
-	return __primclass_printattributes(&p->primclass, ident); 
 }
 
 static PPRIML_ITEM __priml_item_set_data (PPRIML_ITEM p, void *data) {
@@ -1325,18 +1311,26 @@ static int __priml_item_delete(PPRIML_ITEM node) {
 	return 0;
 } 
 
+static void * __priml_item_get_data (PPRIML_ITEM p) {
+		if(p){
+			return p->data;
+		}
+		else {
+			return NULL;
+		}
+}
+
 static PPRIML_ITEM __priml_item_ctor(PPRIML_ITEM ppriml_item) {
 	if(ppriml_item) {
 		ppriml_item->primclass.this = (PPRIMCLASS) ppriml_item;
 		ppriml_item->primclass.type = PRIMCLASS_PRIMLITEM; 
 		ppriml_item->next = NULL;
 		ppriml_item->data = NULL;
-		ppriml_item->primclass.printattributes = 
-			(int (*) (PPRIMCLASS, int))(__priml_item_printattributes);
 		ppriml_item->primclass.delete = 
 			(int (*) (PPRIMCLASS))(__priml_item_delete);
 		ppriml_item->set_data = __priml_item_set_data;
 		ppriml_item->delete = __priml_item_delete;
+		ppriml_item->get_data = __priml_item_get_data;
 	}
 	return ppriml_item;
 	
@@ -1348,21 +1342,6 @@ PPRIML_ITEM newpriml_item ()
 		__priml_item_ctor(ppriml_item);
 	}
 	return ppriml_item;
-}
-
-
-static int __primlist_printattributes(PPRIMLIST p, int ident)
-{
-	PPRIML_ITEM ppriml_item = NULL;
-	__priml_item_printattributes(&p->priml_item, ident);
-	ppriml_item = p->head;
-	while (ppriml_item)
-	{
-		ppriml_item->primclass.printattributes(&ppriml_item->primclass, ident+1);
-		ppriml_item = ppriml_item->next;
-	} 
-	fprintf (stdout, "\n");
-	return 0;
 }
 
 /**
@@ -1444,67 +1423,6 @@ static int __primlist_delete(PPRIMLIST plist)
 }
 
 /**
- * NAME		: __list_takeitem
- * DESCRIPTION	: take member element of name xx
- *                returned item is detached
- */
-static PPRIML_ITEM __primlist_takeitem(PPRIMLIST plist, unsigned char* data, int length)
-{
-	PPRIML_ITEM curr = plist->head;
-	PPRIML_ITEM prev = NULL;
-	while (curr)
-	{ 
-		if (!memcmp(data, curr->data, length))
-		{
-			if (prev)
-			{
-				prev->next = curr->next;
-				curr->next = NULL;
-			}
-			else
-			{
-				plist->head = curr->next;
-				curr->next = NULL;	
-			}
-			return curr;
-		}
-		prev = curr;	
-		curr = curr->next;
-	}
-	return NULL;
-}
-
-/**
- * NAME		: __primlist_getitem
- * DESCRIPTION	: get member element of name xx
- *                returned item is not detached from list
- */
-static PPRIML_ITEM __primlist_getitem(PPRIMLIST plist, unsigned char* data, int length)
-{
-	PPRIML_ITEM curr = plist->head;
-	PPRIML_ITEM prev = NULL;
-		
-	while (curr)
-	{ 
-		if (!memcmp (data, curr->data, length))
-		{
-			if (prev)
-			{
-				prev->next = curr->next; 
-			}
-			else
-			{
-				plist->head = curr->next; 
-			}
-			return curr;
-		}
-		prev = curr;	
-		curr = curr->next;
-	} 
-	return NULL;
-}
-
-/**
  * NAME		: __primlist_getfirstchild
  * DESCRIPTION	: returns the first child of this item
  *		  move the curr to next item of the first child
@@ -1530,6 +1448,121 @@ static PPRIML_ITEM __primlist_getnextchild (PPRIMLIST plist)
 	return ret;
 }
 
+static int __primlist_collect(struct primlist * in, int  (*filter_fn) (void *), void (*collect_fn)(void *, void *), void *collected) {
+	int counter = 0;
+	PPRIML_ITEM curr =  __primlist_getfirstchild(in);
+	void *data = NULL;
+	while(curr) {
+		if ((data = curr->get_data(curr) ) &&  filter_fn(data)) {
+			collect_fn(data, collected);
+			counter ++;
+		}
+		curr  = __primlist_getnextchild (in);
+	}
+	return counter;
+}
+
+
+static PPRIMLIST __primlist_add_sorted(PPRIMLIST node, PPRIML_ITEM added, int (*cmp) (void *, void *)) {
+	PPRIML_ITEM curr = node->head;
+	PPRIML_ITEM prev= NULL;
+	void *curr_data = NULL;
+	void *added_data = NULL;
+	PPRIML_ITEM tmp = NULL; 
+	int res = -1;
+	if (added && (added_data = added->get_data(added))) {
+		while (curr && (curr_data = curr->get_data(curr)) && (res = cmp(added_data, curr_data)) > 0 ) {
+			prev= curr;
+			curr = curr->next;
+		}
+		//match with the first item
+		if (!prev && res == 0) {
+			added->next = node->head->next;
+			tmp = node->head;
+			node->head = added;
+			if (node->tail == tmp) {
+				node->tail = added;
+			}
+			tmp->delete(tmp);
+		}
+		//smaller then first item
+		else if (!prev && res < 0) {
+			added->next = node->head;
+			node->head = added;
+			if (!node->tail) {
+				node->tail = added;
+			}
+		}
+		//add to tail
+		else if (res > 0) {
+			prev->next = added;
+			node->tail = added;
+		}
+		else if (res == 0) {
+			tmp = curr;
+			added->next = curr->next;
+			if(node->tail == curr) {
+				node->tail = added;
+			}
+			prev->next = added;
+			tmp->delete(tmp);
+		}
+		else if (res < 0) {
+			added->next = curr;
+			prev->next = added;
+		}
+		
+	}
+	else {
+		return NULL;
+	}
+	
+	node->currptr = node->head;
+	return node;
+	
+}
+
+static PPRIMLIST __primlist_delete_sorted(PPRIMLIST node, void *deleted, int (*cmp) (void *, void *)) {
+	PPRIML_ITEM curr = node->head;
+	PPRIML_ITEM prev= NULL;
+	void *curr_data = NULL;
+	PPRIML_ITEM tmp = NULL; 
+	int res = -1;
+	if (deleted) {
+		while (curr && (curr_data = curr->get_data(curr)) && (res = cmp(deleted, curr_data)) > 0 ) {
+			prev= curr;
+			curr = curr->next;
+		}
+		if (res) {
+			return NULL;
+		}
+		//match with the first item
+		else if (!prev) {
+			tmp = node->head;
+			if (node->head == node->tail) {
+				node->tail = node->head->next;
+			}
+			node->head = node->head->next;
+			tmp->delete(tmp);
+		}
+		else {
+			if (curr == node->tail)  {
+				node->tail = node->tail->next;
+			}
+			tmp = curr;
+			prev->next = curr->next;
+			tmp->delete(tmp);
+		}
+	}
+	else {
+		return NULL;
+	}
+	
+	node->currptr = node->head;
+	return node;
+	
+}
+
 static PPRIMLIST __primlist_ctor(PPRIMLIST plist) {
 	if (plist) {
 		__priml_item_ctor(&plist->priml_item);
@@ -1537,17 +1570,17 @@ static PPRIMLIST __primlist_ctor(PPRIMLIST plist) {
 		plist->count = 0;
 		plist->add = __primlist_add;
 		plist->take = __primlist_take;
-		plist->takeitem = __primlist_takeitem;
-		plist->getitem = __primlist_getitem;
-		plist->getfirstchild = __primlist_getfirstchild;
-		plist->getnextchild= __primlist_getnextchild;
-		plist->priml_item.primclass.printattributes = 
-			(int(*)(PPRIMCLASS, int))(__primlist_printattributes);
+		plist->get_first_child = __primlist_getfirstchild;
+		plist->get_next_child= __primlist_getnextchild;
 		plist->set_data = (PPRIMLIST (*) (PPRIMLIST , void*))__priml_item_set_data;
 		plist->priml_item.primclass.delete =
 			(int(*)(PPRIMCLASS))(__primlist_delete);
 		plist->detach = __primlist_detach;
 		plist->delete = __primlist_delete;
+		plist->get_data = (void * (*) (PPRIMLIST)) __priml_item_get_data;
+		plist->collect = __primlist_collect;
+		plist->add_sorted = __primlist_add_sorted;
+		plist->delete_sorted = __primlist_delete_sorted;
 	}
 	return plist;
 }
@@ -1654,11 +1687,14 @@ static PPRIMTREE_ITEM  __primtreeitem_detach_node(struct primtree_item *node, st
 	return detached;
 }
 
-static PPRIMTREE_ITEM __primtreeitem_get_child(PPRIMTREE_ITEM node, int (*fn) (PPRIMTREE_ITEM)) {
+static PPRIMTREE_ITEM __primtreeitem_get_one(PPRIMTREE_ITEM node, void *cmp, int (*fn) (void *, void *)) {
+	void *data = NULL;
+	
 	PPRIMTREE_ITEM curritem = node->head;
-	while (curritem)
+	
+	while (curritem && (data = curritem->get_data(curritem)))
 	{
-		if (fn(curritem))
+		if (fn(cmp, data))
 			return curritem;
 		curritem = curritem->next;
 	}
@@ -1677,6 +1713,19 @@ static int __primtreeitem_delete(PPRIMTREE_ITEM pitem) {
 	return 0;
 }
 
+static int __primtreeitem_collect(PPRIMTREE_ITEM in, int  (*filter_fn) (void *), void (*collect_fn)(void *, void *), void *collected) {
+	int counter = 0;
+	void *data = NULL;
+	if ((data = in->get_data(in)) && filter_fn(data)) {
+		collect_fn(data, collected);
+	}
+	PPRIMTREE_ITEM curr = __primtreeitem_getfirstchild(in);
+	while(curr) {
+		__primtreeitem_collect(curr, filter_fn, collect_fn, collected);
+		curr  = __primtreeitem_getnextchild(in);
+	}
+	return counter;
+}
 static PPRIMTREE_ITEM __primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
 	if (pitem) {
 		__primlist_ctor(&pitem->list);
@@ -1685,12 +1734,14 @@ static PPRIMTREE_ITEM __primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
 		pitem->get_next_child= __primtreeitem_getnextchild;
 		pitem->detach_head= __primtreeitem_detach_head;
 		pitem->detach_node= __primtreeitem_detach_node;
-		pitem->get_child = __primtreeitem_get_child;
+		pitem->get_one = __primtreeitem_get_one;
 		pitem->add= __primtreeitem_add;
 		pitem->list.priml_item.primclass.delete = 
 			(int (*) (PPRIMCLASS))(__primtreeitem_delete);
 		pitem->set_data = (PPRIMTREE_ITEM (*) (PPRIMTREE_ITEM , void*))__priml_item_set_data;
 		pitem->delete= __primtreeitem_delete;
+		pitem->get_data = (void * (*) (PPRIMTREE_ITEM)) __priml_item_get_data;
+		pitem->collect = __primtreeitem_collect;
 	}
 	return pitem;
 }
@@ -1736,17 +1787,6 @@ void split_elem_attrib(char *path, char *out_elem, char* out_attrib) {
 		j++;
 	}
 
-}
-
-void usage(char *app) {
-	fprintf (stdout, "usage : %s -s xml_string f:g:p\n\
-					  %s -h\n\
-					 -i -- string input: input to parse xml\n\
-					 -p -- print current active tree\n\
-					 -f find element , to find and element, parameter is path_to_the element\n\
-					 -c --collect an attribute(pointer to an attribute), parameter is path_to_element/attribute\n\
-					 -s --serialize : print current tree to xml format\n"
-					 , app, app);
 }
 
 typedef struct {
@@ -1844,25 +1884,33 @@ void priml_item_print(PPRIML_ITEM item, int ident) {
 
 void primlist_print(PPRIMLIST list, int ident) {
 	PPRIML_ITEM currchild = NULL;
-	priml_item_print(&list->priml_item, ident);
-	currchild =  list->getfirstchild(list);
+	char *data= list->get_data(list);
+	if(data) {
+		for(int i = 0 ; i < ident; i++) {
+			fprintf(stdout, "\t");
+		}
+		fprintf(stdout, "%s\n", data);
+	}
+	currchild =  list->get_first_child(list);
 	while(currchild) {
 		priml_item_print(currchild, ident + 1);
-		currchild = list->getnextchild(list);
+		currchild = list->get_next_child(list);
 	}
 }
 
 void primtreeitem_print(PPRIMTREE_ITEM item, int ident) {
-	primlist_print(&item->list, ident);
-	PPRIMTREE_ITEM currchild = NULL;
-	currchild = item->get_first_child(item);
-	while(currchild) {
-		primtreeitem_print(currchild, ident + 1);
-		currchild = item->get_next_child(item);
+	if (item) {
+		primlist_print(&item->list, ident);
+		PPRIMTREE_ITEM currchild = NULL;
+		currchild = item->get_first_child(item);
+		while(currchild) {
+			primtreeitem_print(currchild, ident + 1);
+			currchild = item->get_next_child(item);
+		}
 	}
 }
-
-int xml_string_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree){
+int fn_compare_map_value(map_struct *in, map_struct *out);
+int xmls_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree){
 	char *doc_p = xml_string;
 	PRIMTREE_ITEM *tree_active= root_tree;
 	PRIMTREE_ITEM *tree_current;
@@ -1891,6 +1939,7 @@ int xml_string_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree){
 
 			case YXML_ELEMEND:
 				elem_name = NULL;
+				//primtreeitem_print(tree_active, 0);
 				tree_active = tree_active->parent;
 				map_active = NULL;
 				break;
@@ -1901,13 +1950,15 @@ int xml_string_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree){
 				break;
 				
 			case YXML_ATTRVAL:
-				map_set_value(map_active, xml_elem.data);
+				strcat(tmp, xml_elem.data);
 				break;
 				
 			case YXML_ATTREND:
+				map_set_value(map_active, tmp);
+				memset(tmp, 0, sizeof(tmp));
 				new_item = newpriml_item();
 				new_item->set_data(new_item, map_active);
-				tree_active->list.add(&tree_active->list, new_item);
+				tree_active->list.add_sorted(&tree_active->list, new_item, (int (*) (void *, void *))fn_compare_map_value);
 				map_active = NULL;
 				break;
 				
@@ -1920,13 +1971,168 @@ int xml_string_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree){
 	return 0;
 }
 
+int  xmlt_marshall(PPRIMTREE_ITEM node, char *output, int outmax, int curr_len) {
+	int i = curr_len;
+	int j = 0;
+	char *data;
+	PPRIMTREE_ITEM  curr = NULL;
+	map_struct *ms;
+	if (node) {
+		if ((data = node->get_data(node))) {
+			if (i + 1 < outmax) {
+				output[i++] = '<';
+				while ((i + 1 < outmax) && data[j]){
+					output[i++] = data[j++];
+				}
+				if (i + 1 < outmax) {
+					output[i++] = ' ';
+					PPRIML_ITEM item = node->list.get_first_child(&node->list);
+					while (item) {
+						if ((ms = (map_struct *)item->get_data(item))) {
+							j = 0;
+							while (i + 1 < outmax && ms->name[j]){
+								output[i++] = ms->name[j++];
+							}
+							if (i + 4 < outmax ) {
+								output[i++] = '=';
+							}
+							else {
+								return i;
+							}
+							
+							if (i + 3 < outmax ) {
+								output[i++] = '"';
+							}
+							else {
+								return i;
+							}
+							
+							j = 0;
+							while (i + 2 < outmax && ms->value[j]){
+								output[i++] = ms->value[j++];
+							}
+							
+							if (i + 2 < outmax) {
+								output[i++] = '"';
+							}
+							if (i + 1 < outmax ) {
+								output[i++] = ' ';
+							}
+							else {
+								return i;
+							}
+						}
+						item = node->list.get_next_child(&node->list);
+					}
+					if (i + 1 < outmax ) {
+						output[i++] = '>';
+					}
+					else {
+						return i;
+					}
+				}
+			}
+			else {
+				return i;
+			}
+		}
+		curr = node->get_first_child(node);
+		while(curr) {
+			i = xmlt_marshall(curr, output, outmax, i);
+			curr = node->get_next_child(node);
+		}
+		if ((data = node->get_data(node))) {
+			if (i + 3 < outmax ) {
+				j =  0;
+				output[i++] = '<';
+				output[i++] = '/';
+				while((i + 1 < outmax) && data[j]) {
+					output[i++] = data[j++];
+				}
+				output[i++] = '>';
+			}
+			else {
+				return i;
+			}
+		}
+	}
+	return i;
+}
 
+int string_is_match(char *comparator, char *value) {
+	return !strcmp(comparator, value);
+}
+
+PPRIMTREE_ITEM xmlt_find_element(PPRIMTREE_ITEM node, char *path_to_find){
+	char *p_path = path_to_find;
+	char *start_path = NULL, *end_path = NULL;
+
+	char elem_name[100] = {0};
+	PPRIMTREE_ITEM next_tree;
+
+		while(*p_path == ' '){
+			p_path ++;
+		}
+
+		start_path = p_path;
+		while (*p_path != 0 && *p_path != '/' && *p_path != ' '){
+			p_path ++;
+		}
+
+		/* empty path or end of string */
+		if (start_path == p_path){
+			return node;
+		}
+
+		end_path = p_path;
+
+		while (*p_path == ' ')
+			p_path ++;
+
+		if (*p_path == '/')
+			p_path ++;
+
+		strncpy(elem_name, start_path, end_path - start_path);
+		
+		if (! (next_tree = node->get_one(node, elem_name, (int (*) (void *, void *))string_is_match))) {
+			return next_tree;
+		}
+		else {
+			return xmlt_find_element(next_tree, p_path);
+		}
+}
+
+void usage(char *app) {
+	fprintf (stdout, "usage : %s -s xml_string f:g:p\n\
+					  %s -h\n\
+					 -i -- string input: input to parse xml\n\
+					 -p -- print current active tree\n\
+					 -f         :find element , to find and element, parameter is path_to_the element\n\
+					 -c --collect an attribute(pointer to an attribute), parameter is path_to_element/attribute\n\
+					 -s --serialize : print current tree to xml format\n\
+					 -t --top: set root as active element\n\
+					 -m --memtest : memory leak test, loop create update and delete test\n\
+					 -u --unittest : perform unit test\n\
+					 -r --remove : remove an attribute from current active tree\n\
+					 -d          : delete active element. Active element is change to root.\n\
+					 -a          : add an attribute to active element, the format is attributename=attributevalue\
+					 -h --help: this help\n"
+					 , app, app);
+}
+
+int fn_compare_map_value(map_struct *in, map_struct *out) {
+	if (!out) {
+		return 0;
+	}
+	return strcmp(in->name, out->name);
+}
 int main (int argc, char **argv) {
 	int c;
 	char buff[2048] = {0};
 	char elem[2048] = {0};
 	char attrib[2048] = {0};
-	char val[256] = {0};
+	char *name;
+	char *value;
 	PPRIMTREE_ITEM root_tree = newprimtreeitem();
 	PPRIMTREE_ITEM active_tree = root_tree;
 	while(1) {
@@ -1934,34 +2140,42 @@ int main (int argc, char **argv) {
 		static struct option long_options[] = {
 			{"i", required_argument, 0, 'i'},
 			{"print", no_argument, 0, 'p'},
-			{"find", required_argument, 0, 'f'},
 			{"collect", required_argument, 0, 'g'},
 			{"help", no_argument, 0, 'h'},
 			{"serialize", no_argument, 0, 's'},
 			{"remove", required_argument, 0, 'r'},
+			{"memtest", no_argument, 0, 'm'},
+			{"unittest", no_argument, 0, 'u'},
 			{0, 0, 0, 0}
 		};
 
-		c  = getopt_long(argc, argv, "i:pf:c:hsr:", long_options, &option_index);
+		c  = getopt_long(argc, argv, "i:pf:c:hsr:mudta:", long_options, &option_index);
 
 		if (c == -1){
 			break;
 		}
 
-		switch (c) {	
+		switch (c) {
 			case 'i' :
 				strcpy(buff, optarg);
-				xml_string_unmarshall(buff, active_tree);
+				xmls_unmarshall(buff, active_tree);
 				break;
 			case 'p' :
-				if(active_tree)
+				if(active_tree){
 					primtreeitem_print(active_tree, 0);
-				else
+				}
+				else{
 					fprintf(stdout, "empty tree");
+				}
 				break;
 			case 'f' :
-				strcpy(buff, optarg);
-				//active_tree = xml_tree_find_element(active_tree, buff);
+				if (active_tree) {
+					strcpy(buff, optarg);
+					active_tree = xmlt_find_element(active_tree, buff);
+				}
+				else {
+					fprintf(stdout, "not found\n");
+				}
 				break;
 			case 'c' :
 				strcpy(buff, optarg);
@@ -1978,15 +2192,61 @@ int main (int argc, char **argv) {
 				return 0;
 			case 's':
 				memset(buff, 0, 2048);
-				//xml_tree_serialize(active_tree, buff, 2048, 0);
-				//fprintf(stdout, "%s\n", buff);
+				xmlt_marshall(active_tree, buff, 2048, 0);
+				fprintf(stdout, "%s\n", buff);
 				break;
 			case 'r' :
-				strcpy(buff, optarg);
-				split_elem_attrib(buff, elem, attrib);
-				//if(!xml_tree_delete_attribute(active_tree, elem, attrib)){
-					//fprintf(stderr, "invalid element/attribute");
-				//}
+				name = NULL;
+				value = NULL;
+				if (active_tree) {
+					strcpy(buff, optarg);
+					int i = 0;
+					map_struct *active_map = new_map_struct();
+					while(buff[i] &&  buff[i] != '=') {
+						i++;
+					}
+					name = buff;
+					map_set_name(active_map, name);
+					active_tree->list.delete_sorted(&active_tree->list, active_map, (int (*) (void *, void *))fn_compare_map_value);
+					
+				}
+				break;
+			case 't' :
+				active_tree = root_tree;
+				break;
+			case 'd' :
+				if (active_tree) {
+					PPRIMTREE_ITEM parent = active_tree->get_parent(active_tree);
+					if (parent) {
+						parent->detach_node(parent, active_tree);
+					}
+					active_tree->delete(active_tree);
+					active_tree = root_tree;
+				}
+				break;
+			case 'a' :
+				name = NULL;
+				value = NULL;
+				if (active_tree) {
+					strcpy(buff, optarg);
+					int i = 0;
+					PPRIML_ITEM new_item = newpriml_item();
+					map_struct *active_map = new_map_struct();
+					while(buff[i] &&  buff[i] != '=') {
+						i++;
+					}
+					
+					if (buff[i] == '=') {
+						buff[i] = 0;
+						value = &buff[i + 1];
+						map_set_value(active_map, value);
+					}
+					name = buff;
+					map_set_name(active_map, name);
+					new_item->set_data(new_item, active_map);
+					active_tree->list.add_sorted(&active_tree->list, new_item, (int (*) (void *, void *))fn_compare_map_value);
+					
+				}
 				break;
 		}
 		

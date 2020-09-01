@@ -1,0 +1,22 @@
+-i "<a><b></b><c><d><e></e><f/><g st=\"jar\" yt=\"sca\"></g></d></c><s><t><ux name=\"ux\"><v></v></ux><uy name=\"uy\" value =\"\"></uy></t></s></a>" \
+	-f a/c \
+	-s  \
+	-d \
+	-p  \
+	-f a/c \
+	-t \
+	-s  \
+	-f "a/b" \
+	-a"white=color"\
+	-t \
+	-s \
+	-f a/b \
+	-a white=tv \
+	-t \
+	-s \
+	-f a/b \
+	-a gray=lock  \
+	-a zero=phone \
+	-t\
+	-s\
+	-t  -f  "a/b"  -r "gray" -t -s

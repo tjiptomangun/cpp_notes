@@ -284,7 +284,6 @@ typedef struct primclass
 {
 	struct  primclass *this;
 	int	type; 
-	int (*printattributes) (struct primclass *, int);
 	int (*delete) (struct primclass *);
 }STRUCT_PRIMCLASS, PRIMCLASS, *PSTRUCT_PRIMCLASS, *PPRIMCLASS;
  
@@ -307,13 +306,20 @@ typedef struct priml_item
    **/
 	struct priml_item *(*set_data) (struct priml_item *, void *); 
 	/**
-	 * NAME			: delete
+	 * NAME					: delete
 	 * DESCRIPTION	: delete input
 	 * RETURNS
-	 *		0		: success
-	 *	others		: failed, only failed if input is null
+	 *		0					: success
+	 *	others			: failed, only failed if input is null
 	 **/
 	int  (*delete) (struct priml_item *); 
+	/**
+	 * NAME					: get_data
+	 * DESCRIPTION	: default implementation will return pointer to data.
+	 * RETURNS			: pointer to attached data
+	 * 
+	 */
+	void *(*get_data) (struct priml_item *); 
 }PRIML_ITEM, *PPRIML_ITEM; 
 extern PPRIML_ITEM newpriml_item ();
 
@@ -326,13 +332,65 @@ typedef struct primlist
 	int count;
 	void (*add) (struct primlist *, PPRIML_ITEM);
 	PPRIML_ITEM (*take) (struct primlist *);
-	PPRIML_ITEM (*takeitem) (struct primlist *, unsigned char *, int ); 
-	PPRIML_ITEM (*getitem) (struct primlist *, unsigned char *, int ); 
-	PPRIML_ITEM (*getfirstchild) (struct primlist *); 
-	PPRIML_ITEM (*getnextchild) (struct primlist *); 
+	PPRIML_ITEM (*get_first_child) (struct primlist *); 
+	PPRIML_ITEM (*get_next_child) (struct primlist *); 
 	PPRIML_ITEM (*detach) (struct primlist *, PPRIML_ITEM);
 	struct primlist *(*set_data) (struct primlist *, void *); 
 	int  (*delete) (struct primlist *); 
+	void *(*get_data) (struct primlist *); 
+
+	/**
+	 * NAME						: add_sorted
+	 * DESCRIPTION		: add an item sorted
+	 * INPUT
+	 * 		1st_arg			: the list where item to add
+	 * 		2nd_arg			: item to add
+	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 									if fnparam1 position before fnparam2 returns value <=-1
+	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
+	 * 									if fnparam1 position after fnparam2 returns value >= 1
+	 * 									2nd_arg  will be passed as fnparam1
+	 * 									if this functions return 0 then old value will be replaced with this new one
+	 * RETURNS
+	 * 				1st_arg	: success
+	 * 				NULL		: failed to add
+	 */
+	struct primlist * (*add_sorted) (struct primlist *, PPRIML_ITEM, int (*) (void *, void *));
+
+	/**
+	 * NAME						: delete_sorted
+	 * DESCRIPTION		: delete an item from a sorted list
+	 * INPUT
+	 * 		1st_arg			: the list where item to add
+	 * 		2nd_arg			: item to add
+	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 									if fnparam1 position before fnparam2 returns value <=-1
+	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
+	 * 									if fnparam1 position after fnparam2 returns value >= 1
+	 * 									2nd_arg  will be passed as fnparam1
+	 * 									if this functions return 0 then old value will be replaced with this new one
+	 * RETURNS
+	 * 				1st_arg	: success
+	 * 				NULL		: failed to delete
+	 */
+	struct primlist * (*delete_sorted) (struct primlist *, void *, int (*) (void *, void *));
+
+	/**
+	 * NAME						: collect
+	 * DESCRIPTION		: collect element of list from head to tail
+	 * INPUT
+	 * 		filter_fn		: function that filter which data will be added into collecting resutl
+	 * 									this function should accept data type of list element as input
+	 * 									this function should return 1 if condition met, 0 if condition not met
+	 * 		collect_fn	: function that add result to collected if filter_fn is true(met)
+	 * 									first parameter of this function is element that met filter_fn 
+	 * 									the second parameter is current collected values
+	 * 									this function do not return anything
+	 * 		collected		: is initial condition of collected data. This is the accumator that is used
+	 * 									by collect_fn as second parameter
+	 * RETURNS				: number of collected item
+	 */
+	int (*collect) (struct primlist *, int  (*filter_fn) (void *), void (*collect_fn)(void *, void *), void *collected);
 }PRIMLIST, *PPRIMLIST; 
 
 struct tree_item * newtreeitem(struct tree_item *parent, char *name);
@@ -369,9 +427,28 @@ typedef struct primtree_item
 	/**
 	 * get first child that match condition in second parameter function
 	 */
-	struct primtree_item * (*get_child) (struct primtree_item *, int (*) (struct primtree_item *));
+	struct primtree_item * (*get_one) (struct primtree_item *, void *, int (*) (void *, void *));
 	struct primtree_item *(*set_data) (struct primtree_item *, void *); 
 	int  (*delete) (struct primtree_item *); 
+	void *(*get_data) (struct primtree_item *);
+	/**
+	 * NAME						: collect
+	 * DESCRIPTION		: collect element of tree item recursively with child
+	 * INPUT
+	 * 		filter_fn		: function that filter which data will be added into collecting resutl
+	 * 									this function should accept data type of treeitem data as input
+	 * 									this function should return 1 if condition met, 0 if condition not met
+	 * 		collect_fn	: function that add result to collected if filter_fn is true(met)
+	 * 									first parameter of this function is element that met filter_fn 
+	 * 									the second parameter is current collected values
+	 * 									this function do not return anything
+	 * 		collected		: is initial condition of collected data. This is the accumator that is used
+	 * 									by collect_fn as second parameter
+	 * RETURNS				: number of collected item
+	 * 									
+	 * 									
+	 */
+	int (*collect) (struct primtree_item *, int  (*filter_fn) (void *), void (*collect_fn)(void *, void *), void *collected);
 }PRIMTREE_ITEM, *PPRIMTREE_ITEM;
 
 #endif
