@@ -1,22 +1,48 @@
--i "<a><b></b><c><d><e></e><f/><g st=\"jar\" yt=\"sca\"></g></d></c><s><t><ux name=\"ux\"><v></v></ux><uy name=\"uy\" value =\"\"></uy></t></s></a>" \
+#!/bin/bash 
+./parserclass_test -i "<a><b></b><c><d><e></e><f/><g st=\"jar\" yt=\"sca\"></g></d></c><s><t><ux name=\"ux\"><v></v></ux><uy name=\"uy\" value =\"\"></uy></t></s></a>" \
+  -p \
 	-f a/c \
-	-s  \
 	-d \
-	-p  \
+  -e "a/c deleted"\
 	-f a/c \
 	-t \
-	-s  \
+	-p \
 	-f "a/b" \
-	-a"white=color"\
+	-a "white=color" \
 	-t \
-	-s \
+  -e "in b, attribute white color added" \
+	-p \
 	-f a/b \
 	-a white=tv \
-	-t \
-	-s \
-	-f a/b \
 	-a gray=lock  \
 	-a zero=phone \
 	-t\
-	-s\
-	-t  -f  "a/b"  -r "gray" -t -s
+  -e "in b, attribute white changed to tv, add gray=lock, zero=phone"\
+	-p \
+	-t  -f  "a/b"  \
+  -r "gray"  \
+  -t \
+  -e "in b, gray removed" \
+  -p \
+	-f  "a/b"  \
+  -c "x/c" \
+  -e "in b, add element x/c" \
+  -t \
+  -p \
+	-f  "a/b"  \
+  -c "n/l" \
+  -e "in b, add element n/l" \
+  -t \
+  -p \
+  -c "a/c/x" \
+  -e "in a, add c/x" \
+  -t \
+  -p \
+  -e "serialize"\
+  -s \
+  -t \
+  -f "a" \
+  -p \
+  -d \
+  -m
+  

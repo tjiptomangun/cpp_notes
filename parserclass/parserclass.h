@@ -319,7 +319,9 @@ typedef struct priml_item
 	 * RETURNS			: pointer to attached data
 	 * 
 	 */
-	void *(*get_data) (struct priml_item *); 
+	void *(*get_data) (struct priml_item *);
+	int (*data_remove_fn) (void *);
+	void (*set_data_remove_fn) (struct priml_item *, int (*) (void *));
 }PRIML_ITEM, *PPRIML_ITEM; 
 extern PPRIML_ITEM newpriml_item ();
 
@@ -403,13 +405,9 @@ PPRIMLIST newprimlist ();
 
 /**
  * primtree_item structure
- * got 1 parent
- * and list of child
- * preparedelete must prepare children for deletion too.
- * have methods : getfirstchild, getnextchild, getparent
- * have variable to hold currentchild
- * primtree_item is extended primlist. with main list 
- * stores properties and children are primtree_item; 
+ * node
+ *    list of attributes
+ *    list of child
  * use for this ? Think of xml tree
  */
 
@@ -425,12 +423,13 @@ typedef struct primtree_item
 	struct primtree_item * (*get_parent) (struct primtree_item *);
 	struct primtree_item * (*get_first_child) (struct primtree_item *);
 	struct primtree_item * (*get_next_child) (struct primtree_item *); 
-	int (*add)(struct primtree_item *, struct primtree_item *);
+	int (*add_last )(struct primtree_item *, struct primtree_item *);
+	int (*add_first)(struct primtree_item *, struct primtree_item *);
 	struct primtree_item * (*detach_head) (struct primtree_item *);
 	struct primtree_item * (*detach_node) (struct primtree_item *, struct primtree_item *);
 	/**
-	 * NAME						: add_element
-	 * DESCRIPTION		: add an item sorted
+	 * NAME						: add_child
+	 * DESCRIPTION		: add a direct child
 	 * INPUT
 	 * 		1st_arg			: the tree where item to add
 	 * 		2nd_arg			: item to add
@@ -440,19 +439,20 @@ typedef struct primtree_item
 	 * 									if fnparam1 position after fnparam2 returns value >= 1.
 	 * 									2nd_arg  will be passed as fnparam1.
 	 * 									if this functions return 0 then old value will be replaced with this new one.
+	 * 										which means all child will be deleted too.
 	 * 									if there is no sorting rule available, just provide with function that returns 1
 	 * 									if not match , and 0 if match. So it will always find to end of list.
 	 * RETURNS
 	 * 				1st_arg	: success
 	 * 				NULL		: failed to add
 	 */
-	struct primtree_item * (*add_element) (struct primtree_item *, struct primtree_item *, int (*) (void *, void *));
+	struct primtree_item * (*add_child ) (struct primtree_item *, struct primtree_item *, int (*) (void *, void *));
 	
 	/**
-	 * NAME						: remove_element
-	 * DESCRIPTION		: delete an item from a sorted tree
+	 * NAME						: remove_child
+	 * DESCRIPTION		: delete a direct child
 	 * INPUT
-	 * 		1st_arg			: the tree where item to add
+	 * 		1st_arg			: the tree where item to d
 	 * 		2nd_arg			: item to add
 	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
 	 * 									if fnparam1 position before fnparam2 returns value <=-1
@@ -466,7 +466,29 @@ typedef struct primtree_item
 	 * 				1st_arg	: success
 	 * 				NULL		: failed to delete
 	 */
-	struct primtree_item * (*remove_element) (struct primtree_item *, void *, int (*) (void *, void *));
+	struct primtree_item * (*remove_child ) (struct primtree_item *, void *, int (*) (void *, void *));
+	
+	
+	/**
+	 * NAME						: find_child
+	 * DESCRIPTION		: delete an item from a sorted tree
+	 * INPUT
+	 * 		1st_arg			: find child
+	 * 		2nd_arg			: data to find
+	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 									if fnparam1 position before fnparam2 returns value <=-1
+	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
+	 * 									if fnparam1 position after fnparam2 returns value >= 1
+	 * 									2nd_arg  will be passed as fnparam1.
+	 * 									if this functions return 0 then old value will be replaced with this new one.
+	 * 									if there is no sorting rule available, just provide with function that returns 1
+	 * 									if not match , and 0 if match. So it will always find to end of list.
+	 * RETURNS
+	 * 				NULL		: not found
+	 * 				OTHERS	: pointer to child
+	 * 				
+	 */
+	struct primtree_item * (*find_child ) (struct primtree_item *, void *, int (*) (void *, void *));
 
 	/**
 	 * get first child that match condition in second parameter function
