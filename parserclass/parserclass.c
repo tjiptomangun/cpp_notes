@@ -2297,6 +2297,40 @@ void usage(char *app) {
 					 , app, app);
 }
 
+/*
+https://www.geeksforgeeks.org/quicksort-on-singly-linked-list/
+*/
+PPRIML_ITEM partition(PPRIML_ITEM first, PPRIML_ITEM last , PPRIML_ITEM *new_first, PPRIML_ITEM *last_end, int (*fn) (void *, void *)) {
+	PPRIML_ITEM pivot = last;
+	PPRIML_ITEM prev = NULL;
+	PPRIML_ITEM curr = head;
+	PPRIML_ITEM tail = pivot;
+	
+	while(curr != pivot) {
+		if (fn(curr->get_data(curr), pivot->get_data(pivot)) < 0) {
+			if ((*new_first) == NULL)  {
+				(*new_first) = curr;
+			}
+			prev = curr;
+			curr = curr->next;
+		}
+		else {
+			if (prev) {
+				prev->next = curr->next;
+				PPRIML_ITEM tmp = curr->next;
+				curr->next = NULL;
+				tail->next = curr;
+				curr = tmp;
+			}
+		}
+	}
+	if ((*new_first) == NULL) {
+		(*new_first) = pivot;
+	}
+	
+	(*new_end) = tail;
+	return pivot;
+}
 int main (int argc, char **argv) {
 	int c;
 	char buff[2048] = {0};
@@ -2379,6 +2413,8 @@ int main (int argc, char **argv) {
 					name = buff;
 					map_set_name(active_map, name);
 					active_tree->list.remove_element(&active_tree->list, active_map, (int (*) (void *, void *))fn_compare_map_value);
+					map_free(active_map);
+					active_map = NULL;
 					
 				}
 				break;
