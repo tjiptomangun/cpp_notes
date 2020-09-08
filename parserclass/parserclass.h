@@ -398,6 +398,26 @@ typedef struct primlist
 	 * 				1st_arg	: success
 	 */
 	struct primlist * (*add_common ) (struct primlist *, PPRIML_ITEM, int (*) (void *, void *));
+	
+	/**
+	 * NAME			: remove_common
+	 * DESCRIPTION		: delete items from a sorted list, items are not unique, delete multiple item
+	 * INPUT
+	 * 		1st_arg			: the list where item to add
+	 * 		2nd_arg			: item to add
+	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 									if fnparam1 position before fnparam2 returns value <=-1
+	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
+	 * 									if fnparam1 position after fnparam2 returns value >= 1
+	 * 									2nd_arg  will be passed as fnparam1.
+	 * 									if this functions return 0 then old value will be replaced with this new one.
+	 * 									if there is no sorting rule available, just provide with function that returns 1
+	 * 									if not match , and 0 if match. So it will always find to end of list.
+	 * RETURNS
+	 * 				1st_arg	: success
+	 * 				NULL		: failed to delete
+	 */
+	struct primlist * (*remove_common ) (struct primlist *, void *, int (*) (void *, void *));
 	/**
 	 * NAME						: collect
 	 * DESCRIPTION		: collect element of list from head to tail

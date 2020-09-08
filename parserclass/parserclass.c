@@ -1572,6 +1572,7 @@ static PPRIMLIST __primlist_add_common (PPRIMLIST node, PPRIML_ITEM added, int (
 			if (node->tail == node->head) {
 				node->tail = added;
 			}
+			node->count++;
 		}
 		//smaller then first item
 		else if (!prev && res < 0) {
@@ -1594,6 +1595,7 @@ static PPRIMLIST __primlist_add_common (PPRIMLIST node, PPRIML_ITEM added, int (
 			if(node->tail == curr) {
 				node->tail = added;
 			}
+			node->count++;
 		}
 		else if (res < 0) {
 			added->next = curr;
@@ -1625,25 +1627,30 @@ static PPRIMLIST __primlist_remove_common (PPRIMLIST node, void *deleted, int (*
 		if (res) {
 			return NULL;
 		}
+		do {
+			if (!prev) {
+				tmp = node->head;
+				if (node->head == node->tail) {
+					node->tail = node->head->next;
+				}
+				node->head = node->head->next;
+				tmp->delete(tmp);
+				curr = node->head;
+				node->count--;
+			}
+			else {
+				if (curr == node->tail)  {
+					node->tail = node->tail->next;
+				}
+				tmp = curr;
+				prev->next = curr->next;
+				tmp->delete(tmp);
+				curr = prev->next;
+				node->count--;
+			}
+			
+		}while(curr && (curr_data = curr->get_data(curr)) && (res = cmp(deleted, curr_data)) == 0);
 		//match with the first item
-		else if (!prev) {
-			tmp = node->head;
-			if (node->head == node->tail) {
-				node->tail = node->head->next;
-			}
-			node->head = node->head->next;
-			tmp->delete(tmp);
-			node->count--;
-		}
-		else {
-			if (curr == node->tail)  {
-				node->tail = node->tail->next;
-			}
-			tmp = curr;
-			prev->next = curr->next;
-			tmp->delete(tmp);
-			node->count--;
-		}
 	}
 	else {
 		return NULL;
@@ -1670,6 +1677,8 @@ static PPRIMLIST __primlist_ctor(PPRIMLIST plist) {
 		plist->collect = __primlist_collect;
 		plist->add_one = __primlist_add_one;
 		plist->remove_one = __primlist_remove_one;
+		plist->add_common = __primlist_add_common;
+		plist->remove_common = __primlist_remove_common;
 	}
 	return plist;
 }
