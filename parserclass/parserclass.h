@@ -341,29 +341,29 @@ typedef struct primlist
 	void *(*get_data) (struct primlist *); 
 
 	/**
-	 * NAME						: add_element
-	 * DESCRIPTION		: add an item sorted
+	 * NAME			: add_one
+	 * DESCRIPTION		: add an item sorted. If the key already presents then it will replace first match item with item_to_add.
 	 * INPUT
-	 * 		1st_arg			: the list where item to add
-	 * 		2nd_arg			: item to add
-	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
-	 * 									if fnparam1 position before fnparam2 returns value <=-1
-	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
-	 * 									if fnparam1 position after fnparam2 returns value >= 1
-	 * 									2nd_arg  will be passed as fnparam1.
-	 * 									if this functions return 0 then old value will be replaced with this new one.
-	 * 									if there is no sorting rule available, just provide with function that returns 1
-	 * 									if not match , and 0 if match. So it will always added to tail.
+	 * 		1st_arg	: the list where item to add
+	 * 		2nd_arg	: item to add
+	 * 		3rd_arg	: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 				if fnparam1 position before fnparam2 returns value <=-1
+	 * 				if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
+	 * 				if fnparam1 position after fnparam2 returns value >= 1
+	 * 				2nd_arg  will be passed as fnparam1.
+	 * 				if this functions return 0 then old value will be replaced with this new one.
+	 * 				if there is no sorting rule available, just provide with function that returns 1
+	 * 				if not match , and 0 if match. So it will always added to tail.
 	 * RETURNS
 	 * 				1st_arg	: success
 	 * 				NULL		: failed to add
 
 	 */
-	struct primlist * (*add_element) (struct primlist *, PPRIML_ITEM, int (*) (void *, void *));
+	struct primlist * (*add_one ) (struct primlist *, PPRIML_ITEM, int (*) (void *, void *));
 
 	/**
-	 * NAME						: remove_element
-	 * DESCRIPTION		: delete an item from a sorted list
+	 * NAME						: remove_one
+	 * DESCRIPTION		: delete an item from a sorted list, items are unique so only one item deleted
 	 * INPUT
 	 * 		1st_arg			: the list where item to add
 	 * 		2nd_arg			: item to add
@@ -379,8 +379,25 @@ typedef struct primlist
 	 * 				1st_arg	: success
 	 * 				NULL		: failed to delete
 	 */
-	struct primlist * (*remove_element) (struct primlist *, void *, int (*) (void *, void *));
-
+	struct primlist * (*remove_one ) (struct primlist *, void *, int (*) (void *, void *));
+	
+	/**
+	 * NAME		: add_common
+	 * DESCRIPTION	: add item, multiple/common key can coexists
+	 * 
+	 * 		2nd_arg	: item to add
+	 * 		3rd_arg	: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 				if fnparam1 position before fnparam2 returns value <=-1
+	 * 				if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
+	 * 				if fnparam1 position after fnparam2 returns value >= 1
+	 * 				2nd_arg  will be passed as fnparam1.
+	 * 				if this functions return 0 item to add will be set after previous exists item
+	 * 				if there is no sorting new item will be put on tail of list
+	 * 				if not match , and 0 if match. So it will always added to tail.
+	 * RETURNS
+	 * 				1st_arg	: success
+	 */
+	struct primlist * (*add_common ) (struct primlist *, PPRIML_ITEM, int (*) (void *, void *));
 	/**
 	 * NAME						: collect
 	 * DESCRIPTION		: collect element of list from head to tail
@@ -395,6 +412,12 @@ typedef struct primlist
 	 * 		collected		: is initial condition of collected data. This is the accumator that is used
 	 * 									by collect_fn as second parameter
 	 * RETURNS				: number of collected item
+	 */
+	
+	/**
+	 * NAME						: add_head
+	 * DESCRIPTION		: add element to head of this list
+	 * INPUT
 	 */
 	int (*collect) (struct primlist *, int  (*filter_fn) (void *), void (*collect_fn)(void *, void *), void *collected);
 }PRIMLIST, *PPRIMLIST; 
