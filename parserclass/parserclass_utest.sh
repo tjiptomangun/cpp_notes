@@ -1,15 +1,11 @@
 #!/bin/bash 
-./parserclass_test -i "<a x=\"y\" ><b></b></a>" \
-	-f "a"\
-	-t \
-	-p \
-	-f "a" \
-	-r "x" \
-	-p \
-	-d \
-	-t \
-	-p \
-	-m 
+./parserclass_test -c "a"\
+  -l "b"\
+  -t\
+  -p\
+  -f "a"\
+  -d
+
 #	-t  -f  "a/b"  \
 #	-r "gray"  \
 #	-t \

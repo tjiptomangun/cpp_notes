@@ -440,6 +440,15 @@ typedef struct primlist
 	 * INPUT
 	 */
 	int (*collect) (struct primlist *, int  (*filter_fn) (void *), void (*collect_fn)(void *, void *), void *collected);
+	
+	/**
+	 * NAME						: sort
+	 * DESCRIPTION		: reorder item in this list using new comparison function
+	 * INPUT
+	 * 			argv1			: pointer to this list
+	 * 			argv2			: function to compare between to values
+	 */
+	void (*sort) (struct primlist *, int (*) (void *, void *));
 }PRIMLIST, *PPRIMLIST; 
 
 struct tree_item * newtreeitem(struct tree_item *parent, char *name);
@@ -471,7 +480,7 @@ typedef struct primtree_item
 	struct primtree_item * (*detach_head) (struct primtree_item *);
 	struct primtree_item * (*detach_node) (struct primtree_item *, struct primtree_item *);
 	/**
-	 * NAME						: add_child
+	 * NAME						: add_one
 	 * DESCRIPTION		: add a direct child
 	 * INPUT
 	 * 		1st_arg			: the tree where item to add
@@ -489,10 +498,10 @@ typedef struct primtree_item
 	 * 				1st_arg	: success
 	 * 				NULL		: failed to add
 	 */
-	struct primtree_item * (*add_child ) (struct primtree_item *, struct primtree_item *, int (*) (void *, void *));
+	struct primtree_item * (*add_one ) (struct primtree_item *, struct primtree_item *, int (*) (void *, void *));
 	
 	/**
-	 * NAME						: remove_child
+	 * NAME						: remove_one
 	 * DESCRIPTION		: delete a direct child
 	 * INPUT
 	 * 		1st_arg			: the tree where item to d
@@ -501,22 +510,19 @@ typedef struct primtree_item
 	 * 									if fnparam1 position before fnparam2 returns value <=-1
 	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
 	 * 									if fnparam1 position after fnparam2 returns value >= 1
-	 * 									2nd_arg  will be passed as fnparam1.
-	 * 									if this functions return 0 then old value will be replaced with this new one.
-	 * 									if there is no sorting rule available, just provide with function that returns 1
-	 * 									if not match , and 0 if match. So it will always find to end of list.
+	 * 									this will only delete one item
 	 * RETURNS
 	 * 				1st_arg	: success
 	 * 				NULL		: failed to delete
 	 */
-	struct primtree_item * (*remove_child ) (struct primtree_item *, void *, int (*) (void *, void *));
+	struct primtree_item * (*remove_one ) (struct primtree_item *, void *, int (*) (void *, void *));
 	
 	
 	/**
-	 * NAME						: find_child
-	 * DESCRIPTION		: delete an item from a sorted tree
+	 * NAME						: find_one
+	 * DESCRIPTION		: find an item from a sorted tree
 	 * INPUT
-	 * 		1st_arg			: find child
+	 * 		1st_arg			: pointer to this
 	 * 		2nd_arg			: data to find
 	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
 	 * 									if fnparam1 position before fnparam2 returns value <=-1
@@ -531,12 +537,48 @@ typedef struct primtree_item
 	 * 				OTHERS	: pointer to child
 	 * 				
 	 */
-	struct primtree_item * (*find_child ) (struct primtree_item *, void *, int (*) (void *, void *));
+	struct primtree_item * (*find_one ) (struct primtree_item *, void *, int (*) (void *, void *));
+	
+	/**
+	 * NAME						: add_common
+	 * DESCRIPTION		: add a direct child, sorted. Allow multiple key
+	 * INPUT
+	 * 		1st_arg			: the tree where item to add
+	 * 		2nd_arg			: item to add
+	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 									if fnparam1 position before fnparam2 returns value <=-1.
+	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists).
+	 * 									if fnparam1 position after fnparam2 returns value >= 1.
+	 * 									2nd_arg  will be passed as fnparam1.
+	 * 									if this functions return 0 then add this item after that item.
+	 * 									if there is no sorting rule available, just provide with function that returns 1
+	 * 									if not match , and 0 if match. So it will always find to end of list.
+	 * RETURNS
+	 * 				1st_arg	: success
+	 * 				NULL		: failed to add
+	 */
+	struct primtree_item * (*add_common) (struct primtree_item *, struct primtree_item *, int (*) (void *, void *));
+	
 
 	/**
-	 * get first child that match condition in second parameter function
+	 * NAME						: remove_common
+	 * DESCRIPTION		: delete direct children
+	 * INPUT
+	 * 		1st_arg			: the tree where item to delete
+	 * 		2nd_arg			: item to delete
+	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 									if fnparam1 position before fnparam2 returns value <=-1
+	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
+	 * 									if fnparam1 position after fnparam2 returns value >= 1
+	 * 									2nd_arg  will be passed as fnparam1.
+	 * 									if multiple value match then all of them removed , as long as data is sorted
+	 * RETURNS
+	 * 				1st_arg	: success
+	 * 				NULL		: failed to delete
 	 */
-	struct primtree_item * (*get_one) (struct primtree_item *, void *, int (*) (void *, void *));
+	struct primtree_item * (*remove_common) (struct primtree_item *, void *, int (*) (void *, void *));
+
+
 	struct primtree_item *(*set_data) (struct primtree_item *, void *); 
 	int  (*delete) (struct primtree_item *); 
 	void *(*get_data) (struct primtree_item *);

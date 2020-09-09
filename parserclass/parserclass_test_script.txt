@@ -44,5 +44,34 @@
   -f "a" \
   -p \
   -d \
+  -c "a/b" \
+  -p\
+  -e "add ins and uns alternating"\
+  -j "ins=1" \
+  -j "uns=2" \
+  -j "ins=4" \
+  -j "uns=8" \
+  -j "uns=1" \
+  -j "ins=2" \
+  -j "uns=4" \
+  -j "ins=8" \
+  -t \
+  -p \
+  -e "sort by value"\
+  -f "a/b" \
+  -g "value" -t -p \
+  -e "sort by name"\
+  -f "a/b"\
+  -g "name" -t -p \
+  -e "remove ins"\
+  -f "a/b"\
+  -o "ins"\
+  -t\
+  -p\
+  -f "a"\
+  -d\
+  -t\
+  -e "final tree"\
+  -p\
   -m
   

@@ -1658,7 +1658,91 @@ static PPRIMLIST __primlist_remove_common (PPRIMLIST node, void *deleted, int (*
 	
 	node->currptr = node->head;
 	return node;
+}
+
+/*
+https://www.geeksforgeeks.org/quicksort-on-singly-linked-list/
+*/
+PPRIML_ITEM __primlist_partition (PPRIML_ITEM head, PPRIML_ITEM end, PPRIML_ITEM *new_head, PPRIML_ITEM *right_tail, PPRIML_ITEM *new_end, int (*fn) (void *, void *)) {
+	PPRIML_ITEM pivot = end;
+	PPRIML_ITEM prev = NULL;
+	PPRIML_ITEM curr = head;
+	PPRIML_ITEM tail = pivot;
 	
+	while(curr && curr != pivot) {
+		if (fn(curr->get_data(curr), pivot->get_data(pivot)) < 0) {
+			if ((*new_head) == NULL)  {
+				//first smaller than pivot becomes new_head
+				(*new_head) = curr;
+			}
+			prev = curr;
+			curr = curr->next;
+		}
+		else {
+			if (prev) {
+				//move to right side of pivot
+				prev->next = curr->next;
+			}
+
+			PPRIML_ITEM tmp = curr->next;
+			curr->next = NULL;//unlink with the rest of the list
+												//later invoker of this function
+												//will relink it
+			tail->next = curr;
+			tail = curr;
+			curr = tmp;
+			
+		}
+	}
+	
+	if (prev) {
+		prev->next = NULL;
+	}
+	*right_tail = prev;
+	
+	if (!(*new_head)) {
+		*new_head = pivot;
+	}
+	
+	*new_end = tail;
+	return pivot;
+}
+
+PPRIML_ITEM __prim_list_get_tail (PPRIML_ITEM curr) {
+	while(curr && curr->next) {
+		curr = curr->next;
+	}
+	return curr;
+}
+
+PPRIML_ITEM __primlist_quicksort_recur (PPRIML_ITEM head, PPRIML_ITEM end, int (*fn) (void *, void *)) {
+	if (!head || head == end) {
+		return head;
+	}
+	
+	PPRIML_ITEM new_head = NULL;
+	PPRIML_ITEM new_end = NULL;
+	PPRIML_ITEM right_tail = NULL;
+	
+	PPRIML_ITEM pivot = __primlist_partition (head, end, &new_head, &right_tail, &new_end, fn);
+	
+	if (new_head != pivot) {
+	//there are left side of pivot, sort them
+		new_head = __primlist_quicksort_recur (new_head, right_tail, fn);
+		PPRIML_ITEM tmp;
+		if ((tmp = __prim_list_get_tail (new_head))) {
+			tmp->next = pivot;
+		}
+	}
+	//sort the right side of pivot
+	pivot->next = __primlist_quicksort_recur (pivot->next, new_end, fn);
+	return new_head;
+}
+
+void __primlist_quicksort (PPRIMLIST plist, int (*fn) (void *, void *)) {
+	plist->head = __primlist_quicksort_recur (plist->head, plist->tail, fn);
+	PPRIML_ITEM last = __prim_list_get_tail (plist->head);
+	plist->tail = last;
 }
 static PPRIMLIST __primlist_ctor(PPRIMLIST plist) {
 	if (plist) {
@@ -1679,6 +1763,7 @@ static PPRIMLIST __primlist_ctor(PPRIMLIST plist) {
 		plist->remove_one = __primlist_remove_one;
 		plist->add_common = __primlist_add_common;
 		plist->remove_common = __primlist_remove_common;
+		plist->sort = __primlist_quicksort;
 	}
 	return plist;
 }
@@ -1725,7 +1810,7 @@ static int __primtreeitem_add_first(struct primtree_item *root, struct primtree_
 	addedchild->parent = root;
 	return 0;
 }
-static PPRIMTREE_ITEM __primtreeitem_add_child (PPRIMTREE_ITEM node, PPRIMTREE_ITEM added, int (*cmp) (void *, void *)) {
+static PPRIMTREE_ITEM __primtreeitem_add_one (PPRIMTREE_ITEM node, PPRIMTREE_ITEM added, int (*cmp) (void *, void *)) {
 	PPRIMTREE_ITEM curr = node->head;
 	PPRIMTREE_ITEM prev= NULL;
 	void *curr_data = NULL;
@@ -1782,7 +1867,7 @@ static PPRIMTREE_ITEM __primtreeitem_add_child (PPRIMTREE_ITEM node, PPRIMTREE_I
 	return node;
 }
 
-static PPRIMTREE_ITEM __primtreeitem_remove_child (PPRIMTREE_ITEM node, void *deleted, int (*cmp) (void *, void *)) {
+static PPRIMTREE_ITEM __primtreeitem_remove_one (PPRIMTREE_ITEM node, void *deleted, int (*cmp) (void *, void *)) {
 	PPRIMTREE_ITEM curr = node->head;
 	PPRIMTREE_ITEM prev= NULL;
 	void *curr_data = NULL;
@@ -1823,7 +1908,7 @@ static PPRIMTREE_ITEM __primtreeitem_remove_child (PPRIMTREE_ITEM node, void *de
 }
 
 
-static PPRIMTREE_ITEM __primtreeitem_find_child (PPRIMTREE_ITEM node, void *to_find, int (*cmp) (void *, void *)){
+static PPRIMTREE_ITEM __primtreeitem_find_one (PPRIMTREE_ITEM node, void *to_find, int (*cmp) (void *, void *)){
 	PPRIMTREE_ITEM curr = node->head;
 	void *curr_data = NULL;
 	int res = -1;
@@ -1841,18 +1926,96 @@ static PPRIMTREE_ITEM __primtreeitem_find_child (PPRIMTREE_ITEM node, void *to_f
 	return NULL;
 }
 
-static PPRIMTREE_ITEM __primtreeitem_get_one(PPRIMTREE_ITEM node, void *cmp, int (*fn) (void *, void *)) {
-	void *data = NULL;
+static PPRIMTREE_ITEM __primtreeitem_add_common(PPRIMTREE_ITEM node, PPRIMTREE_ITEM added, int (*cmp) (void *, void *)) {
+	PPRIMTREE_ITEM curr = node->head;
+	PPRIMTREE_ITEM prev = NULL;
+	void *curr_data;
+	void *added_data;
+	int res = -1;
 	
-	PPRIMTREE_ITEM curritem = node->head;
-	
-	while (curritem && (data = curritem->get_data(curritem)))
-	{
-		if (!fn(cmp, data))
-			return curritem;
-		curritem = curritem->next;
+	if (added && (added_data = added->get_data(added))) {
+		while(curr && (curr_data = curr->get_data(curr)) && (res = cmp(added_data, curr_data)) > 0){
+			prev = curr;
+			curr = curr->next;
+		}
+		
+		if(!prev && res == 0) {
+			added->next = node->head->next;
+			node->head->next = added;
+			if (node->tail == node->head) {
+				node->tail = added;
+			}
+		}
+		else if (!prev && res < 0) {
+			added->next = node->head;
+			node->head = added;
+			if (!node->tail) {
+				node->tail = added;
+			}
+		}
+		else if (res > 0) {
+			prev->next = added;
+			node->tail = added;
+		}
+		else if (res == 0) {
+			added->next = curr->next;
+			curr->next = added;
+			if (node->tail == curr) {
+				node->tail = added;
+			}
+		}
+		else if (res < 0) {
+			added->next = curr;
+			prev->next = added;
+		}
+		node->curr = node->head;
+		return node;
 	}
-	return NULL; 
+	else {
+		return NULL; 
+	}
+}
+
+static PPRIMTREE_ITEM __primtreeitem_remove_common(PPRIMTREE_ITEM node, void *deleted, int (*cmp) (void *, void *)) {
+	PPRIMTREE_ITEM curr = node->head;
+	PPRIMTREE_ITEM prev = NULL;
+	void *curr_data = NULL;
+	PPRIMTREE_ITEM tmp = NULL;
+	int res = -1;
+	if (deleted) {
+		while(curr && (curr_data = curr->get_data(curr)) && (res = cmp(deleted, curr_data)) > 0) {
+			prev = curr;
+			curr = curr->next;
+		}
+		if(res) {
+			return NULL;
+		}
+		do {
+			if (!prev) {
+				tmp = node->head;
+				if (node->head == node->tail) {
+					node->tail = node->head->next;
+				}
+				node->head = node->head->next;
+				tmp->delete(tmp);
+				curr = node->head;
+			}
+			else {
+				if (curr == node->tail) {
+					node->tail = node->tail->next;
+				}
+				tmp = curr;
+				prev->next = curr->next;
+				tmp->delete(tmp);
+				curr = prev->next;
+			}
+		}while (curr && (curr_data = curr->get_data(curr)) && (res = cmp(deleted, curr_data)) == 0);
+		node->curr = node->head;
+		return node;
+	}
+	else {
+		return NULL;
+	}
 }
 static struct primtree_item * __primtreeitem_getparent (struct primtree_item *node)
 {
@@ -1968,7 +2131,6 @@ static PPRIMTREE_ITEM __primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
 		pitem->get_next_child= __primtreeitem_getnextchild;
 		pitem->detach_head= __primtreeitem_detach_head;
 		pitem->detach_node= __primtreeitem_detach_node;
-		pitem->get_one = __primtreeitem_get_one;
 		pitem->add_last= __primtreeitem_add_last;
 		pitem->add_first= __primtreeitem_add_first;
 		pitem->list.priml_item.primclass.delete = 
@@ -1977,9 +2139,11 @@ static PPRIMTREE_ITEM __primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
 		pitem->delete= __primtreeitem_delete;
 		pitem->get_data = (void * (*) (PPRIMTREE_ITEM)) __priml_item_get_data;
 		pitem->collect = __primtreeitem_collect;
-		pitem->add_child = __primtreeitem_add_child;
-		pitem->remove_child = __primtreeitem_remove_child;
-		pitem->find_child = __primtreeitem_find_child;
+		pitem->add_one = __primtreeitem_add_one;
+		pitem->remove_one = __primtreeitem_remove_one;
+		pitem->find_one = __primtreeitem_find_one;
+		pitem->add_common = __primtreeitem_add_common;
+		pitem->remove_common = __primtreeitem_remove_common;
 	}
 	return pitem;
 }
@@ -2149,12 +2313,19 @@ void primtreeitem_print(PPRIMTREE_ITEM item, int ident) {
 	}
 }
 
-int fn_compare_map_value(map_struct *in, map_struct *out) {
+int fn_map_value_cmp_by_name(map_struct *in, map_struct *out) {
 	if (!out) {
 		return 0;
 	}
 	return strcmp(in->name, out->name);
 }	
+
+int fn_map_value_cmp_by_value(map_struct *in1, map_struct *in2) {
+	if (in1 && in2) {
+		return strcmp(in1->value, in2->value);
+	}
+	return 0;
+}
 
 int xmls_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree){
 	char *doc_p = xml_string;
@@ -2178,7 +2349,7 @@ int xmls_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree){
 				tree_current = newprimtreeitem();
 				copy_string(&elem_name, xml_elem.elem);
 				tree_current->set_data(tree_current, elem_name);
-				tree_active->add_child(tree_active, tree_current, (int (*) (void *, void *))strcmp);
+				tree_active->add_one(tree_active, tree_current, (int (*) (void *, void *))strcmp);
 				tree_active = tree_current;
 				map_active = NULL;
 				break;
@@ -2205,7 +2376,7 @@ int xmls_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree){
 				new_item = newpriml_item();
 				new_item->set_data_remove_fn(new_item, (int (*) (void *))map_free);
 				new_item->set_data(new_item, map_active);
-				tree_active->list.add_one(&tree_active->list, new_item, (int (*) (void *, void *))fn_compare_map_value);
+				tree_active->list.add_one(&tree_active->list, new_item, (int (*) (void *, void *))fn_map_value_cmp_by_name);
 				map_active = NULL;
 				break;
 				
@@ -2337,7 +2508,7 @@ PPRIMTREE_ITEM xmlt_find_element(PPRIMTREE_ITEM node, char *path_to_find){
 
 		strncpy(elem_name, start_path, end_path - start_path);
 		
-		if (! (next_tree = node->find_child(node, elem_name, (int (*) (void *, void *))strcmp))) {
+		if (! (next_tree = node->find_one(node, elem_name, (int (*) (void *, void *))strcmp))) {
 			return next_tree;
 		}
 		else {
@@ -2376,15 +2547,18 @@ PPRIMTREE_ITEM xmlt_add_element(PPRIMTREE_ITEM node, char *path_to_find){
 		p_path ++;
 
 	strncpy(elem_name, start_path, end_path - start_path);
-	if (! (next_tree = node->find_child(node, elem_name, (int (*) (void *, void *))strcmp))) {
+	if (! (next_tree = node->find_one(node, elem_name, (int (*) (void *, void *))strcmp))) {
 		new_string = copy_string(&new_string, elem_name);
 		next_tree = newprimtreeitem();
 		next_tree->set_data(next_tree, new_string);
-		node->add_child(node, next_tree, (int (*) (void *, void *))strcmp);
+		node->add_one(node, next_tree, (int (*) (void *, void *))strcmp);
 	}
 	return xmlt_add_element(next_tree, p_path);
 	
 }
+
+
+
 void usage(char *app) {
 	fprintf (stdout, "usage : %s -s xml_string f:g:p\n\
 					  %s -h\n\
@@ -2394,100 +2568,21 @@ void usage(char *app) {
 					 -s --serialize : print current tree to xml format\n\
 					 -t --top: set root as active element\n\
 					 -r --remove : remove an attribute from current active tree\n\
+					 -o          : obliterate/remove some attributes with specified attribute names\n\
 					 -d          : delete active element. Active element is change to root.\n\
-					 -a          : add an attribute to active element, the format is attributename=attributevalue\n\
-					 -i          : insert and element to current active tree\n\
+					 -x          : expunge/delete some elements matching with value.\n\
+					 -a          : add an attribute to active element, the format is attributename=attributevalue, if attribute name exists will replace attribute value with new one\n\
+					 -j          : add an attribute to active element, the format is attributename=attributevalue. will add to list despites attribute name exists before\n\
 					 -h --help: this help\n\
-					 -c --create an element\n\
+					 -c --create : insert and element to current active tree. Will replace old value if key exists \n\
+					 -l          : lodge/insert and element to current active tree. Will not replace old value if key exists \n\
 					 -m --memtest : memory leak test, loop create update and delete test\n\
 					 -u --unittest : perform unit test\n\
 					 -e           : echo something\n\
+					 -g           : group/sort attribute by value/name\n\
 						"
 					 , app, app);
 }
-
-/*
-https://www.geeksforgeeks.org/quicksort-on-singly-linked-list/
-*/
-PPRIML_ITEM __partition(PPRIML_ITEM head, PPRIML_ITEM end, PPRIML_ITEM *new_head, PPRIML_ITEM *right_tail, PPRIML_ITEM *new_end, int (*fn) (void *, void *)) {
-	PPRIML_ITEM pivot = end;
-	PPRIML_ITEM prev = NULL;
-	PPRIML_ITEM curr = head;
-	PPRIML_ITEM tail = pivot;
-	
-	while(curr != pivot) {
-		if (fn(curr->get_data(curr), pivot->get_data(pivot)) < 0) {
-			if ((*new_head) == NULL)  {
-				//first smaller than pivot becomes new_head
-				(*new_head) = curr;
-			}
-			prev = curr;
-			curr = curr->next;
-		}
-		else {
-			if (prev) {
-				//move to right side of pivot
-				prev->next = curr->next;
-			}
-
-			PPRIML_ITEM tmp = curr->next;
-			curr->next = NULL;
-			tail->next = curr;
-			curr = tmp;
-			
-		}
-	}
-	
-	if (prev) {
-		prev->next = NULL;
-	}
-	*right_tail = prev;
-	
-	if (!(*new_head)) {
-		*new_head = pivot;
-	}
-	
-	*new_end = tail;
-	return pivot;
-}
-
-PPRIML_ITEM __get_tail(PPRIML_ITEM curr) {
-	while(curr && curr->next) {
-		curr = curr->next;
-	}
-	return curr;
-}
-
-PPRIML_ITEM __quicksort_recur(PPRIML_ITEM head, PPRIML_ITEM end, int (*fn) (void *, void *)) {
-	if (!head || head == end) {
-		return head;
-	}
-	
-	PPRIML_ITEM new_head = NULL;
-	PPRIML_ITEM new_end = NULL;
-	PPRIML_ITEM right_tail = NULL;
-	
-	PPRIML_ITEM pivot = __partition(head, end, &new_head, &right_tail, &new_end, fn);
-	
-	if (new_head != pivot) {
-	//there are left side of pivot, sort them
-		new_head = __quicksort_recur(new_head, right_tail, fn);
-		PPRIML_ITEM tmp;
-		if ((tmp = __get_tail(new_head))) {
-			tmp->next = pivot;
-		}
-	}
-	//sort the right side of pivot
-	pivot->next = __quicksort_recur(pivot->next, new_end, fn);
-	return new_head;
-}
-
-void __quicksort(PPRIMLIST plist, int (*fn) (void *, void *)) {
-	plist->head = __quicksort_recur(plist->head, plist->tail, fn);
-	PPRIML_ITEM last = __get_tail(plist->head);
-	plist->tail = last;
-}
-
 int main (int argc, char **argv) {
 	int c;
 	char buff[2048] = {0};
@@ -2511,7 +2606,7 @@ int main (int argc, char **argv) {
 			{0, 0, 0, 0}
 		};
 
-		c  = getopt_long(argc, argv, "i:pf:c:hsr:mudta:e:u", long_options, &option_index);
+		c  = getopt_long(argc, argv, "i:pf:c:hsr:mudta:e:uj:o:g:l:x:", long_options, &option_index);
 
 		if (c == -1){
 			break;
@@ -2541,10 +2636,40 @@ int main (int argc, char **argv) {
 				break;
 			case 'c' :
 				strcpy(buff, optarg);
-				split_elem_attrib(buff, elem, attrib);
 				active_tree = xmlt_add_element(active_tree, buff);
 				break;
-				case 'e' :
+			case 'l':
+				strcpy(buff, optarg);
+				PPRIMTREE_ITEM prev_active = active_tree;
+				if (strstr(buff, "/")) {
+					split_elem_attrib(buff, elem, attrib);
+					active_tree = xmlt_find_element(active_tree, elem);
+				}
+				if (active_tree) {
+					PPRIMTREE_ITEM pitem = newprimtreeitem();
+					char *new_string = copy_string(&new_string, attrib);
+					pitem->set_data(pitem, (void *)new_string);
+					active_tree = active_tree->add_common(active_tree, pitem, (int (*) (void *, void *))strcmp);
+				}
+				else {
+					fprintf(stdout, "element not found\n");
+					active_tree = prev_active;
+				}
+				break;
+			case 'x':
+				split_elem_attrib(buff, elem, attrib);
+				active_tree = xmlt_find_element(active_tree, elem);
+				if (active_tree) {
+					active_tree->remove_common(active_tree, attrib, (int (*) (void *, void *))strcmp);
+					active_tree = prev_active;
+				}
+				else {
+					fprintf(stdout, "element not found\n");
+					active_tree = prev_active;
+				}
+				
+				break;
+			case 'e' :
 				strcpy(buff, optarg);
 				fprintf(stdout, "%s\n", buff);
 				break;
@@ -2569,7 +2694,25 @@ int main (int argc, char **argv) {
 					}
 					name = buff;
 					map_set_name(active_map, name);
-					active_tree->list.remove_one(&active_tree->list, active_map, (int (*) (void *, void *))fn_compare_map_value);
+					active_tree->list.remove_one(&active_tree->list, active_map, (int (*) (void *, void *))fn_map_value_cmp_by_name);
+					map_free(active_map);
+					active_map = NULL;
+					
+				}
+				break;
+			case 'o' :
+				name = NULL;
+				value = NULL;
+				if (active_tree) {
+					strcpy(buff, optarg);
+					int i = 0;
+					map_struct *active_map = new_map_struct();
+					while(buff[i] &&  buff[i] != '=') {
+						i++;
+					}
+					name = buff;
+					map_set_name(active_map, name);
+					active_tree->list.remove_common(&active_tree->list, active_map, (int (*) (void *, void *))fn_map_value_cmp_by_name);
 					map_free(active_map);
 					active_map = NULL;
 					
@@ -2609,13 +2752,47 @@ int main (int argc, char **argv) {
 					map_set_name(active_map, name);
 					new_item->set_data_remove_fn(new_item, (int (*) (void *))map_free);
 					new_item->set_data(new_item, active_map);
-					active_tree->list.add_one(&active_tree->list, new_item, (int (*) (void *, void *))fn_compare_map_value);
+					active_tree->list.add_one(&active_tree->list, new_item, (int (*) (void *, void *))fn_map_value_cmp_by_name);
 					
+				}
+				break;
+			case 'j' :
+				name = NULL;
+				value = NULL;
+				if (active_tree) {
+					strcpy(buff, optarg);
+					int i = 0;
+					PPRIML_ITEM new_item = newpriml_item();
+					map_struct *active_map = new_map_struct();
+					while(buff[i] &&  buff[i] != '=') {
+						i++;
+					}
+					
+					if (buff[i] == '=') {
+						buff[i] = 0;
+						value = &buff[i + 1];
+						map_set_value(active_map, value);
+					}
+					name = buff;
+					map_set_name(active_map, name);
+					new_item->set_data_remove_fn(new_item, (int (*) (void *))map_free);
+					new_item->set_data(new_item, active_map);
+					active_tree->list.add_common(&active_tree->list, new_item, (int (*) (void *, void *))fn_map_value_cmp_by_name);
 				}
 				break;
 			case 'm' :
 				optind = 1;
-				usleep(10000);
+				usleep(1000000);
+				break;
+			case 'g' :
+				if (active_tree) {
+					if (!strcmp(optarg, "value")) {
+						active_tree->list.sort(&active_tree->list, (int (*) (void *, void *))fn_map_value_cmp_by_value);
+					}
+					else if (!strcmp(optarg, "name")) {
+						active_tree->list.sort(&active_tree->list, (int (*) (void *, void *))fn_map_value_cmp_by_name);
+					}
+				}
 				break;
 		}
 		
