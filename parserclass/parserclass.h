@@ -600,6 +600,15 @@ typedef struct primtree_item
 	 * 									
 	 */
 	int (*collect) (struct primtree_item *, int  (*filter_fn) (void *), void (*collect_fn)(void *, void *), void *collected);
+	
+	/**
+	 * NAME						: sort
+	 * DESCRIPTION		: reorder direct child of this item using new comparison function
+	 * INPUT
+	 * 			argv1			: pointer to this list
+	 * 			argv2			: function to compare between to values
+	 */
+	void (*sort) (struct primtree_item *, int (*) (void *, void *));
 }PRIMTREE_ITEM, *PPRIMTREE_ITEM;
 
 #endif

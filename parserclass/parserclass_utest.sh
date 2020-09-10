@@ -1,10 +1,50 @@
 #!/bin/bash 
 ./parserclass_test -c "a"\
-  -l "b"\
-  -t\
-  -p\
-  -f "a"\
-  -d
+  -e "add some b{"\
+  -l "b" -t -f "a" -l "b" -t -f "a" -l"b"\
+  -t -p\
+  -e "}"\
+  -e "add some d{"\
+  -t -f "a" -l "d" -t -f "a" -l "d" -t -f"a" -l"d"\
+  -t -p\
+  -e "}"\
+  -e "add some x{"\
+  -t -f "a" -l "x" -t -f "a" -l "x"\
+  -t -p\
+  -e "}"\
+  -e "sort ascending{"\
+  -t -f "a"\
+  -w "a" -t -p \
+  -e "}"\
+  -e "sort descending{"\
+  -t -f "a"\
+  -w "d" -t -p \
+  -e "}"
+
+
+
+#  -t -p\
+#  -e "add another b"\
+#  -t  -f "a"\
+#  -l "b"\
+#  -t -p\
+#  -t -f "a"\
+#  -l "b"\
+#  -t -p \
+#  -e "remove all b"\
+#  -x "b"\
+#  -t -p -d
+#  -t -f "a"\
+#  -l "b"\
+#  -t -f "a"\
+#  -l "b"\
+#  -t\
+#  -p\
+#  -f "a"\
+#  -x "b"\
+#  -t\
+#  -p\
+#  -d
 
 #	-t  -f  "a/b"  \
 #	-r "gray"  \

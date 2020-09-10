@@ -2123,6 +2123,88 @@ static int __primtreeitem_collect(PPRIMTREE_ITEM in, int  (*filter_fn) (void *),
 	return counter;
 }
 
+PPRIMTREE_ITEM __primtreeitem_partition (PPRIMTREE_ITEM head, PPRIMTREE_ITEM end, PPRIMTREE_ITEM *new_head, PPRIMTREE_ITEM *right_tail, PPRIMTREE_ITEM *new_end, int (*fn) (void *, void *)) {
+	PPRIMTREE_ITEM pivot = end;
+	PPRIMTREE_ITEM prev = NULL;
+	PPRIMTREE_ITEM curr = head;
+	PPRIMTREE_ITEM tail = pivot;
+	
+	while(curr && curr != pivot) {
+		if (fn(curr->get_data(curr), pivot->get_data(pivot)) < 0) {
+			if ((*new_head) == NULL)  {
+				//first smaller than pivot becomes new_head
+				(*new_head) = curr;
+			}
+			prev = curr;
+			curr = curr->next;
+		}
+		else {
+			if (prev) {
+				//move to right side of pivot
+				prev->next = curr->next;
+			}
+
+			PPRIMTREE_ITEM tmp = curr->next;
+			curr->next = NULL;//unlink with the rest of the list
+												//later invoker of this function
+												//will relink it
+			tail->next = curr;
+			tail = curr;
+			curr = tmp;
+			
+		}
+	}
+	
+	if (prev) {
+		prev->next = NULL;
+	}
+	*right_tail = prev;
+	
+	if (!(*new_head)) {
+		*new_head = pivot;
+	}
+	
+	*new_end = tail;
+	return pivot;
+}
+
+PPRIMTREE_ITEM __primtreeitem_get_tail (PPRIMTREE_ITEM curr) {
+	while(curr && curr->next) {
+		curr = curr->next;
+	}
+	return curr;
+}
+
+PPRIMTREE_ITEM __primtreeitem_quicksort_recur (PPRIMTREE_ITEM head, PPRIMTREE_ITEM end, int (*fn) (void *, void *)) {
+	if (!head || head == end) {
+		return head;
+	}
+	
+	PPRIMTREE_ITEM new_head = NULL;
+	PPRIMTREE_ITEM new_end = NULL;
+	PPRIMTREE_ITEM right_tail = NULL;
+	
+	PPRIMTREE_ITEM pivot = __primtreeitem_partition (head, end, &new_head, &right_tail, &new_end, fn);
+	
+	if (new_head != pivot) {
+	//there are left side of pivot, sort them
+		new_head = __primtreeitem_quicksort_recur (new_head, right_tail, fn);
+		PPRIMTREE_ITEM tmp;
+		if ((tmp = __primtreeitem_get_tail (new_head))) {
+			tmp->next = pivot;
+		}
+	}
+	//sort the right side of pivot
+	pivot->next = __primtreeitem_quicksort_recur (pivot->next, new_end, fn);
+	return new_head;
+}
+
+void __primtreeitem_quicksort (PPRIMTREE_ITEM item, int (*fn) (void *, void *)) {
+	item->head = __primtreeitem_quicksort_recur (item->head, item->tail, fn);
+	PPRIMTREE_ITEM last = __primtreeitem_get_tail (item->head);
+	item->tail = last;
+}
+
 static PPRIMTREE_ITEM __primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
 	if (pitem) {
 		__primlist_ctor(&pitem->list);
@@ -2144,6 +2226,7 @@ static PPRIMTREE_ITEM __primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
 		pitem->find_one = __primtreeitem_find_one;
 		pitem->add_common = __primtreeitem_add_common;
 		pitem->remove_common = __primtreeitem_remove_common;
+		pitem->sort = __primtreeitem_quicksort;
 	}
 	return pitem;
 }
@@ -2557,31 +2640,34 @@ PPRIMTREE_ITEM xmlt_add_element(PPRIMTREE_ITEM node, char *path_to_find){
 	
 }
 
-
+int negate_strcmp(char *a, char *b) {
+	int ret  = strcmp(a, b);
+	return -1 *ret;
+}
 
 void usage(char *app) {
-	fprintf (stdout, "usage : %s -s xml_string f:g:p\n\
-					  %s -h\n\
-					 -i -- string input: input to parse xml\n\
-					 -p -- print current active tree\n\
-					 -f          :find element , to find and element, parameter is path_to_the element\n\
-					 -s --serialize : print current tree to xml format\n\
-					 -t --top: set root as active element\n\
-					 -r --remove : remove an attribute from current active tree\n\
-					 -o          : obliterate/remove some attributes with specified attribute names\n\
-					 -d          : delete active element. Active element is change to root.\n\
-					 -x          : expunge/delete some elements matching with value.\n\
-					 -a          : add an attribute to active element, the format is attributename=attributevalue, if attribute name exists will replace attribute value with new one\n\
-					 -j          : add an attribute to active element, the format is attributename=attributevalue. will add to list despites attribute name exists before\n\
-					 -h --help: this help\n\
-					 -c --create : insert and element to current active tree. Will replace old value if key exists \n\
-					 -l          : lodge/insert and element to current active tree. Will not replace old value if key exists \n\
-					 -m --memtest : memory leak test, loop create update and delete test\n\
-					 -u --unittest : perform unit test\n\
-					 -e           : echo something\n\
-					 -g           : group/sort attribute by value/name\n\
-						"
-					 , app, app);
+	fprintf (stdout, "usage : %s i:pf:c:hsr:mudta:e:uj:o:g:l:x:w:\n\
+		-i --       : input to parse xml\n\
+		-p -- print : current active tree\n\
+		-f          : find element , to find and element, parameter is path_to_the element\n\
+		-s --serialize : print current tree to xml format\n\
+		-t --top    : set root as active element\n\
+		-r --remove : remove an attribute from current active tree\n\
+		-o          : obliterate/remove some attributes with specified attribute names\n\
+		-d          : delete active element. Active element is change to root.\n\
+		-x          : expunge/delete some elements matching with value.\n\
+		-a          : add an attribute to active element, the format is attributename=attributevalue, \n\
+			          : if attribute name exists will replace attribute value with new one\n\
+		-j          : add an attribute to active element, the format is attributename=attributevalue. \n\
+			          : will add to list despites attribute name exists before\n\
+		-h --help   : this help\n\
+		-c --create : insert and element to current active tree. Will replace old value if key exists \n\
+		-l          : lodge/insert element to current active tree. Will not replace old value if key exists \n\
+		-m --memtest : memory leak test, loop create update and delete test\n\
+		-e           : echo something\n\
+		-g           : group/sort attribute [name|value]\n\
+		-w           : group/sort child of current tree [a|d] ascending or descending \n\
+", app);
 }
 int main (int argc, char **argv) {
 	int c;
@@ -2589,6 +2675,7 @@ int main (int argc, char **argv) {
 	char elem[2048] = {0};
 	char attrib[2048] = {0};
 	char *name;
+	char *new_string = NULL;
 	char *value;
 	PPRIMTREE_ITEM root_tree = newprimtreeitem();
 	PPRIMTREE_ITEM active_tree = root_tree;
@@ -2602,11 +2689,10 @@ int main (int argc, char **argv) {
 			{"serialize", no_argument, 0, 's'},
 			{"remove", required_argument, 0, 'r'},
 			{"memtest", no_argument, 0, 'm'},
-			{"unittest", no_argument, 0, 'u'},
 			{0, 0, 0, 0}
 		};
 
-		c  = getopt_long(argc, argv, "i:pf:c:hsr:mudta:e:uj:o:g:l:x:", long_options, &option_index);
+		c  = getopt_long(argc, argv, "i:pf:c:hsr:mudta:e:j:o:g:l:x:w:", long_options, &option_index);
 
 		if (c == -1){
 			break;
@@ -2639,15 +2725,19 @@ int main (int argc, char **argv) {
 				active_tree = xmlt_add_element(active_tree, buff);
 				break;
 			case 'l':
+				new_string = NULL;
 				strcpy(buff, optarg);
 				PPRIMTREE_ITEM prev_active = active_tree;
 				if (strstr(buff, "/")) {
 					split_elem_attrib(buff, elem, attrib);
 					active_tree = xmlt_find_element(active_tree, elem);
 				}
+				else {
+					strcpy(attrib, optarg);
+				}
 				if (active_tree) {
 					PPRIMTREE_ITEM pitem = newprimtreeitem();
-					char *new_string = copy_string(&new_string, attrib);
+					new_string = copy_string(&new_string, attrib);
 					pitem->set_data(pitem, (void *)new_string);
 					active_tree = active_tree->add_common(active_tree, pitem, (int (*) (void *, void *))strcmp);
 				}
@@ -2657,8 +2747,13 @@ int main (int argc, char **argv) {
 				}
 				break;
 			case 'x':
-				split_elem_attrib(buff, elem, attrib);
-				active_tree = xmlt_find_element(active_tree, elem);
+				if (strstr(buff, "/")) {
+					split_elem_attrib(buff, elem, attrib);
+					active_tree = xmlt_find_element(active_tree, elem);
+				}
+				else {
+					strcpy(attrib, optarg);
+				}
 				if (active_tree) {
 					active_tree->remove_common(active_tree, attrib, (int (*) (void *, void *))strcmp);
 					active_tree = prev_active;
@@ -2782,7 +2877,7 @@ int main (int argc, char **argv) {
 				break;
 			case 'm' :
 				optind = 1;
-				usleep(1000000);
+				usleep(100000);
 				break;
 			case 'g' :
 				if (active_tree) {
@@ -2791,6 +2886,16 @@ int main (int argc, char **argv) {
 					}
 					else if (!strcmp(optarg, "name")) {
 						active_tree->list.sort(&active_tree->list, (int (*) (void *, void *))fn_map_value_cmp_by_name);
+					}
+				}
+				break;
+			case 'w' :
+				if (active_tree) {
+					if (!strcmp(optarg, "a")) {
+						active_tree->sort(active_tree, (int (*) (void *, void *))strcmp);
+					}
+					else if (!strcmp(optarg, "d")) {
+						active_tree->sort(active_tree, (int (*) (void *, void *))negate_strcmp);
 					}
 				}
 				break;

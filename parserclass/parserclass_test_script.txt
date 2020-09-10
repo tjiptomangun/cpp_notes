@@ -29,7 +29,7 @@
   -e "in b, add element x/c" \
   -t \
   -p \
-	-f  "a/b"  \
+   -f  "a/b"  \
   -c "n/l" \
   -e "in b, add element n/l" \
   -t \
@@ -71,6 +71,14 @@
   -f "a"\
   -d\
   -t\
+  -e "create a and 3 bs{"\
+  -c "a"\
+  -l "b" -t -f "a" -l "b" -t -f "a" -l "b" -t -p\
+  -e "}"\
+  -e "delete all bs{"\
+  -t -f "a" -x "b" -t -p\
+  -e "}"\
+  -t -f "a" -d\
   -e "final tree"\
   -p\
   -m
