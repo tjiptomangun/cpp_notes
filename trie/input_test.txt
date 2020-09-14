@@ -7,4 +7,5 @@ del suralaya
 print
 del joyoboyo mandalika tawabanika
 print
+kwprint
 q
