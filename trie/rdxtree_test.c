@@ -226,7 +226,7 @@ int stdparse (FILE *fp, PRDXTREE_ITEM pTree)
 
 int main (int argc, char **argv)
 {
-	PRDXTREE_ITEM pTree = new_rdxtreeitem(NULL, 0, NULL);
+	PRDXTREE_ITEM pTree = new_rdxtreeitem(NULL, 0);
 	stdparse (stdin, pTree);
 	exit (EXIT_SUCCESS);
 }

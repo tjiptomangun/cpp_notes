@@ -37,15 +37,6 @@ typedef struct rdxtree_stack_context{
 	void (*delete)(struct rdxtree_stack_context *);
 }RDXTREE_STACK_CONTEXT, *PRDXTREE_STACK_CONTEXT;
 
-// /**
-//  * NAME						: rdxtreeitem_add 
-//  * DESCRIPTION		: add to tail of a parent node
-//  * INPUT
-//  * 		root				: parent of the new node
-//  * 		addedchild	: the added node
-//  */
-// PRDXTREE_ITEM rdxtreeitem_add (struct rdxtree_item *parent, struct rdxtree_item *addedchild);
-
 /**
  * NAME						: insert_child
  * DESCRIPTION		: add descendants key to a parent
@@ -64,8 +55,13 @@ PRDXTREE_ITEM rdxtreeitem_insertkey(PRDXTREE_ITEM parent, char *name);
  * INPUT
  * 				parent	: parent of the key
  * 				name		: key to find
+ * 				ctx			: is in out context that will populates with pointers from 
+ * 									parent to returned result. See RDXTREE_FIND_CONTEXT for details
+ * RETURNS				:
+ * 			NULL			: Not found
+ * 			OTHERS		: Pointer to final result
  */
-PRDXTREE_ITEM rdxtreeitem_findkey(PRDXTREE_ITEM parent, char *name, PRDXTREE_FIND_CONTEXT);
+PRDXTREE_ITEM rdxtreeitem_findkey(PRDXTREE_ITEM parent, char *name, PRDXTREE_FIND_CONTEXT ctx);
 
 /**
  * NAME					: find_prefix
@@ -73,7 +69,11 @@ PRDXTREE_ITEM rdxtreeitem_findkey(PRDXTREE_ITEM parent, char *name, PRDXTREE_FIN
  * INPUT
  * 			parent	: parent to keys
  * 			name		: string to find
- *
+ * 			ctx			: is in out context that will populates with pointers from 
+ * 								parent to returned result. See RDXTREE_FIND_CONTEXT for details
+ * RETURNS			:
+ * 			NULL		: Not found
+ * 			OTHERS	: Pointer to final result
  */
 PRDXTREE_ITEM rdxtreeitem_findprefix(PRDXTREE_ITEM parent, char *name, PRDXTREE_FIND_CONTEXT);
 
@@ -102,7 +102,7 @@ void rdxtreeitem_deletekey(PRDXTREE_ITEM parent, char *name);
  */
 void print_tree(PRDXTREE_ITEM root, int tab_count);
 
-PRDXTREE_ITEM new_rdxtreeitem(char *name, int name_len, PRDXTREE_ITEM parent);
+PRDXTREE_ITEM new_rdxtreeitem(char *name, int name_len);
 
 /**
  * NAME 				: rdxtreeitem_getkeywords
@@ -128,4 +128,20 @@ PRDXTREE_FIND_CONTEXT new_rdxtree_find_context();
  * DESCRIPTION	: create new rdx tree stack context
  */
 PRDXTREE_STACK_CONTEXT new_rdxtree_stack_context();
+
+/**
+ * NAME					: rdxtreeitem_ctor
+ * DESCRIPTION	: rdxtreeitem constructor routine. Use this
+ * 								if RDXTREE_ITEM is created without new_rdxtreeitem
+ */
+void rdxtreeitem_ctor(PRDXTREE_ITEM new_item, char *name, int name_len);
+
+/**
+ * NAME					: rdxtree_find_context_ctor
+ * DESCRIPTION	: rdxtree_find_context constructor routing. Use this
+ * 								if RDXTREE_FIND_CONTEXT is created without new_rdxtree_stack_context
+ */
+PRDXTREE_FIND_CONTEXT rdxtree_find_context_ctor(PRDXTREE_FIND_CONTEXT ctx);
+
+
 #endif

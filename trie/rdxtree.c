@@ -90,7 +90,7 @@ PRDXTREE_FIND_CONTEXT new_rdxtree_find_context() {
 }
 
 
-void __rdxtreeitem_ctor(PRDXTREE_ITEM new_item, char *name, int name_len) {
+void rdxtreeitem_ctor(PRDXTREE_ITEM new_item, char *name, int name_len) {
 	if (name_len > 1){
 		strncpy(new_item->name, name, name_len);
 		new_item->name_len = name_len;
@@ -103,10 +103,10 @@ void __rdxtreeitem_ctor(PRDXTREE_ITEM new_item, char *name, int name_len) {
 	new_item->head = new_item->tail = new_item->next = 0;
 }
 
-PRDXTREE_ITEM new_rdxtreeitem(char *name, int name_len, PRDXTREE_ITEM parent) {
+PRDXTREE_ITEM new_rdxtreeitem(char *name, int name_len) {
 	PRDXTREE_ITEM ret = (PRDXTREE_ITEM) calloc(1, sizeof (RDXTREE_ITEM));
 	if (ret){
-		__rdxtreeitem_ctor(ret, name, name_len);	
+		rdxtreeitem_ctor(ret, name, name_len);	
 	}
 	return ret; 
 }
@@ -202,7 +202,7 @@ PRDXTREE_ITEM rdxtreeitem_insertkey(PRDXTREE_ITEM parent, char *name) {
 	}
 	else if(occ < 0){
 		
-		PRDXTREE_ITEM p  = new_rdxtreeitem(name, len, parent);
+		PRDXTREE_ITEM p  = new_rdxtreeitem(name, len);
 		if (p) {
 			if(prev) {
 				p->next = prev->next;
@@ -216,7 +216,7 @@ PRDXTREE_ITEM rdxtreeitem_insertkey(PRDXTREE_ITEM parent, char *name) {
 		return p;
 	}
 	else {
-		PRDXTREE_ITEM newi = new_rdxtreeitem(name, len, parent);
+		PRDXTREE_ITEM newi = new_rdxtreeitem(name, len);
 		if (!newi) {
 			return newi;
 		}
@@ -598,7 +598,7 @@ void delete_and_print(PRDXTREE_ITEM root, char * to_find){
 
 int main (int argc, char **argv) {
 	PRDXTREE_ITEM root;
-	root = new_rdxtreeitem(NULL, 0, NULL);
+	root = new_rdxtreeitem(NULL, 0);
 	rdxtreeitem_insertkey(root, "hello");
 	rdxtreeitem_insertkey(root, "world");
 	rdxtreeitem_insertkey(root, "he");
