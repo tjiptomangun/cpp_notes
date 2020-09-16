@@ -449,6 +449,27 @@ typedef struct primlist
 	 * 			argv2			: function to compare between to values
 	 */
 	void (*sort) (struct primlist *, int (*) (void *, void *));
+	
+	/**
+	 * NAME						: find_one
+	 * DESCRIPTION		: find an item from a sorted tree
+	 * INPUT
+	 * 		1st_arg			: pointer to this
+	 * 		2nd_arg			: data to find
+	 * 		3rd_arg			: a function that accept two arguments (fnparam1 and fnparam2) with condition,
+	 * 									if fnparam1 position before fnparam2 returns value <=-1
+	 * 									if fnparam1 position exactly in fnparam2 returns 0 (means data already exists)
+	 * 									if fnparam1 position after fnparam2 returns value >= 1
+	 * 									2nd_arg  will be passed as fnparam1.
+	 * 									if this functions return 0 then old value will be replaced with this new one.
+	 * 									if there is no sorting rule available, just provide with function that returns 1
+	 * 									if not match , and 0 if match. So it will always find to end of list.
+	 * RETURNS
+	 * 				NULL		: not found
+	 * 				OTHERS	: pointer to child
+	 * 				
+	 */
+	PPRIML_ITEM (*find_one ) (struct primlist *, void *, int (*) (void *, void *));
 }PRIMLIST, *PPRIMLIST; 
 
 struct tree_item * newtreeitem(struct tree_item *parent, char *name);
@@ -611,5 +632,41 @@ typedef struct primtree_item
 	void (*sort) (struct primtree_item *, int (*) (void *, void *));
 }PRIMTREE_ITEM, *PPRIMTREE_ITEM;
 
+PPRIMTREE_ITEM newprimtreeitem();
+/*
+ * NAME							: struct dlist_item
+ * DESCRIPTION			: two way linked list
+ */
+typedef struct dlist_item {
+	void * data;
+	struct dlist_item * next;
+	struct dlist_item * prev;
+	struct dlist_item * (*set_data) (struct dlist_item *, void *);
+	int (*data_remove_fn) (void *);
+	void (*set_data_remove_fn) (struct dlist_item *, int (*) (void *));
+	int  (*delete) (struct dlist_item *); 
+}DLIST_ITEM, *PDLIST_ITEM;
+
+typedef struct dlist {
+	struct dlist_item * head;
+	struct dlist_item * tail;
+	struct dlist_item * (* push) (struct dlist *, PDLIST_ITEM);
+	struct dlist_item * (* pop) (struct dlist *);
+	int  (*delete) (struct dlist*); 
+}DLIST, *PDLIST;
+
+PDLIST new_dlist();
+PDLIST  dlist_ctor(PDLIST lst);
+
+PDLIST_ITEM new_dlist_item();
+PDLIST_ITEM dlist_item_ctor(PDLIST_ITEM );
+/**
+ * NAME					: copy string
+ * DESCRIPTION	: copy in to target, if target data already 
+ * 								exists realloc for new usage
+ */
+char *copy_string(char **target, char *in);
+
+PPRIMTREE_ITEM primtreeitem_ctor(PPRIMTREE_ITEM pitem);
 #endif
 

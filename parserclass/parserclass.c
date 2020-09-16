@@ -1304,6 +1304,9 @@ static int __priml_item_delete(PPRIML_ITEM node) {
 			if (node->data_remove_fn) {
 				node->data_remove_fn(node->data);
 			}
+			else {
+				free(node->data);
+			}
 			node->data = NULL;
 		}
 		node->next = NULL;
@@ -1448,6 +1451,23 @@ static int __primlist_collect(struct primlist * in, int  (*filter_fn) (void *), 
 	return counter;
 }
 
+static PPRIML_ITEM __primlist_find_one (PPRIMLIST node, void *to_find, int (*cmp) (void *, void *)) {
+	PPRIML_ITEM curr = node->head;
+	void *curr_data = NULL;
+	int res = -1;
+	if(to_find) {
+		while (curr && (curr_data = curr->get_data(curr)) && (res = cmp(to_find, curr_data)) > 0 ) {
+			curr = curr->next;
+		}
+		if (res) {
+			return NULL;
+		}
+		else {
+			return curr;
+		}
+	}
+	return NULL;
+}
 
 static PPRIMLIST __primlist_add_one (PPRIMLIST node, PPRIML_ITEM added, int (*cmp) (void *, void *)) {
 	PPRIML_ITEM curr = node->head;
@@ -1764,6 +1784,7 @@ static PPRIMLIST __primlist_ctor(PPRIMLIST plist) {
 		plist->add_common = __primlist_add_common;
 		plist->remove_common = __primlist_remove_common;
 		plist->sort = __primlist_quicksort;
+		plist->find_one = __primlist_find_one;
 	}
 	return plist;
 }
@@ -1811,60 +1832,63 @@ static int __primtreeitem_add_first(struct primtree_item *root, struct primtree_
 	return 0;
 }
 static PPRIMTREE_ITEM __primtreeitem_add_one (PPRIMTREE_ITEM node, PPRIMTREE_ITEM added, int (*cmp) (void *, void *)) {
-	PPRIMTREE_ITEM curr = node->head;
-	PPRIMTREE_ITEM prev= NULL;
-	void *curr_data = NULL;
-	void *added_data = NULL;
-	PPRIMTREE_ITEM tmp = NULL;
-	int res = -1;
-	if (added && (added_data = added->get_data(added))) {
-		while (curr && (curr_data = curr->get_data(curr)) && (res = cmp(added_data, curr_data)) > 0 ) {
-			prev= curr;
-			curr = curr->next;
-		}
-		//match with the first item
-		if (!prev && res == 0) {
-			added->next = node->head->next;
-			tmp = node->head;
-			node->head = added;
-			if (node->tail == tmp) {
+	if (node) {
+		PPRIMTREE_ITEM curr = node->head;
+		PPRIMTREE_ITEM prev= NULL;
+		void *curr_data = NULL;
+		void *added_data = NULL;
+		PPRIMTREE_ITEM tmp = NULL;
+		int res = -1;
+		if (added && (added_data = added->get_data(added))) {
+			while (curr && (curr_data = curr->get_data(curr)) && (res = cmp(added_data, curr_data)) > 0 ) {
+				prev= curr;
+				curr = curr->next;
+			}
+			//match with the first item
+			if (!prev && res == 0) {
+				added->next = node->head->next;
+				tmp = node->head;
+				node->head = added;
+				if (node->tail == tmp) {
+					node->tail = added;
+				}
+				tmp->delete(tmp);
+			}
+			//smaller then first item
+			else if (!prev && res < 0) {
+				added->next = node->head;
+				node->head = added;
+				if (node && !node->tail) {
+					node->tail = added;
+				}
+			}
+			//add to tail
+			else if (res > 0) {
+				prev->next = added;
 				node->tail = added;
 			}
-			tmp->delete(tmp);
-		}
-		//smaller then first item
-		else if (!prev && res < 0) {
-			added->next = node->head;
-			node->head = added;
-			if (!node->tail) {
-				node->tail = added;
+			else if (res == 0) {
+				tmp = curr;
+				added->next = curr->next;
+				if(node->tail == curr) {
+					node->tail = added;
+				}
+				prev->next = added;
+				tmp->delete(tmp);
+			}
+			else if (res < 0) {
+				added->next = curr;
+				prev->next = added;
 			}
 		}
-		//add to tail
-		else if (res > 0) {
-			prev->next = added;
-			node->tail = added;
+		else {
+			return NULL;
 		}
-		else if (res == 0) {
-			tmp = curr;
-			added->next = curr->next;
-			if(node->tail == curr) {
-				node->tail = added;
-			}
-			prev->next = added;
-			tmp->delete(tmp);
-		}
-		else if (res < 0) {
-			added->next = curr;
-			prev->next = added;
-		}
+		added->parent = node;
+		node->curr = node->head;
+		return node;
 	}
-	else {
-		return NULL;
-	}
-	added->parent = node;
-	node->curr = node->head;
-	return node;
+	return NULL;
 }
 
 static PPRIMTREE_ITEM __primtreeitem_remove_one (PPRIMTREE_ITEM node, void *deleted, int (*cmp) (void *, void *)) {
@@ -2050,7 +2074,7 @@ static struct primtree_item * __primtreeitem_getnextchild (struct primtree_item 
 static struct primtree_item * __primtreeitem_detach_head (struct primtree_item *node)
 {
 	struct primtree_item * ret = NULL;
-	if (node->head)
+	if(node && node->head)
 	{
 		ret = node->head;
 		node->head = (PPRIMTREE_ITEM) node->head->next; 
@@ -2205,7 +2229,7 @@ void __primtreeitem_quicksort (PPRIMTREE_ITEM item, int (*fn) (void *, void *)) 
 	item->tail = last;
 }
 
-static PPRIMTREE_ITEM __primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
+PPRIMTREE_ITEM primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
 	if (pitem) {
 		__primlist_ctor(&pitem->list);
 		pitem->get_parent = __primtreeitem_getparent;
@@ -2230,14 +2254,151 @@ static PPRIMTREE_ITEM __primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
 	}
 	return pitem;
 }
+
 PPRIMTREE_ITEM newprimtreeitem() {
 	PPRIMTREE_ITEM pitem = (PPRIMTREE_ITEM) calloc (1, sizeof(PRIMTREE_ITEM));
 	if (pitem) {
-		__primtreeitem_ctor(pitem);
+		primtreeitem_ctor(pitem);
 	}
 	return pitem;
 }
 
+PDLIST_ITEM dlist_item_set_data(PDLIST_ITEM entry, void *data) {
+	if(entry) {
+		entry->data = data;
+	}
+	return entry;
+}
+
+void  dlist_item_set_data_remove_fn(PDLIST_ITEM entry, int (*data_remove_fn) (void *)) {
+	if (entry) {
+		entry->data_remove_fn = data_remove_fn;
+	}
+}
+
+int  dlist_item_delete(PDLIST_ITEM entry) {
+	if (entry) {
+		if (entry->data_remove_fn) {
+			entry->data_remove_fn(entry->data);
+		}
+		else {
+			free(entry->data);
+		}
+		entry->prev = entry->next = NULL;
+		free(entry);
+		return 1;
+	}	
+	return 0;
+}
+
+
+
+PDLIST_ITEM  dlist_item_ctor(PDLIST_ITEM in) {
+	if (in) {
+		in->set_data = dlist_item_set_data;
+		in->set_data_remove_fn = dlist_item_set_data_remove_fn;
+		in->delete = dlist_item_delete;
+	}
+	return in;
+}
+
+PDLIST_ITEM new_dlist_item() {
+	PDLIST_ITEM ret = (PDLIST_ITEM )calloc(1, sizeof(DLIST_ITEM ));
+	if (ret) {
+		return dlist_item_ctor(ret);
+	}
+	return ret;
+}
+
+PDLIST_ITEM dlist_push(PDLIST lst, PDLIST_ITEM item) {
+	if(lst && lst->tail) {
+		lst->tail->next = item;
+		item->prev = lst->tail;
+		lst->tail = item;
+	}
+	else {
+		lst->head = lst->tail = item;
+	}
+	return item;
+}
+
+PDLIST_ITEM dlist_pop(PDLIST lst) {
+	if (lst && lst->tail) {
+		PDLIST_ITEM to_ret = lst->tail;
+		if (to_ret->prev) {
+			to_ret->prev->next = NULL;
+			lst->tail = to_ret->prev;
+		}
+		else  {//also a head
+			lst->head = NULL;
+			lst->tail = NULL;
+		}
+		to_ret->prev = NULL;
+		return to_ret;
+	}
+	return NULL;
+}
+
+int dlist_delete(PDLIST lst) {
+		PDLIST_ITEM curr = NULL;
+		PDLIST_ITEM next = NULL;
+
+	if (lst) {
+		curr = lst->head;
+		while(curr) {
+				curr->delete(curr);
+				next = curr->next;
+				curr = next;
+		}
+		lst->head = lst->tail = NULL;
+		free(lst);
+		return 1;
+	}
+	return 0;
+}
+
+PDLIST  dlist_ctor(PDLIST lst) {
+	if (lst) {
+		lst->push = dlist_push;
+		lst->pop = dlist_pop;
+		lst->delete = dlist_delete;
+	}
+	return lst;
+}
+
+PDLIST new_dlist() {
+	PDLIST ret = (PDLIST) calloc(1, sizeof(DLIST));
+	if (ret) {
+		dlist_ctor(ret);
+	}
+	return ret;
+}
+char *copy_string(char **target, char *in) {
+	char *copied ;
+	if (!*target) {
+		copied = calloc(1, strlen(in) + 2);
+		if (copied) {
+			strncpy(copied, in, strlen(in));
+			*target = copied;
+			return copied;
+		}
+		else {
+			return NULL;
+		}
+	}
+	else {
+		*target = realloc(*target, strlen(in) + 2);
+		if (*target) {
+			strncpy(*target, in, strlen(in));
+			return *target;
+		}
+		else {
+			return NULL;
+		}
+		
+	}
+	
+}
 #ifdef _PARSER_CLASS_TEST_
 #include <stdio.h>
 #include <stdlib.h> 
@@ -2281,33 +2442,6 @@ typedef struct {
 
 map_struct *new_map_struct() {
 	return calloc(1, sizeof(map_struct));
-}
-
-char *copy_string(char **target, char *in) {
-	char *copied ;
-	if (!*target) {
-		copied = calloc(1, strlen(in) + 2);
-		if (copied) {
-			strncpy(copied, in, strlen(in));
-			*target = copied;
-			return copied;
-		}
-		else {
-			return NULL;
-		}
-	}
-	else {
-		*target = realloc(*target, strlen(in) + 2);
-		if (*target) {
-			strncpy(*target, in, strlen(in));
-			return *target;
-		}
-		else {
-			return NULL;
-		}
-		
-	}
-	
 }
 
 map_struct *map_set_name(map_struct *in, char *input) {
@@ -2906,4 +3040,7 @@ int main (int argc, char **argv) {
 	root_tree->delete(root_tree);
 	
 }
+
+
+
 #endif
