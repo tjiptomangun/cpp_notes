@@ -84,6 +84,10 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 			if (!strcmp (buffer, "q"))
 			{
 				radixtreeitem_deletenode(pTree);
+				if (stack) {
+					free(stack);
+					stack = NULL;
+				}
 				fprintf (stdout, "bye...\n");
 				return 0;
 			}
@@ -213,6 +217,11 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 
 		token = stream_gettoken (fp, tokenlist, buffer, MAX_PROCESSED_DATA, &length);
 	}
+	if (stack) {
+		free(stack);
+		stack = NULL;
+	}
+
 	return 0;
 
 }

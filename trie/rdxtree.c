@@ -514,6 +514,7 @@ void __rdxtreeitem_getkeywords(PRDXTREE_ITEM item, PRDXTREE_STACK_CONTEXT ctx, c
 		__rdxtreeitem_getkeywords(curr, ctx, buffout, buffout_max, buffout_count, delim);
 		curr = curr->next;
 	}
+	free(citem);
 	citem = ctx->pop(ctx);
 	free(citem);
 	citem = NULL;
@@ -539,7 +540,7 @@ PRDXTREE_STACK_CONTEXT new_rdxtree_stack_context(){
 void rdxtreeitem_getkeywords(PRDXTREE_ITEM item, char *bufout, int bufout_max, int *bufout_count, char *delim) {
 	PRDXTREE_STACK_CONTEXT ctx = new_rdxtree_stack_context();
 	__rdxtreeitem_getkeywords(item, ctx, bufout, bufout_max, bufout_count, delim);
-	
+	free(ctx);
 }
 
 #ifdef _RDXTREE_INTERNAL_TEST_

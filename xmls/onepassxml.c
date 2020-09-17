@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "parserclass.h"
-#include "radixtree.h"
+#include "rdxtree.h"
 #include "yxml.h"
 
 typedef struct {
 	char statResetInterval[20];
 	char httpMaxSession[20];
-	PRADIXTREE_ITEM ussdSpamBlackTree;
-	PRADIXTREE_ITEM smsByPassRoamTree;
+	PRDXTREE_ITEM ussdSpamBlackTree;
+	PRDXTREE_ITEM smsByPassRoamTree;
 } af_config;
 
 typedef struct {
@@ -64,12 +64,12 @@ int updateHttpMaxSession(char *in_value) {
 }
 
 int addUssdSpamBlackTree(char *in_value) {
-	radixtreeitem_insertkey(config.ussdSpamBlackTree, in_value);
+	rdxtreeitem_insertkey(config.ussdSpamBlackTree, in_value);
 	return 1;
 }
 
 int addSmsByPassRoamTree(char *in_value) {
-	radixtreeitem_insertkey(config.smsByPassRoamTree, in_value);
+	rdxtreeitem_insertkey(config.smsByPassRoamTree, in_value);
 	return 1;
 }
 
@@ -385,8 +385,8 @@ int main (int argc, char **argv) {
 		primtreeitem_ctor(&root);
 		setup_functions(&root);
 		
-		config.ussdSpamBlackTree = new_radixtreeitem(NULL, 0, NULL);
-		config.smsByPassRoamTree = new_radixtreeitem(NULL, 0, NULL);
+		config.ussdSpamBlackTree = new_rdxtreeitem(NULL, 0, NULL);
+		config.smsByPassRoamTree = new_rdxtreeitem(NULL, 0, NULL);
 		FILE *fp = fopen(argv[1], "r");
 		int fsz = file_size(fp);
 		char * holder = calloc(fsz + 1, sizeof(char));
@@ -402,10 +402,10 @@ int main (int argc, char **argv) {
 			
 		test_fun("statResetInterval [1440]", !strcmp(config.statResetInterval, "1440"));
 		test_fun("HttpMaxSession [100]", !strcmp(config.httpMaxSession, "100"));
-		test_fun("ussdSpamBlackTree present [856207000048]", radixtreeitem_findkey(config.ussdSpamBlackTree, "856207000048") != NULL);
-		test_fun("ussdSpamBlackTree absent  [342342323]", !radixtreeitem_findkey(config.ussdSpamBlackTree, "342342323"));
-		test_fun("smsByPassRoamTree present [66810000015]", radixtreeitem_findkey(config.smsByPassRoamTree, "66810000015") != NULL);
-		test_fun("smsByPassRoamTree absent [66818124579]", !radixtreeitem_findkey(config.smsByPassRoamTree, "66818124579"));
+		test_fun("ussdSpamBlackTree present [856207000048]", rdxtreeitem_findkey(config.ussdSpamBlackTree, "856207000048") != NULL);
+		test_fun("ussdSpamBlackTree absent  [342342323]", !rdxtreeitem_findkey(config.ussdSpamBlackTree, "342342323"));
+		test_fun("smsByPassRoamTree present [66810000015]", rdxtreeitem_findkey(config.smsByPassRoamTree, "66810000015") != NULL);
+		test_fun("smsByPassRoamTree absent [66818124579]", !rdxtreeitem_findkey(config.smsByPassRoamTree, "66818124579"));
 		fclose(fp);
 		free(holder);
 		curr = root.detach_head(&root) ;
@@ -413,8 +413,8 @@ int main (int argc, char **argv) {
 			curr->delete(curr);
 			curr = root.detach_head(&root) ;
 		}
-		radixtreeitem_deletenode(config.ussdSpamBlackTree);
-		radixtreeitem_deletenode(config.smsByPassRoamTree);
+		rdxtreeitem_deletenode(config.ussdSpamBlackTree);
+		rdxtreeitem_deletenode(config.smsByPassRoamTree);
 		sleep(1);
 	}while(argc >= 3 && !strcmp(argv[2], "-m"));
 }

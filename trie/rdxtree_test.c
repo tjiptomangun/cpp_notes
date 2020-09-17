@@ -92,6 +92,10 @@ int stdparse (FILE *fp, PRDXTREE_ITEM pTree)
 			{
 				rdxtreeitem_deletenode(pTree);
 				fprintf (stdout, "bye...\n");
+				if(stack) {
+					free(stack);
+					stack = NULL;
+				}
 				return 0;
 			}
 			else if (!strncmp (buffer, "help", 4))
@@ -220,6 +224,11 @@ int stdparse (FILE *fp, PRDXTREE_ITEM pTree)
 
 		token = stream_gettoken (fp, tokenlist, buffer, MAX_PROCESSED_DATA, &length);
 	}
+	if(stack) {
+		free(stack);
+		stack = NULL;
+	}
+
 	return 0;
 
 }
