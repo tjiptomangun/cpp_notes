@@ -76,7 +76,7 @@ void radixtreeitem_deletekey(PRADIXTREE_ITEM parent, char *name);
 /**
  * NAME					: print_tree
  */
-void print_tree(PRADIXTREE_ITEM root, int tab_count);
+void print_radix_tree(PRADIXTREE_ITEM root, int tab_count);
 
 PRADIXTREE_ITEM new_radixtreeitem(char *name, int name_len, PRADIXTREE_ITEM parent);
 

@@ -16,7 +16,6 @@ void __radixtreeitem_ctor(PRADIXTREE_ITEM new_item, PRADIXTREE_ITEM parent, char
 		new_item->name[0] = name[0];
 		new_item->name_len = 1;
 	}
-
 	new_item->head = new_item->tail = new_item->next = 0;
 	new_item->parent = parent;
 }
@@ -360,14 +359,14 @@ void radixtreeitem_deletekey(PRADIXTREE_ITEM parent, char *name){
 	__delete_key(parent, name);
 }
 
-void print_tree(PRADIXTREE_ITEM root, int tab_count){	
+void print_radix_tree(PRADIXTREE_ITEM root, int tab_count){	
 	for(int i = 0; i < tab_count; i++){
 		fprintf(stdout, "\t");
 	}
 	fprintf(stdout, "name : %s, is_word : %d\n", root->name, root->is_word);
 	PRADIXTREE_ITEM curr = root->head;
 	while(curr){
-		print_tree(curr, tab_count + 1);
+		print_radix_tree(curr, tab_count + 1);
 		curr = curr->next;
 	} 
 }
@@ -411,7 +410,7 @@ void find_prefix_and_print(PRADIXTREE_ITEM root, char * to_find){
 void delete_and_print(PRADIXTREE_ITEM root, char * to_find){
 	fprintf(stdout, "delete key %s  \n", to_find);
 	radixtreeitem_deletekey(root, to_find);
-	print_tree(root, 0);
+	print_radix_tree(root, 0);
 	
 }
 
@@ -470,7 +469,7 @@ looper:
 	find_prefix_and_print(root, "7777755");
 	
 	fprintf(stdout, "----- * -----\n");
-	print_tree(root, 0);
+	print_radix_tree(root, 0);
 	
 	delete_and_print(root, "crimea");
 	delete_and_print(root, "stop");

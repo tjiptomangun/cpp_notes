@@ -51,8 +51,8 @@ typedef struct class
 	struct  class *this;
 	char    name[MAX_NAME_LENGTH];
 	int	type;
-	int (*printattributes) (struct class *, int);
-	int (*delete) (struct class *);
+	int (*printattributes) (void *, int);
+	int (*delete) (void *);
 }STRUCT_CLASS, CLASS, *PSTRUCT_CLASS, *PCLASS; 
 
 extern PCLASS newclass (char *name); 
@@ -90,7 +90,7 @@ typedef struct property
 	L_ITEM l_item ;
 	char  value[256]; 
 	int   (*setvalue) (struct property *, char*);
-	int   (*getvalue) (struct property *, char*);
+	int   (*getvalue) (struct property *, char*, size_t);
 	char *(*getvalue_ptr) (struct property *);
 }PROPERTY, *PPROPERTY; 
 
@@ -110,7 +110,7 @@ typedef struct stack_ptr
 	int (* is_empty) (struct stack_ptr *);
 }STACK_PTR, *PSTACK_PTR; 
 
-extern PSTACK_PTR newstackptr ();
+PSTACK_PTR newstackptr (void);
 
 /**
  * miniparser is generic file parser structure
@@ -216,7 +216,7 @@ typedef struct circularlist
 	PCIRCULARITEM current;
 	int count;
 	void (*add)  (struct circularlist *, PCIRCULARITEM);
-	int (*remove) (struct circularlist *, PCIRCULARITEM);
+	PCIRCULARITEM (*remove) (struct circularlist *, PCIRCULARITEM);
 	PCIRCULARITEM (*take) (struct circularlist *);
 	PCIRCULARITEM  (*takename) (struct circularlist *, char *);
 }CIRCULARLIST, *PCIRCULARLIST;
@@ -284,7 +284,7 @@ typedef struct primclass
 {
 	struct  primclass *this;
 	int	type; 
-	int (*delete) (struct primclass *);
+	int (*delete) (void *);
 }STRUCT_PRIMCLASS, PRIMCLASS, *PSTRUCT_PRIMCLASS, *PPRIMCLASS;
  
 extern PPRIMCLASS newprimclass (char *name);
@@ -304,7 +304,7 @@ typedef struct priml_item
    *	NULL	  : can not set data
    *	Others	  : pointer to this
    **/
-	struct priml_item *(*set_data) (struct priml_item *, void *); 
+	void *(*set_data) (void *, void *); 
 	/**
 	 * NAME					: delete
 	 * DESCRIPTION	: delete input
@@ -312,14 +312,14 @@ typedef struct priml_item
 	 *		0					: success
 	 *	others			: failed, only failed if input is null
 	 **/
-	int  (*delete) (struct priml_item *); 
+	int  (*delete) (void *); 
 	/**
 	 * NAME					: get_data
 	 * DESCRIPTION	: default implementation will return pointer to data.
 	 * RETURNS			: pointer to attached data
 	 * 
 	 */
-	void *(*get_data) (struct priml_item *);
+	void *(*get_data) (void *);
 	int (*data_remove_fn) (void *);
 	void (*set_data_remove_fn) (struct priml_item *, int (*) (void *));
 }PRIML_ITEM, *PPRIML_ITEM; 
@@ -336,9 +336,9 @@ typedef struct primlist
 	PPRIML_ITEM (*get_first_child) (struct primlist *); 
 	PPRIML_ITEM (*get_next_child) (struct primlist *); 
 	PPRIML_ITEM (*detach) (struct primlist *, PPRIML_ITEM);
-	struct primlist *(*set_data) (struct primlist *, void *); 
-	int  (*delete) (struct primlist *); 
-	void *(*get_data) (struct primlist *); 
+	void *(*set_data) (void*, void *); 
+	int  (*delete) (void *); 
+	void *(*get_data) (void *); 
 
 	/**
 	 * NAME			: add_one
@@ -600,9 +600,9 @@ typedef struct primtree_item
 	struct primtree_item * (*remove_common) (struct primtree_item *, void *, int (*) (void *, void *));
 
 
-	struct primtree_item *(*set_data) (struct primtree_item *, void *); 
-	int  (*delete) (struct primtree_item *); 
-	void *(*get_data) (struct primtree_item *);
+	void *(*set_data) (void*, void *); 
+	int  (*delete) (void *); 
+	void *(*get_data) (void *);
 	/**
 	 * NAME						: collect
 	 * DESCRIPTION		: collect element of tree item recursively with child

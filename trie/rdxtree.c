@@ -11,8 +11,11 @@ PRDXTREE_CONTEXT_ITEM new_rdxtree_context_item(PRDXTREE_ITEM new_titem) {
 	PRDXTREE_CONTEXT_ITEM new_litem =  (PRDXTREE_CONTEXT_ITEM) calloc(1, sizeof(RDXTREE_CONTEXT_ITEM));
 	if(new_litem) {
 		new_litem->item = new_titem;
+		return new_litem;
 	}
-	return new_litem;
+	else {
+		return NULL;
+	}
 }
 
 void rdxtree_find_context_delete(PRDXTREE_FIND_CONTEXT to_del) {
@@ -81,7 +84,7 @@ PRDXTREE_FIND_CONTEXT rdxtree_find_context_ctor(PRDXTREE_FIND_CONTEXT ctx) {
 	return ctx;
 }
 
-PRDXTREE_FIND_CONTEXT new_rdxtree_find_context() {
+PRDXTREE_FIND_CONTEXT new_rdxtree_find_context(void) {
 	PRDXTREE_FIND_CONTEXT ret = (PRDXTREE_FIND_CONTEXT )calloc(1, sizeof(RDXTREE_FIND_CONTEXT));
 	if (ret) {
 		return rdxtree_find_context_ctor(ret);
@@ -120,6 +123,9 @@ PRDXTREE_ITEM rdxtreeitem_add (struct rdxtree_item *parent, struct rdxtree_item 
 	}
 	else
 	{
+		if (!parent->tail) {
+			parent->tail = parent->head;
+		}
 		parent->tail->next = addedchild;
 		parent->tail = addedchild;
 	}
@@ -146,103 +152,116 @@ PRDXTREE_ITEM rdxtreeitem_inserthead(struct rdxtree_item *parent, struct rdxtree
 }
 
 PRDXTREE_ITEM rdxtreeitem_insertkey(PRDXTREE_ITEM parent, char *name) {
-	int len = strlen(name);
+	if(parent) {
+		int len = strlen(name);
 
-	PRDXTREE_ITEM curr = NULL, prev = NULL;
+		PRDXTREE_ITEM curr = NULL, prev = NULL;
 
-	int occ; //1 occured after, 0 occured match, -1 occured before
-	curr = parent->head;
+		int occ; //1 occured after, 0 occured match, -1 occured before
+		curr = parent->head;
 
-	int idx = 0;
-	occ = 1;
-	prev = NULL;
-	while(curr && (occ = name[0] - curr->name[0]) > 0){
-		prev = curr;
-		curr = curr->next;
-	}
-
-	
-	if (occ == 0){
-		while(curr->name[idx] && name[idx] && curr->name[idx] == name[idx])
-			idx++;
-		// now idx is length of equal char
-		if (idx < curr->name_len){
-			PRDXTREE_ITEM fc = (PRDXTREE_ITEM) calloc(1, sizeof (RDXTREE_ITEM));
-			memcpy(fc->name, &curr->name[idx], curr->name_len - idx);
-			fc->name_len =  curr->name_len - idx;
-			fc->head = curr->head; fc->tail = curr->tail;
-			fc->is_word = curr->is_word;
-			PRDXTREE_ITEM fcch = fc->head ;
-			while(fcch) {
-				fcch = fcch->next;
-			}
-			fc->next  = NULL;
-			curr->is_word = 0;
-			curr->head = curr->tail = fc;
-			curr->name[idx] = 0;
-			curr->name_len = idx;
-			if (name[idx])
-				return rdxtreeitem_insertkey(curr, &name[idx]);
-			else{
-				curr->is_word = 1;
-				return curr;
-			}
+		int idx = 0;
+		occ = 1;
+		prev = NULL;
+		while(curr && (occ = name[0] - curr->name[0]) > 0){
+			prev = curr;
+			curr = curr->next;
 		}
-		else if (idx == curr->name_len){
-			if (name[idx] == 0)
-				curr->is_word = 1;
-			if (name[idx])
-				return rdxtreeitem_insertkey(curr, &name[idx]);
-			else{
-				return curr;
-			}
-		}else {//new item longer, just add the rest
-			return rdxtreeitem_insertkey(curr, &name[idx]);
-		}
-	}
-	else if(occ < 0){
+
 		
-		PRDXTREE_ITEM p  = new_rdxtreeitem(name, len);
-		if (p) {
-			if(prev) {
-				p->next = prev->next;
-				prev->next = p;
+		if (occ == 0){
+			while(curr->name[idx] && name[idx] && curr->name[idx] == name[idx])
+				idx++;
+			// now idx is length of equal char
+			if (idx < curr->name_len){
+				PRDXTREE_ITEM fc = (PRDXTREE_ITEM) calloc(1, sizeof (RDXTREE_ITEM));
+				if(fc) {
+					memcpy(fc->name, &curr->name[idx], curr->name_len - idx);
+					fc->name_len =  curr->name_len - idx;
+					fc->head = curr->head; fc->tail = curr->tail;
+					fc->is_word = curr->is_word;
+					PRDXTREE_ITEM fcch = fc->head ;
+					while(fcch) {
+						fcch = fcch->next;
+					}
+					fc->next  = NULL;
+					curr->is_word = 0;
+					curr->head = curr->tail = fc;
+					curr->name[idx] = 0;
+					curr->name_len = idx;
+					if (name[idx])
+						return rdxtreeitem_insertkey(curr, &name[idx]);
+					else{
+						curr->is_word = 1;
+						return curr;
+					}
+				}
+				else {
+					return NULL;
+				}
 			}
-			else {
-				rdxtreeitem_inserthead(parent, p);
+			else if (idx == curr->name_len){
+				if (name[idx] == 0)
+					curr->is_word = 1;
+				if (name[idx])
+					return rdxtreeitem_insertkey(curr, &name[idx]);
+				else{
+					return curr;
+				}
+			}else {//new item longer, just add the rest
+				return rdxtreeitem_insertkey(curr, &name[idx]);
 			}
+		}
+		else if(occ < 0){
+			
+			PRDXTREE_ITEM p  = new_rdxtreeitem(name, len);
+			if (p) {
+				if(prev) {
+					p->next = prev->next;
+					prev->next = p;
+				}
+				else {
+					rdxtreeitem_inserthead(parent, p);
+				}
+				p->is_word = 1;
+			}
+			return p;
+		}
+		else {
+			PRDXTREE_ITEM newi = new_rdxtreeitem(name, len);
+			if (!newi) {
+				return newi;
+			}
+			PRDXTREE_ITEM p = rdxtreeitem_add(parent, newi);
 			p->is_word = 1;
+			return p;
 		}
-		return p;
-	}
-	else {
-		PRDXTREE_ITEM newi = new_rdxtreeitem(name, len);
-		if (!newi) {
-			return newi;
-		}
-		PRDXTREE_ITEM p = rdxtreeitem_add(parent, newi);
-		p->is_word = 1;
-		return p;
 	}
 
 	return NULL; 
 }
 
 PRDXTREE_ITEM rdxtreeitem_findkey(PRDXTREE_ITEM parent, char *name, PRDXTREE_FIND_CONTEXT ctx){
-	PRDXTREE_ITEM curr = parent->head;	
+	PRDXTREE_ITEM curr = parent->head;
+	PRDXTREE_CONTEXT_ITEM nctx = NULL;
 	while(curr) {
 		if(curr->name[0] == name[0]){
 			if(!memcmp(curr->name, name, curr->name_len)){
-				ctx->add_item(ctx, new_rdxtree_context_item(curr));
-				if (name[curr->name_len] == 0){
-					if (curr->is_word)
-						return curr;
-					else
-						return NULL;
+				nctx = new_rdxtree_context_item(curr);
+				if (!nctx) {
+					return NULL;
 				}
 				else {
-					
-					return rdxtreeitem_findkey(curr, &name[curr->name_len], ctx);
+					ctx->add_item(ctx, nctx);
+					if (name[curr->name_len] == 0){
+						if (curr->is_word)
+							return curr;
+						else
+							return NULL;
+					}
+					else {
+						return rdxtreeitem_findkey(curr, &name[curr->name_len], ctx);
+					}
 				}
 			}
 			return NULL;
@@ -254,14 +273,23 @@ PRDXTREE_ITEM rdxtreeitem_findkey(PRDXTREE_ITEM parent, char *name, PRDXTREE_FIN
 
 PRDXTREE_ITEM rdxtreeitem_findprefix(PRDXTREE_ITEM parent, char *name, PRDXTREE_FIND_CONTEXT ctx){
 	PRDXTREE_ITEM curr = parent->head;
+	PRDXTREE_CONTEXT_ITEM nctx = NULL;
 	while(curr) {
 		if(curr->name[0] == name[0]){
 			if(!memcmp(curr->name, name, curr->name_len)){
-				ctx->add_item(ctx, new_rdxtree_context_item(curr));
-				if (curr->is_word)
-					return curr;
-				else
-					return rdxtreeitem_findprefix(curr, &name[curr->name_len], ctx);
+				nctx = new_rdxtree_context_item(curr);
+				if (!nctx) {
+					return NULL;
+				}
+				else {
+					ctx->add_item(ctx, nctx);
+					if (curr->is_word){
+						return curr;
+					}
+					else{
+						return rdxtreeitem_findprefix(curr, &name[curr->name_len], ctx);
+					}
+				}
 			}
 			return NULL;
 		}
@@ -387,14 +415,14 @@ void rdxtreeitem_deletekey(PRDXTREE_ITEM parent, char *name){
 	__delete_key(parent, name);
 }
 
-void print_tree(PRDXTREE_ITEM root, int tab_count){	
+void print_rdx_tree(PRDXTREE_ITEM root, int tab_count){	
 	for(int i = 0; i < tab_count; i++){
 		fprintf(stdout, "\t");
 	}
 	fprintf(stdout, "name : %s, is_word : %d\n", root->name, root->is_word);
 	PRDXTREE_ITEM curr = root->head;
 	while(curr){
-		print_tree(curr, tab_count + 1);
+		print_rdx_tree(curr, tab_count + 1);
 		curr = curr->next;
 	} 
 }
@@ -484,40 +512,56 @@ void __rdxtreeitem_getkeywords(PRDXTREE_ITEM item, PRDXTREE_STACK_CONTEXT ctx, c
 	int tmp_buffout = *buffout_count;
 	int copied = 0;
 	int delim_len = strlen(delim);
-	if (item->is_word) {
-		if ((copied = strreverse(item->name,&buffout[tmp_buffout], buffout_max - (tmp_buffout + delim_len))) < 0) {
-			memset(&buffout[*buffout_count], 0, tmp_buffout - *buffout_count);
-			return;
-		}
-		else {
-			tmp_buffout += copied;
-		}
-		PRDXTREE_CONTEXT_ITEM curr= ctx->top;
-		while (curr) {
-			if ((copied = strreverse(curr->item->name,&buffout[tmp_buffout], buffout_max - (tmp_buffout + delim_len))) < 0) {
+	if ((tmp_buffout + delim_len) >= buffout_max){
+		return;
+	}
+	else if (!item) {
+		return;
+	}
+	else {
+		if (item->is_word) {
+			if ((copied = strreverse(item->name,&buffout[tmp_buffout], buffout_max - (tmp_buffout + delim_len))) < 0) {
 				memset(&buffout[*buffout_count], 0, tmp_buffout - *buffout_count);
 				return;
 			}
 			else {
 				tmp_buffout += copied;
 			}
-			curr = curr->next;
+			PRDXTREE_CONTEXT_ITEM curr= ctx->top;
+			while (curr) {
+				if ((copied = strreverse(curr->item->name,&buffout[tmp_buffout], buffout_max - (tmp_buffout + delim_len))) < 0) {
+					memset(&buffout[*buffout_count], 0, tmp_buffout - *buffout_count);
+					return;
+				}
+				else {
+					tmp_buffout += copied;
+				}
+				curr = curr->next;
+			}
+			reverse0(&buffout[*buffout_count], tmp_buffout - *buffout_count);
+			strcpy(&buffout[tmp_buffout], delim);
+			*buffout_count = tmp_buffout + delim_len;
 		}
-		reverse0(&buffout[*buffout_count], tmp_buffout - *buffout_count);
-		strcpy(&buffout[tmp_buffout], delim);
-		*buffout_count = tmp_buffout + delim_len;
+		PRDXTREE_CONTEXT_ITEM citem = new_rdxtree_context_item(item);
+		if (citem){
+			ctx->push(ctx, citem);
+			PRDXTREE_ITEM curr = item->head;
+			while(curr) {
+				__rdxtreeitem_getkeywords(curr, ctx, buffout, buffout_max, buffout_count, delim);
+				curr = curr->next;
+			}
+			ctx->pop(ctx);
+//			citem = ctx->pop(ctx);
+// 		if (!citem) {
+// 			return;
+// 		}
+// 		else {
+			free(citem);
+			citem = NULL;
+// 		}
+ 		}
 	}
-	PRDXTREE_CONTEXT_ITEM citem = new_rdxtree_context_item(item);
-	ctx->push(ctx, new_rdxtree_context_item(item));
-	PRDXTREE_ITEM curr = item->head;
-	while(curr) {
-		__rdxtreeitem_getkeywords(curr, ctx, buffout, buffout_max, buffout_count, delim);
-		curr = curr->next;
-	}
-	free(citem);
-	citem = ctx->pop(ctx);
-	free(citem);
-	citem = NULL;
+
 }
 
 PRDXTREE_STACK_CONTEXT  rdxtree_stack_context_ctor(PRDXTREE_STACK_CONTEXT  curr) {
@@ -539,8 +583,10 @@ PRDXTREE_STACK_CONTEXT new_rdxtree_stack_context(){
 
 void rdxtreeitem_getkeywords(PRDXTREE_ITEM item, char *bufout, int bufout_max, int *bufout_count, char *delim) {
 	PRDXTREE_STACK_CONTEXT ctx = new_rdxtree_stack_context();
-	__rdxtreeitem_getkeywords(item, ctx, bufout, bufout_max, bufout_count, delim);
-	free(ctx);
+	if (ctx) {
+		__rdxtreeitem_getkeywords(item, ctx, bufout, bufout_max, bufout_count, delim);
+		free(ctx);
+	}
 }
 
 #ifdef _RDXTREE_INTERNAL_TEST_
@@ -593,12 +639,17 @@ void find_prefix_and_print(PRDXTREE_ITEM root, char * to_find){
 void delete_and_print(PRDXTREE_ITEM root, char * to_find){
 	fprintf(stdout, "delete key %s  \n", to_find);
 	rdxtreeitem_deletekey(root, to_find);
-	print_tree(root, 0);
+	print_rdx_tree(root, 0);
 	
 }
 
 int main (int argc, char **argv) {
 	PRDXTREE_ITEM root;
+	int redo = 0;
+	if (argc == 2 && !strcmp(argv[1], "-r")) {
+		redo = 1;
+	}
+redo_label:
 	root = new_rdxtreeitem(NULL, 0);
 	rdxtreeitem_insertkey(root, "hello");
 	rdxtreeitem_insertkey(root, "world");
@@ -631,13 +682,11 @@ int main (int argc, char **argv) {
 	rdxtreeitem_insertkey(root, "324");
 	
 	fprintf(stdout, "----- * -----\n");
-	
 	find_child_and_print(root, "he");
 	find_child_and_print(root, "thus");
 	find_child_and_print(root, "crimean");
 	find_child_and_print(root, "stop");
 	find_child_and_print(root, "crimea");
-
 	fprintf(stdout, "----- * -----\n");
 	find_prefix_and_print(root, "crimson");
 	find_prefix_and_print(root, "crimealand");
@@ -651,7 +700,7 @@ int main (int argc, char **argv) {
 	find_prefix_and_print(root, "7777755");
 	
 	fprintf(stdout, "----- * -----\n");
-	print_tree(root, 0);
+	print_rdx_tree(root, 0);
 	
 	delete_and_print(root, "crimea");
 	delete_and_print(root, "stop");
@@ -664,6 +713,10 @@ int main (int argc, char **argv) {
 	rdxtreeitem_getkeywords(root, buff, sizeof(buff), &count, ",");
 	fprintf(stdout, "%s\n", buff);
 	rdxtreeitem_deletenode(root);
+	if (redo) {
+		usleep(100000);
+		goto redo_label;
+	}
 
 	return 0;
 	

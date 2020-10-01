@@ -22,7 +22,9 @@
 #include <unistd.h>
 
 #include "parserclass.h"
+#include <assert.h>
 
+size_t strlen(const char *s);
 void print_identation (int ident)
 {
 	int i;
@@ -32,51 +34,55 @@ void print_identation (int ident)
 
 char *trimstring (char *instr)
 {
-	int len = strlen(instr);
-	int first = 0;
-	int last = len;
-	int k = 0;
-	int i = 0;
-	if (!len)
-		return instr;
+	if (instr) {
+		size_t len = strlen(instr);
+		int first = 0;
+		int last = len;
+		int k = 0;
+		int i = 0;
+		if (!len)
+			return instr;
 
-	k = (int)instr[i++];
-
-	while(k != 0)
-	{
-		if (k != ' ')
-			break;	
 		k = (int)instr[i++];
-	}
-	first = i-1; 
-	i = len-1;
 
-	do
-	{
-		k = (int)instr[i--];
-		if(k != ' ')
-			break;
+		while(k != 0)
+		{
+			if (k != ' ')
+				break;	
+			k = (int)instr[i++];
+		}
+		first = i-1; 
+		i = len-1;
+
+		do
+		{
+			k = (int)instr[i--];
+			if(k != ' ')
+				break;
+		}
+		while ((k != 0) && (i > first)) ;
+		
+		last = i+1; 
+		len = last - first + 1;
+		memcpy (instr, instr + first, len);
+		instr[len]  = 0; 
 	}
-	while ((k != 0) && (i > first)) ;
-	
-	last = i+1; 
-	len = last - first + 1;
-	memcpy (instr, instr + first, len);
-	instr[len]  = 0; 
 	return instr;
 }
 
 
-static int __class_delete (PCLASS p)
+static int __class_delete (void *arg1)
 {
+	PCLASS p = (PCLASS) arg1;
 	memset (p->name, 0, MAX_NAME_LENGTH);
 	p->this = NULL;
 	free (p); 
 	p = NULL;
 	return 0;
 }
-static int __class_printattributes(PCLASS p, int ident)
+static int __class_printattributes(void* arg1, int ident)
 {
+	PCLASS p = (PCLASS) arg1;
 	print_identation (ident);
 	if (p->name[0])
 		fprintf (stdout, "class.name : %s", p->name);
@@ -91,7 +97,7 @@ void __class_ctor (PCLASS pclass,char *name)
 	pclass->this = pclass;
 	pclass->type = CLASS_CLASS;
 	strncpy (pclass->name, name, MAX_NAME_LENGTH); 
-	pclass->printattributes = __class_printattributes; 
+	pclass->printattributes = (int (*) (void*, int))__class_printattributes; 
 	pclass->delete = __class_delete; 
 }
 
@@ -103,8 +109,9 @@ PCLASS newclass (char *name)
 	return pclass; 
 } 
 
-static int __l_item_printattributes(PL_ITEM p, int ident)
+static int __l_item_printattributes(void *arg1, int ident)
 {
+	PL_ITEM p = (PL_ITEM) arg1;
 	return __class_printattributes(&p->class, ident); 
 }
 /**
@@ -113,8 +120,9 @@ static int __l_item_printattributes(PL_ITEM p, int ident)
  * Returns	
  *		0 on success
  */
-static int __l_item_delete(PL_ITEM p)
+static int __l_item_delete(void *arg1)
 {
+	PL_ITEM p = (PL_ITEM) arg1;
 	p->next = NULL;
 	return __class_delete(& p->class);
 }
@@ -125,9 +133,9 @@ void __l_item_ctor (PL_ITEM pl_item, char *name)
 	pl_item->class.type = CLASS_L_ITEM; 
 	pl_item->next = 0;
 	pl_item->class.printattributes = 
-		(int (*) (PCLASS, int))(__l_item_printattributes);
+		__l_item_printattributes;
 	pl_item->class.delete = 
-		(int (*) (PCLASS))(__l_item_delete);
+		__l_item_delete;
 }
 
 PL_ITEM newl_item (char *name)
@@ -139,8 +147,9 @@ PL_ITEM newl_item (char *name)
 }
 
 
-static int __list_printattributes(PLIST p, int ident)
+static int __list_printattributes(void *arg1, int ident)
 {
+	PLIST p = (PLIST) arg1;
 	PL_ITEM pl_item = NULL;
 	__l_item_printattributes(&p->l_item, ident);
 	pl_item = p->head;
@@ -252,9 +261,9 @@ static PL_ITEM __list_take (PLIST plist)
  * NAME 	: __list_delete
  * DESCRIPTION	: clean up the list and delete object
  */
-static int __list_delete(PLIST plist)
+static int __list_delete(void *arg1)
 {
-
+	PLIST plist = (PLIST) arg1;
 	PL_ITEM curr;
 	while (( curr = __list_take(plist)))
 	{
@@ -354,10 +363,8 @@ void __list_ctor (PLIST plist, char *list_name)
 	plist->getname = __list_getname; 
 	plist->getfirstchild = __list_getfirstchild; 
 	plist->getnextchild= __list_getnextchild; 
-	plist->l_item.class.printattributes = 
-		(int(*)(PCLASS, int))(__list_printattributes);
-	plist->l_item.class.delete= 
-		(int(*)(PCLASS))(__list_delete); 
+	plist->l_item.class.printattributes = __list_printattributes;
+	plist->l_item.class.delete= __list_delete; 
 	plist->detach = __list_detach; 
 	plist->addproperty = __list_addproperty;
 }
@@ -376,8 +383,9 @@ PLIST newlist (char *list_name)
 }
 
 
-static int __property_delete(PPROPERTY p) 
+static int __property_delete(void *arg1) 
 {
+	PPROPERTY p = (PPROPERTY) arg1;
 	memset (p->value, 0, sizeof(p->value));
 	__class_delete (&p->l_item.class);
 	return 0;
@@ -389,9 +397,9 @@ static int __property_setvalue (PPROPERTY p, char *value)
 	return 0;
 }
 
-static int __property_getvalue (PPROPERTY p, char *value)
+static int __property_getvalue (PPROPERTY p, char *value, size_t max_len)
 {
-	strncpy (value, p->value, sizeof(p->value));
+	strncpy (value, p->value, max_len);
 	return 0;
 }
 
@@ -399,8 +407,9 @@ static char* __property_getvalue_ptr (PPROPERTY p) {
 	return p->value;
 }
 
-static int __property_printattributes(PPROPERTY p, int ident)
+static int __property_printattributes(void *arg1, int ident)
 {
+	PPROPERTY p = (PPROPERTY) arg1;
 	__l_item_printattributes(&p->l_item, ident);	
 	print_identation (ident);
 	fprintf (stdout, "property.value : %s", p->value);
@@ -426,10 +435,8 @@ void __property_ctor (PPROPERTY prop, char *name)
 	prop->getvalue_ptr = __property_getvalue_ptr;
 	prop->getvalue= __property_getvalue;
 	prop->l_item.next = NULL;
-	prop->l_item.class.printattributes = 
-		(int (*) (PCLASS, int))(__property_printattributes);
-	prop->l_item.class.delete = 
-		(int (*) (PCLASS))(__property_delete);
+	prop->l_item.class.printattributes = __property_printattributes;
+	prop->l_item.class.delete = __property_delete;
 }
 
 /**
@@ -452,10 +459,8 @@ void __property_ctor2 (PPROPERTY prop, char *name, char *value)
 	prop->getvalue= __property_getvalue;
 	prop->l_item.next = NULL;
 	__property_setvalue (prop, value);
-	prop->l_item.class.printattributes = 
-		(int (*) (PCLASS, int))(__property_printattributes);
-	prop->l_item.class.delete = 
-		(int (*) (PCLASS))(__property_delete);
+	prop->l_item.class.printattributes = __property_printattributes;
+	prop->l_item.class.delete = __property_delete;
 }
 
 PPROPERTY newproperty (char *name)
@@ -532,12 +537,14 @@ int __stack_ptr_isempty (PSTACK_PTR p)
 PSTACK_PTR newstackptr ()
 {
 	PSTACK_PTR p = (PSTACK_PTR) calloc (1, sizeof (STACK_PTR));
-	p->top = -1;
-	p->init = __stack_ptr_init;
-	p->push = __stack_ptr_push;
-	p->pop = __stack_ptr_pop;
-	p->cleanup = __stack_ptr_cleanup;
-	p->is_empty = __stack_ptr_isempty;
+	if(p) {
+		p->top = -1;
+		p->init = __stack_ptr_init;
+		p->push = __stack_ptr_push;
+		p->pop = __stack_ptr_pop;
+		p->cleanup = __stack_ptr_cleanup;
+		p->is_empty = __stack_ptr_isempty;
+	}
 	return p;	
 }
  
@@ -589,14 +596,14 @@ int stream_gettoken (FILE *fp, char tokenlist[], char * buff,
 	int i = 0;
 	int j = 0;
 	*length_read = 0;
-	while ((ch = fgetc (fp)) != EOF)
+	while (fp && (ch = fgetc (fp)) != EOF)
 	{
 		i = 0;
-		while (tokenlist[i] !=0 )
+		while (tokenlist[i] !=0 && j < max_buffsize)
 		{
 			if (tokenlist[i] == (char) ch)
 			{
-				*length_read = j;	
+				*length_read = j;
 				buff[j] = 0;
 				return i;
 			}
@@ -873,8 +880,9 @@ static struct tree_item * __treeitem_takechild (struct tree_item *root)
  * NAME		: __treeitem_listdelete
  * DESCRIPTION	: clean up the list and delete object
  */
-static int __treeitem_listdelete(struct tree_item *root)
+static int __treeitem_listdelete(void *arg1)
 {
+	PTREE_ITEM root = (PTREE_ITEM ) arg1;
 	PL_ITEM curr;
 	while (( curr = root->list.take(&root->list)))
 	{
@@ -980,7 +988,8 @@ static PTREE_ITEM __treeitem_getname (PTREE_ITEM root, char *name)
 	return NULL;
 }
 
-static int __treeitem_printattributes(PTREE_ITEM root, int ident){
+static int __treeitem_printattributes(void *arg1, int ident){
+	PTREE_ITEM root = (PTREE_ITEM) arg1;
 	__list_printattributes(&root->list, ident + 1);
 	PTREE_ITEM curr = root->head;
 	while(curr){
@@ -997,7 +1006,7 @@ void __treeitem_ctor (PTREE_ITEM  new, PTREE_ITEM parent, char *name)
 	new->head = new->tail = new->curr = new->next = 0;
 	new->parent = parent;
 	list_resetlist (&new->list, name);
-	new->list.l_item.class.delete = (int  (*) (PCLASS) ) (__treeitem_listdelete);
+	new->list.l_item.class.delete = __treeitem_listdelete;
 	new->add = __treeitem_add;
 	new->getparent = __treeitem_getparent;
 	new->getfirstchild = __treeitem_getfirstchild;
@@ -1007,8 +1016,7 @@ void __treeitem_ctor (PTREE_ITEM  new, PTREE_ITEM parent, char *name)
 	new->getname = __treeitem_getname;
 	new->detach = __treeitem_detach;
 	new->delete = __treeitem_delete;
-	new->list.l_item.class.printattributes = 
-		(int(*)(PCLASS, int))(__treeitem_printattributes);
+	new->list.l_item.class.printattributes = __treeitem_printattributes;
 	
 }
 /*
@@ -1031,8 +1039,9 @@ struct tree_item * newtreeitem(struct tree_item *parent, char *name)
  * Description	: delete the supplied circular item
  * 		  set data to null and free the data
  **/
-void __circularitem_delete(PCIRCULARITEM item)
+int __circularitem_delete(void *arg1)
 {
+	PCIRCULARITEM item = (PCIRCULARITEM) arg1;
 	item->next = item->prev = NULL; 
 	if (item->data)
 	{
@@ -1041,10 +1050,12 @@ void __circularitem_delete(PCIRCULARITEM item)
 	}
 	memset (item, 0 , sizeof (CIRCULARITEM));
 	free (item);
+	return 0;
 }
 
-int  __circularitem_printattributes (PCIRCULARITEM citem, int ident)
+int  __circularitem_printattributes (void * arg1, int ident)
 {
+	PCIRCULARITEM citem = (PCIRCULARITEM) arg1;
 	__class_printattributes (&citem->class, ident);
 	print_identation (ident);
 	fprintf (stdout, "prev : %p\n",  citem->prev);
@@ -1072,9 +1083,10 @@ void __circularlist_add (PCIRCULARLIST clist, PCIRCULARITEM citem)
 	}
 	clist->count ++;
 }
-int __circularlist_printattributes (PCIRCULARLIST clist, int ident)
+int __circularlist_printattributes (void *arg1, int ident)
 {
-	PCIRCULARITEM citem; 
+	PCIRCULARLIST clist = (PCIRCULARLIST) arg1;
+	PCIRCULARITEM citem;
 	int k = clist->count;
 	__class_printattributes (&clist->class, ident);
 	citem = clist->current;
@@ -1196,8 +1208,9 @@ PCIRCULARITEM  __circularlist_remove (PCIRCULARLIST clist, PCIRCULARITEM citem)
  * Name		: __circularlist_delete
  * Description	: override class delete
  */
-void __circularlist_delete (PCIRCULARLIST clist)
+int __circularlist_delete (void *arg1)
 {
+	PCIRCULARLIST clist = (PCIRCULARLIST) arg1;
 	while (clist->current)
 	{
 		__circularlist_remove (clist, clist->current);
@@ -1206,6 +1219,7 @@ void __circularlist_delete (PCIRCULARLIST clist)
 	clist->remove = NULL;
 	memset (clist, 0, sizeof (CIRCULARLIST));
 	free (clist); 
+	return 0;
 } 
 
 void __circularitem_ctor (PCIRCULARITEM pciri, char *name, void *data, int size)
@@ -1215,11 +1229,11 @@ void __circularitem_ctor (PCIRCULARITEM pciri, char *name, void *data, int size)
 	pciri->class.type = CLASS_CIRCULARITEM;
 	strncpy (pciri->class.name, name, MAX_NAME_LENGTH - 1); 
 	pciri->next = pciri->prev = NULL;
-	pciri->class.delete = (int (*)(PCLASS))(__circularitem_delete);
+	pciri->class.delete =__circularitem_delete;
 	pciri->class.printattributes = 
-		(int (*) (PCLASS, int))(__circularitem_printattributes);
+		(int (*) (void*, int))(__circularitem_printattributes);
 	pciri->datasize = size;
-	pciri->data = data; 
+	pciri->data = data; 	;
 }
 
 /**
@@ -1242,15 +1256,13 @@ void __circularlist_ctor (PCIRCULARLIST pcirlist, char *name)
 	pcirlist->class.type = CLASS_CIRCULARLIST; 
 	pcirlist->add = (void (*) (PCIRCULARLIST, PCIRCULARITEM)) 
 			 (__circularlist_add);
-	pcirlist->remove = (int (*) (PCIRCULARLIST, PCIRCULARITEM)) 
-			 (__circularlist_remove);
+	pcirlist->remove = __circularlist_remove;
 	pcirlist->take = (PCIRCULARITEM (*) (PCIRCULARLIST))
 			 (__circularlist_take);
 	pcirlist->takename = (PCIRCULARITEM (*) (PCIRCULARLIST, char *))
 			 (__circularlist_takename);
-	pcirlist->class.delete = (int (*)(PCLASS))(__circularlist_delete);
-	pcirlist->class.printattributes = 
-		(int (*) (PCLASS, int))(__circularlist_printattributes);
+	pcirlist->class.delete = __circularlist_delete;
+	pcirlist->class.printattributes = __circularlist_printattributes;
 
 }
 /**
@@ -1268,8 +1280,9 @@ PCIRCULARLIST newcircularlist (char *name)
 	return pcirlist;
 }
 
-static int __primclass_delete (PPRIMCLASS p)
+static int __primclass_delete (void *arg1)
 {
+	PPRIMCLASS p = (PPRIMCLASS) arg1;
 	p->this = NULL;
 	free (p); 
 	p = NULL;
@@ -1279,23 +1292,27 @@ static int __primclass_delete (PPRIMCLASS p)
 PPRIMCLASS __newprimclass ()
 {
 	PPRIMCLASS pclass = (PPRIMCLASS) calloc (1, sizeof (PRIMCLASS));
-	pclass->this = pclass;
-	pclass->type = PRIMCLASS_PRIMCLASS;
-	pclass->delete = __primclass_delete; 
+	if (pclass) {
+		pclass->this = pclass;
+		pclass->type = PRIMCLASS_PRIMCLASS;
+		pclass->delete = __primclass_delete; 
+	}
 	return pclass;
 }
 
-static PPRIML_ITEM __priml_item_set_data (PPRIML_ITEM p, void *data) {
+void* __priml_item_set_data (void *arg1, void *data) {
+	PPRIML_ITEM p = (PPRIML_ITEM) arg1;
 	if (!data){
 		return NULL;
 	}
 	else {
 		p->data = data;
-		return p;
+		return (void*) p;
 	}
 }
 
-static int __priml_item_delete(PPRIML_ITEM node) {
+static int __priml_item_delete(void *arg1) {
+	PPRIML_ITEM node = (PPRIML_ITEM) arg1;
 	if (!node) {
 		return 1;
 	}
@@ -1317,7 +1334,8 @@ static int __priml_item_delete(PPRIML_ITEM node) {
 	return 0;
 } 
 
-static void * __priml_item_get_data (PPRIML_ITEM p) {
+static void * __priml_item_get_data (void *arg1) {
+		PPRIML_ITEM p = (PPRIML_ITEM) arg1;
 		if(p){
 			return p->data;
 		}
@@ -1335,8 +1353,7 @@ static PPRIML_ITEM __priml_item_ctor(PPRIML_ITEM ppriml_item) {
 		ppriml_item->primclass.type = PRIMCLASS_PRIMLITEM; 
 		ppriml_item->next = NULL;
 		ppriml_item->data = NULL;
-		ppriml_item->primclass.delete = 
-			(int (*) (PPRIMCLASS))(__priml_item_delete);
+		ppriml_item->primclass.delete = __priml_item_delete;
 		ppriml_item->set_data = __priml_item_set_data;
 		ppriml_item->delete = __priml_item_delete;
 		ppriml_item->get_data = __priml_item_get_data;
@@ -1398,9 +1415,9 @@ static PPRIML_ITEM __primlist_take (PPRIMLIST plist)
  * NAME 	: __primlist_delete
  * DESCRIPTION	: clean up the list and delete object
  */
-static int __primlist_delete(PPRIMLIST plist)
+static int __primlist_delete(void *arg1)
 {
-
+	PPRIMLIST plist = (PPRIMLIST) arg1;
 	PPRIML_ITEM curr;
 	while (( curr = __primlist_take(plist)))
 	{
@@ -1690,28 +1707,33 @@ PPRIML_ITEM __primlist_partition (PPRIML_ITEM head, PPRIML_ITEM end, PPRIML_ITEM
 	PPRIML_ITEM tail = pivot;
 	
 	while(curr && curr != pivot) {
-		if (fn(curr->get_data(curr), pivot->get_data(pivot)) < 0) {
-			if ((*new_head) == NULL)  {
-				//first smaller than pivot becomes new_head
-				(*new_head) = curr;
-			}
-			prev = curr;
-			curr = curr->next;
+		if (!pivot) {
+			break;
 		}
 		else {
-			if (prev) {
-				//move to right side of pivot
-				prev->next = curr->next;
+			if (fn(curr->get_data(curr), pivot->get_data(pivot)) < 0) {
+				if ((*new_head) == NULL)  {
+					//first smaller than pivot becomes new_head
+					(*new_head) = curr;
+				}
+				prev = curr;
+				curr = curr->next;
 			}
+			else {
+				if (prev) {
+					//move to right side of pivot
+					prev->next = curr->next;
+				}
 
-			PPRIML_ITEM tmp = curr->next;
-			curr->next = NULL;//unlink with the rest of the list
-												//later invoker of this function
-												//will relink it
-			tail->next = curr;
-			tail = curr;
-			curr = tmp;
-			
+				PPRIML_ITEM tmp = curr->next;
+				curr->next = NULL;//unlink with the rest of the list
+													//later invoker of this function
+													//will relink it
+				tail->next = curr;
+				tail = curr;
+				curr = tmp;
+				
+			}
 		}
 	}
 	
@@ -1746,16 +1768,17 @@ PPRIML_ITEM __primlist_quicksort_recur (PPRIML_ITEM head, PPRIML_ITEM end, int (
 	
 	PPRIML_ITEM pivot = __primlist_partition (head, end, &new_head, &right_tail, &new_end, fn);
 	
-	if (new_head != pivot) {
+	if (pivot && new_head != pivot) {
 	//there are left side of pivot, sort them
 		new_head = __primlist_quicksort_recur (new_head, right_tail, fn);
 		PPRIML_ITEM tmp;
 		if ((tmp = __prim_list_get_tail (new_head))) {
 			tmp->next = pivot;
 		}
+		pivot->next = __primlist_quicksort_recur (pivot->next, new_end, fn);
 	}
 	//sort the right side of pivot
-	pivot->next = __primlist_quicksort_recur (pivot->next, new_end, fn);
+
 	return new_head;
 }
 
@@ -1772,12 +1795,11 @@ static PPRIMLIST __primlist_ctor(PPRIMLIST plist) {
 		plist->take = __primlist_take;
 		plist->get_first_child = __primlist_getfirstchild;
 		plist->get_next_child= __primlist_getnextchild;
-		plist->set_data = (PPRIMLIST (*) (PPRIMLIST , void*))__priml_item_set_data;
-		plist->priml_item.primclass.delete =
-			(int(*)(PPRIMCLASS))(__primlist_delete);
+		plist->set_data = __priml_item_set_data;
+		plist->priml_item.primclass.delete =__primlist_delete;
 		plist->detach = __primlist_detach;
 		plist->delete = __primlist_delete;
-		plist->get_data = (void * (*) (PPRIMLIST)) __priml_item_get_data;
+		plist->get_data = __priml_item_get_data;
 		plist->collect = __primlist_collect;
 		plist->add_one = __primlist_add_one;
 		plist->remove_one = __primlist_remove_one;
@@ -2121,7 +2143,8 @@ static PPRIMTREE_ITEM  __primtreeitem_detach_node(struct primtree_item *node, st
 	return detached;
 }
 
-static int __primtreeitem_delete(PPRIMTREE_ITEM pitem) {
+static int __primtreeitem_delete(void *arg1) {
+	PPRIMTREE_ITEM pitem = (PPRIMTREE_ITEM) arg1;
 	PPRIMTREE_ITEM child = NULL;
 	if (pitem){
 		while((child = __primtreeitem_detach_head(pitem))) {
@@ -2154,28 +2177,30 @@ PPRIMTREE_ITEM __primtreeitem_partition (PPRIMTREE_ITEM head, PPRIMTREE_ITEM end
 	PPRIMTREE_ITEM tail = pivot;
 	
 	while(curr && curr != pivot) {
-		if (fn(curr->get_data(curr), pivot->get_data(pivot)) < 0) {
-			if ((*new_head) == NULL)  {
-				//first smaller than pivot becomes new_head
-				(*new_head) = curr;
+		if (pivot) {
+			if (fn(curr->get_data(curr), pivot->get_data(pivot)) < 0) {
+				if ((*new_head) == NULL)  {
+					//first smaller than pivot becomes new_head
+					(*new_head) = curr;
+				}
+				prev = curr;
+				curr = curr->next;
 			}
-			prev = curr;
-			curr = curr->next;
-		}
-		else {
-			if (prev) {
-				//move to right side of pivot
-				prev->next = curr->next;
-			}
+			else {
+				if (prev) {
+					//move to right side of pivot
+					prev->next = curr->next;
+				}
 
-			PPRIMTREE_ITEM tmp = curr->next;
-			curr->next = NULL;//unlink with the rest of the list
-												//later invoker of this function
-												//will relink it
-			tail->next = curr;
-			tail = curr;
-			curr = tmp;
-			
+				PPRIMTREE_ITEM tmp = curr->next;
+				curr->next = NULL;//unlink with the rest of the list
+													//later invoker of this function
+													//will relink it
+				tail->next = curr;
+				tail = curr;
+				curr = tmp;
+				
+			}
 		}
 	}
 	
@@ -2210,16 +2235,17 @@ PPRIMTREE_ITEM __primtreeitem_quicksort_recur (PPRIMTREE_ITEM head, PPRIMTREE_IT
 	
 	PPRIMTREE_ITEM pivot = __primtreeitem_partition (head, end, &new_head, &right_tail, &new_end, fn);
 	
-	if (new_head != pivot) {
+	if (pivot && new_head != pivot) {
 	//there are left side of pivot, sort them
 		new_head = __primtreeitem_quicksort_recur (new_head, right_tail, fn);
 		PPRIMTREE_ITEM tmp;
 		if ((tmp = __primtreeitem_get_tail (new_head))) {
 			tmp->next = pivot;
 		}
+		//sort the right side of pivot
+		pivot->next = __primtreeitem_quicksort_recur (pivot->next, new_end, fn);
 	}
-	//sort the right side of pivot
-	pivot->next = __primtreeitem_quicksort_recur (pivot->next, new_end, fn);
+
 	return new_head;
 }
 
@@ -2239,11 +2265,10 @@ PPRIMTREE_ITEM primtreeitem_ctor(PPRIMTREE_ITEM pitem) {
 		pitem->detach_node= __primtreeitem_detach_node;
 		pitem->add_last= __primtreeitem_add_last;
 		pitem->add_first= __primtreeitem_add_first;
-		pitem->list.priml_item.primclass.delete = 
-			(int (*) (PPRIMCLASS))(__primtreeitem_delete);
-		pitem->set_data = (PPRIMTREE_ITEM (*) (PPRIMTREE_ITEM , void*))__priml_item_set_data;
+		pitem->list.priml_item.primclass.delete = __primtreeitem_delete;
+		pitem->set_data = __priml_item_set_data;
 		pitem->delete= __primtreeitem_delete;
-		pitem->get_data = (void * (*) (PPRIMTREE_ITEM)) __priml_item_get_data;
+		pitem->get_data = __priml_item_get_data;
 		pitem->collect = __primtreeitem_collect;
 		pitem->add_one = __primtreeitem_add_one;
 		pitem->remove_one = __primtreeitem_remove_one;

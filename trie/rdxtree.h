@@ -100,7 +100,7 @@ void rdxtreeitem_deletekey(PRDXTREE_ITEM parent, char *name);
 /**
  * NAME					: print_tree
  */
-void print_tree(PRDXTREE_ITEM root, int tab_count);
+void print_rdx_tree(PRDXTREE_ITEM root, int tab_count);
 
 PRDXTREE_ITEM new_rdxtreeitem(char *name, int name_len);
 
@@ -121,7 +121,7 @@ void rdxtreeitem_getkeywords(PRDXTREE_ITEM item,  char *bufout, int bufout_max, 
  * NAME					: new_rdxtree_find_context
  * DESCRIPTION	: create new rdx tree find context
  */
-PRDXTREE_FIND_CONTEXT new_rdxtree_find_context();
+PRDXTREE_FIND_CONTEXT new_rdxtree_find_context(void);
 
 /**
  * NAME					: new_rdxtree_find_context

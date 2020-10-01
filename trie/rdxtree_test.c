@@ -21,7 +21,7 @@ int option ()
 	return 0;
 }
 
-void print_reverse(PRDXTREE_FIND_CONTEXT ctx) {
+void rdxtree_print_reverse(PRDXTREE_FIND_CONTEXT ctx) {
 	if (ctx) {
 		ctx->reverse_once(ctx);
 	}
@@ -34,12 +34,12 @@ void print_reverse(PRDXTREE_FIND_CONTEXT ctx) {
 	
 }
 
-void find_child_and_print(PRDXTREE_ITEM root, char * to_find){
+void rdxtree_find_child_and_print(PRDXTREE_ITEM root, char * to_find){
 	fprintf(stdout, "finding name %s  ", to_find);
 	PRDXTREE_FIND_CONTEXT ctx= new_rdxtree_find_context();
 	PRDXTREE_ITEM curr = rdxtreeitem_findkey(root, to_find, ctx);
 	if(curr){
-		print_reverse(ctx);
+		rdxtree_print_reverse(ctx);
 		fprintf(stdout, "\n");
 	}
 	else {
@@ -47,12 +47,12 @@ void find_child_and_print(PRDXTREE_ITEM root, char * to_find){
 	} 
 }
 
-void find_prefix_and_print(PRDXTREE_ITEM root, char * to_find){
+void rdxtree_find_prefix_and_print(PRDXTREE_ITEM root, char * to_find){
 	fprintf(stdout, "finding prefix %s  ", to_find);
 	PRDXTREE_FIND_CONTEXT ctx= new_rdxtree_find_context();
 	PRDXTREE_ITEM curr = rdxtreeitem_findprefix(root, to_find, ctx);
 	if(curr){
-		print_reverse(ctx);
+		rdxtree_print_reverse(ctx);
 		fprintf(stdout, "\n");
 	}
 	else {
@@ -65,7 +65,7 @@ void find_prefix_and_print(PRDXTREE_ITEM root, char * to_find){
 int stdparse (FILE *fp, PRDXTREE_ITEM pTree)
 {
 	char tokenlist[] = {" \n"};
-	char buffer[MAX_PROCESSED_DATA];
+	char buffer[MAX_PROCESSED_DATA] = {0};
 	int token = -1;
 	int length = 0;
 
@@ -135,7 +135,7 @@ int stdparse (FILE *fp, PRDXTREE_ITEM pTree)
 			}
 			else if (!strncmp (buffer, "print", 5))
 			{
-				print_tree(pTree, 0);
+				print_rdx_tree(pTree, 0);
 				state = STATE_OTHER; 
 				break;
 			}
@@ -189,7 +189,7 @@ int stdparse (FILE *fp, PRDXTREE_ITEM pTree)
 				do
 				{
 					a = stack->pop(stack);
-					find_prefix_and_print(pTree, a);
+					rdxtree_find_prefix_and_print(pTree, a);
 					free (a);
 
 				} while (stack->top>=0);
@@ -200,7 +200,7 @@ int stdparse (FILE *fp, PRDXTREE_ITEM pTree)
 				do
 				{
 					a = stack->pop(stack);
-					find_child_and_print(pTree, a);
+					rdxtree_find_child_and_print(pTree, a);
 					free (a);
 				} while (stack->top>=0);
 				break;

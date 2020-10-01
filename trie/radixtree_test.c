@@ -8,7 +8,8 @@
 
 #include "radixtree.h"
 
-
+#ifndef _RADIXTREE_TEST_
+#define _RADIXTREE_TEST_
 int option ()
 {
 	fprintf (stdout, "type:\n"
@@ -55,10 +56,10 @@ void find_prefix_and_print(PRADIXTREE_ITEM root, char * to_find){
 
 #define MAX_PROCESSED_DATA 3000
 
-int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
+int radixtest_stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 {
 	char tokenlist[] = {" \n"};
-	char buffer[MAX_PROCESSED_DATA];
+	char buffer[MAX_PROCESSED_DATA] = {0};
 	int token = -1;
 	int length = 0;
 
@@ -96,27 +97,33 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 				option();
 				state = STATE_OTHER; 
 				radixtreeitem_deletenode(pTree);
+				memset(buffer, 0, sizeof(buffer));
 				return 0;
 			}
 			else if (!strncmp (buffer, "add", 3))
 			{
 				state = STATE_ADD; 
+				memset(buffer, 0, sizeof(buffer));
 			}
 			else if (!strncmp (buffer, "delete", 6))
 			{
 				state = STATE_DELETE; 
+				memset(buffer, 0, sizeof(buffer));
 			}
 			else if (!strncmp (buffer, "del", 3))
 			{
 				state = STATE_DELETE; 
+				memset(buffer, 0, sizeof(buffer));
 			}
 			else if (!strncmp (buffer, "gpref", 3))
 			{
 				state = STATE_GET_PREFIX; 
+				memset(buffer, 0, sizeof(buffer));
 			}
 			else if (!strncmp (buffer, "gkey", 3))
 			{
-				state = STATE_GET_KEY; 
+				state = STATE_GET_KEY;
+				memset(buffer, 0, sizeof(buffer));
 			}
 			else if (!strncmp (buffer, "kwprint", 3))
 			{
@@ -125,11 +132,13 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 				radixtreeitem_getkeywords(pTree, buff, sizeof(buff), &count, ",");
 				fprintf(stdout, "%s\n", buff);
 				state = STATE_OTHER; 
+				memset(buffer, 0, sizeof(buffer));
 			}
 			else if (!strncmp (buffer, "print", 5))
 			{
-				print_tree(pTree, 0);
+				print_radix_tree(pTree, 0);
 				state = STATE_OTHER; 
+				memset(buffer, 0, sizeof(buffer));
 				break;
 			}
 			else if (strlen(buffer))
@@ -148,6 +157,7 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 				numvar ++;
 				memcpy (newvar, buffer, length);
 				stack->push (stack, newvar); 
+				memset(buffer, 0, sizeof(buffer));
 			}
 			if (tokenlist[token] == ' ')
 				break;
@@ -164,6 +174,7 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 					free (a);
 
 				} while (stack->top>=0);
+				memset(buffer, 0, sizeof(buffer));
 				break;
 			case STATE_DELETE:
 				if (stack->top < 0)
@@ -175,6 +186,7 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 					free (a);
 
 				} while (stack->top>=0);
+				memset(buffer, 0, sizeof(buffer));
 				break;
 			case STATE_GET_PREFIX:
 				if (stack->top < 0)
@@ -186,6 +198,7 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 					free (a);
 
 				} while (stack->top>=0);
+				memset(buffer, 0, sizeof(buffer));
 				break;
 			case STATE_GET_KEY:
 				if (stack->top < 0)
@@ -196,6 +209,7 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 					find_child_and_print(pTree, a);
 					free (a);
 				} while (stack->top>=0);
+				memset(buffer, 0, sizeof(buffer));
 				break;
 			case STATE_OTHER:
 				while (stack->top>=0)
@@ -204,6 +218,7 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 					free (a);
 
 				}
+				memset(buffer, 0, sizeof(buffer));
 				break;
 			default:
 				break;
@@ -229,6 +244,7 @@ int stdparse (FILE *fp, PRADIXTREE_ITEM pTree)
 int main (int argc, char **argv)
 {
 	PRADIXTREE_ITEM pTree = new_radixtreeitem(NULL, 0, NULL);
-	stdparse (stdin, pTree);
+	radixtest_stdparse (stdin, pTree);
 	exit (EXIT_SUCCESS);
 }
+#endif
