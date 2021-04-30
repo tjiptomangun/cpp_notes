@@ -37,7 +37,7 @@ typedef struct none{
 	struct o_option *this;
 	void (*delete) (struct none*);
 	bool (* is_some) ();
-}NONE;
+}NONE_OPTION;
 
 /**
  * Option is union of Some and None. 
@@ -48,7 +48,7 @@ typedef struct none{
 union Option {
 	OPTION Optional;
 	SOME Some;
-	NONE None;
+	NONE_OPTION None;
 };
 
 /**
@@ -66,7 +66,7 @@ bool __none_is_some();
 /**
  * none_instance, the single None object instance
  */
-NONE *none_instance;
+NONE_OPTION *none_instance;
 
 /**
  * NAME			: none_object

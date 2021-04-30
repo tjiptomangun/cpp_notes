@@ -72,7 +72,7 @@ int xml_tree_delete_attribute(TREE_ITEM *root_tree, char *path, char *attrib_nam
  * RETURNS
  * 	pointer to attribute
  */
-char *xml_tree_get_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name, char *output);
+char *xml_tree_get_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name, char *output, size_t max_size);
 
 /**
  * NAME						: xml_tree_serialize

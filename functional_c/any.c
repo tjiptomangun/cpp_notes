@@ -9,9 +9,11 @@ static ANY* copy(ANY *a) {
 
 ANY* new_any(){
 	ANY *ret = (ANY*)calloc(1, sizeof(ANY));
-	ret->this = ret;
-	ret->delete = (void (*) ()) delete_any;
-	ret->copy= copy;
+	if(ret) {
+		ret->this = ret;
+		ret->delete = (void (*) ()) delete_any;
+		ret->copy= copy;
+	}
 	return ret;
 }
 

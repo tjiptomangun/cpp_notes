@@ -109,7 +109,7 @@ void rdxtreeitem_ctor(PRDXTREE_ITEM new_item, char *name, int name_len) {
 PRDXTREE_ITEM new_rdxtreeitem(char *name, int name_len) {
 	PRDXTREE_ITEM ret = (PRDXTREE_ITEM) calloc(1, sizeof (RDXTREE_ITEM));
 	if (ret){
-		rdxtreeitem_ctor(ret, name, name_len);	
+		rdxtreeitem_ctor(ret, name, name_len);
 	}
 	return ret; 
 }
@@ -587,6 +587,22 @@ void rdxtreeitem_getkeywords(PRDXTREE_ITEM item, char *bufout, int bufout_max, i
 		__rdxtreeitem_getkeywords(item, ctx, bufout, bufout_max, bufout_count, delim);
 		free(ctx);
 	}
+}
+
+PRDXTREE_ITEM rdxtree_findkey(PRDXTREE_ITEM root, char * to_find){
+	PRDXTREE_FIND_CONTEXT ctx= new_rdxtree_find_context();
+	PRDXTREE_ITEM curr = rdxtreeitem_findkey(root, to_find, ctx);
+	ctx->delete(ctx);
+	ctx = NULL;
+	return curr;
+}
+
+PRDXTREE_ITEM rdxtree_findprefix(PRDXTREE_ITEM root, char * to_find){
+	PRDXTREE_FIND_CONTEXT ctx= new_rdxtree_find_context();
+	PRDXTREE_ITEM curr = rdxtreeitem_findprefix(root, to_find, ctx);
+	ctx->delete(ctx);
+	ctx = NULL;
+	return curr;
 }
 
 #ifdef _RDXTREE_INTERNAL_TEST_

@@ -134,7 +134,7 @@ PROPERTY *xml_tree_find_attribute(TREE_ITEM *root_tree, char *path, char *attrib
 	return ret;
 }
 
-char *xml_tree_get_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name, char *output) {
+char *xml_tree_get_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name, char *output, size_t max_size) {
 	TREE_ITEM *elem = NULL;
 	PROPERTY *ret = NULL;
 	
@@ -143,7 +143,7 @@ char *xml_tree_get_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name
 		if (!ret)
 			return NULL;
 		else {
-			ret->getvalue(ret, output);
+			ret->getvalue(ret, output, max_size);
 		}
 	}
 	else

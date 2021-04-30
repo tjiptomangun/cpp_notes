@@ -96,7 +96,7 @@ int main (int argc, char **argv) {
 			case 'c' :
 				strcpy(buff, optarg);
 				split_elem_attrib(buff, elem, attrib);
-				if (xml_tree_get_attribute(active_tree, elem, attrib, val)){
+				if (xml_tree_get_attribute(active_tree, elem, attrib, val, sizeof(val))){
 					fprintf(stdout, "attrib %s value is %s\n", attrib, val); 
 				}
 				else

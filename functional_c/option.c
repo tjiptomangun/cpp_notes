@@ -12,18 +12,22 @@ bool __none_is_some(){
 	return false;
 }
 
-extern NONE *none_instance;
+extern NONE_OPTION *none_instance;
 
 ANY *get_some_data(SOME *indata){
 	return (ANY *) indata->wrapped_data;
 }
 
 OPTION* none_object() {
+	NONE_OPTION* t = NULL;
 	if (none_instance == NULL){
-		none_instance = (NONE *)calloc(1, sizeof(NONE));
-		none_instance->this = (OPTION *)none_instance;;
-		none_instance->is_some = __none_is_some; 
-		none_instance->delete = (void (*) (NONE *))free_o_option;
+		t = (NONE_OPTION *)calloc(1, sizeof(NONE_OPTION));
+		if(t) {
+			none_instance = t;
+			none_instance->this = (OPTION *)none_instance;;
+			none_instance->is_some = __none_is_some; 
+			none_instance->delete = (void (*) (NONE_OPTION *))free_o_option;
+		}
 	}
 	return (OPTION*)none_instance;
 }
@@ -42,12 +46,14 @@ void free_o_option(OPTION *opt) {
 
 SOME *some_object(ANY *obj) {
 	SOME *x = (SOME *)calloc(1, sizeof(SOME)); 
-	ANY *dup = obj->copy(obj);
-	x->this = (OPTION *)x;
-	x->delete = (void (*) (SOME*)) free_o_option;
-	x->is_some = __some_is_some;
-	x->get = get_some_data; 
-	x->wrapped_data = dup;
+	if(x) {
+		ANY *dup = obj->copy(obj);
+		x->this = (OPTION *)x;
+		x->delete = (void (*) (SOME*)) free_o_option;
+		x->is_some = __some_is_some;
+		x->get = get_some_data; 
+		x->wrapped_data = dup;
+	}
 	return x;
 	
 }

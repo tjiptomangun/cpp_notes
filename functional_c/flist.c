@@ -520,28 +520,30 @@ static FLIST *__take_n(FLIST *in, int n) {
 
 FLIST *new_list() {
 	FLIST *ret = (FLIST *) calloc(1, sizeof(FLIST));
-	ret->this = ret;
-	ret->delete = __delete_list; 
-	ret->__s__head = NULL;
-	ret->__s__last = NULL;
-	ret->size = 0;
-	ret->prepend = __prepend_list;
-	ret->append = __append_list;
-	ret->init = __init_list;
-	ret->tail = __tail_list;
-	ret->get = __get_nth;
-	ret->head = __head;
-	ret->last= __last;
-	ret->fold_left = __fold_left;
-	ret->fold_right = __fold_right;
-	ret->copy = copy;
-	ret->flip= __flip;
-	ret->reverse= __reverse;
-	ret->map = __map;
-	ret->filter = __filter;
-	ret->collect = __collect;
-	ret->zip= __zip;
-	ret->take= __take_n;
+	if(ret) {
+		ret->this = ret;
+		ret->delete = __delete_list; 
+		ret->__s__head = NULL;
+		ret->__s__last = NULL;
+		ret->size = 0;
+		ret->prepend = __prepend_list;
+		ret->append = __append_list;
+		ret->init = __init_list;
+		ret->tail = __tail_list;
+		ret->get = __get_nth;
+		ret->head = __head;
+		ret->last= __last;
+		ret->fold_left = __fold_left;
+		ret->fold_right = __fold_right;
+		ret->copy = copy;
+		ret->flip= __flip;
+		ret->reverse= __reverse;
+		ret->map = __map;
+		ret->filter = __filter;
+		ret->collect = __collect;
+		ret->zip= __zip;
+		ret->take= __take_n;
+	}
 	return ret;
 }
 
