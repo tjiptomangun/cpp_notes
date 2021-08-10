@@ -30,7 +30,7 @@
 #define inline __inline
 #endif
 
-/* Full API documentation for this library can be found in the "yxml.pod" file
+/* Full API documentation for this library can be found in the "yxml.md" file
  * in the yxml git repository, or online at http://dev.yorhel.nl/yxml/man */
 
 typedef enum {
@@ -160,4 +160,3 @@ static inline size_t yxml_symlen(yxml_t *x, const char *s) {
 #endif
 
 /* vim: set noet sw=4 ts=4: */
-

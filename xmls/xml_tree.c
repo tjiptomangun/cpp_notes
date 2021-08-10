@@ -1,3 +1,6 @@
+/**
+ * author : henky <hanky.acbb@telogic.com.sg>
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,55 +16,133 @@
  * 	root_tree		: storage
  */
 int xml_string_deserialize(char *xml_string, TREE_ITEM *root_tree){
-  char *doc_p = xml_string;
-  TREE_ITEM *tree_active= root_tree;
-  TREE_ITEM *tree_current;
+	char *doc_p = xml_string;
+	TREE_ITEM *tree_active= root_tree;
+	TREE_ITEM *tree_current = NULL;
 
-  PROPERTY *prop_active;
+	PROPERTY *prop_active = NULL;
 
-  yxml_t xml_elem;
-  yxml_ret_t xml_ret;
-  char buf[8192] = {0};
-  yxml_init(&xml_elem, buf, 8192);
-  char tmp[1024] = {0};
+	yxml_t xml_elem;
+	yxml_ret_t xml_ret;
+	char buf[8192] = {0};
+	yxml_init(&xml_elem, buf, 8192);
+	char tmp[1024] = {0};
+	while(*doc_p){
+		xml_ret = yxml_parse(&xml_elem, *doc_p);
+		switch(xml_ret) {
+			case YXML_ELEMSTART:
+				tree_current = newtreeitem(tree_active, xml_elem.elem);
+				tree_active->add(tree_active, tree_current);
+				tree_active = tree_current;
+				prop_active = NULL;
+				break;
 
-  while(*doc_p){
-    xml_ret = yxml_parse(&xml_elem, *doc_p);
-    switch(xml_ret) {
-      case YXML_ELEMSTART:
-        tree_current = newtreeitem(tree_active, xml_elem.elem);
-		tree_active->add(tree_active, tree_current);
-        tree_active = tree_current;
-        prop_active = NULL;
-        break;
+			case YXML_ELEMEND:
+				tree_active = tree_active->parent;
+				prop_active = NULL;
+				break;
 
-      case YXML_ELEMEND:
-        tree_active = tree_active->parent;
-        prop_active = NULL;
-        break;
+			case YXML_ATTRSTART:
+				prop_active= newproperty(xml_elem.attr);
+				tree_active->list.add (&tree_active->list, (L_ITEM*)prop_active); 
+				break;
 
-      case YXML_ATTRSTART:
-        prop_active= newproperty(xml_elem.attr);
-        tree_active->list.add (&tree_active->list, (L_ITEM*)prop_active); 
-        break;
+			case YXML_ATTRVAL:
+				strcat(tmp, xml_elem.data);
+				break;
+			case YXML_ATTREND:
+				prop_active->setvalue(prop_active, tmp); 
+				tmp[0] = 0;
+				prop_active = NULL;
+				break;
+			case YXML_ESYN:
+				return -1;
+			default: 
+				break; 
+		}
+		
+		doc_p++;
+	}
+	return 0;
+}
 
-      case YXML_ATTRVAL:
-		strcat(tmp, xml_elem.data);
-		break;
+/**
+ * NAME					: xml_string_deserialize_root
+ * DESCRIPTION	: deserialize an xml string to our internal structure, 
+ *                this xml probably have several top level element
+ *                which is non standard
+ * INPUT
+ * 	xml_string	: string to deserialize
+ * 	root_tree		: storage
+ */
+int xml_string_deserialize_multiroot(char *xml_string, TREE_ITEM *root_tree){
+	char *doc_p = xml_string;
+	TREE_ITEM *tree_active= root_tree;
+	TREE_ITEM *tree_current;
 
-      case YXML_ATTREND:
-		prop_active->setvalue(prop_active, tmp); 
-		tmp[0] = 0;
-		prop_active = NULL;
-        break; 
+	PROPERTY *prop_active;
 
-      default: 
-		break; 
-    }
-    
-    doc_p++;
-  }
-  return 0;
+	yxml_t xml_elem;
+	yxml_ret_t xml_ret;
+	char buf[8192] = {0};
+	yxml_init(&xml_elem, buf, 8192);
+	char tmp[1024] = {0};
+	int i = 0;
+	int depth = 0;
+
+	//yxml_selfclose
+	while(*doc_p){
+		xml_ret = yxml_parse(&xml_elem, *doc_p);
+		switch(xml_ret) {
+			case YXML_ELEMSTART:
+				tree_current = newtreeitem(tree_active, xml_elem.elem);
+				tree_active->add(tree_active, tree_current);
+				tree_active = tree_current;
+				prop_active = NULL;
+				depth += 1;
+				break;
+
+			case YXML_ELEMEND:
+				tree_active = tree_active->parent;
+				prop_active = NULL;
+				depth -= 1;
+				break;
+
+			case YXML_ATTRSTART:
+				prop_active= newproperty(xml_elem.attr);
+				tree_active->list.add (&tree_active->list, (L_ITEM*)prop_active); 
+				break;
+
+			case YXML_ATTRVAL:
+				strcat(tmp, xml_elem.data);
+				break;
+
+			case YXML_ATTREND:
+				prop_active->setvalue(prop_active, tmp); 
+				tmp[0] = 0;
+				prop_active = NULL;
+				break; 
+			case YXML_ESYN:
+				// 34 is yxml.state YXMLS_le3 , see yxml.c enum yxml_state_t
+				if (depth == 0 && doc_p != xml_string && xml_elem.state == 34) {
+					while(*doc_p != '<') {
+						doc_p -= 1;
+					}
+					yxml_init(&xml_elem, buf, 8192);
+					continue;
+				}
+				else {
+					return -1;
+				}
+				break;
+			default: 
+				i++;
+			break; 
+		}
+		
+		doc_p++;
+	}
+	return 0;
 }
 
 /**
@@ -79,7 +160,7 @@ TREE_ITEM* xml_tree_find_element(TREE_ITEM *root_tree, char *path_to_find) {
   char *start_path = NULL, *end_path = NULL;
 
   char elem_name[100] = {0};
-  TREE_ITEM *next_tree;
+  TREE_ITEM *next_tree = NULL;
   
     while(*p_path == ' '){
       p_path ++;
@@ -113,6 +194,25 @@ TREE_ITEM* xml_tree_find_element(TREE_ITEM *root_tree, char *path_to_find) {
 		return xml_tree_find_element(next_tree, p_path);
 }
 
+/**
+ * NAME						: xml_tree_delete_element
+ * DESCRIPTION		: delete tree element
+ * RETURNS
+ * 						1		: found and deleted
+ * 						0		: not found
+ */
+int xml_tree_delete_element(TREE_ITEM *root_tree, char *path) {
+	
+	TREE_ITEM *to_del;
+	if ((to_del = xml_tree_find_element(root_tree, path))) {
+		TREE_ITEM *parent = to_del->parent;
+		if (!parent->detach(parent , to_del)) {
+			to_del->delete(to_del);
+		}
+		return 1;
+	}
+	return 0;
+}
 
 /**
  * NAME					: xml_tree_find_attribute
@@ -137,8 +237,10 @@ PROPERTY *xml_tree_find_attribute(TREE_ITEM *root_tree, char *path, char *attrib
 char *xml_tree_get_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name, char *output, size_t max_size) {
 	TREE_ITEM *elem = NULL;
 	PROPERTY *ret = NULL;
-	
-	if ((elem = xml_tree_find_element(root_tree, path)) != NULL) {
+	if (!root_tree) {
+    return NULL;
+  }
+	else if ((elem = xml_tree_find_element(root_tree, path)) != NULL) {
 		ret = (PPROPERTY) elem->list.getname(&elem->list, attrib_name);
 		if (!ret)
 			return NULL;
@@ -146,9 +248,9 @@ char *xml_tree_get_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name
 			ret->getvalue(ret, output, max_size);
 		}
 	}
-	else
+	else {
 		return NULL;
-
+	}
 	return output;
 }
 
@@ -174,7 +276,6 @@ int xml_tree_set_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name, 
 	return 0;
 }
 
-
 int xml_tree_delete_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name) {
 	PROPERTY *ret = NULL;
 	if ((ret = xml_tree_find_attribute(root_tree, path, attrib_name)) != NULL){
@@ -198,8 +299,8 @@ int xml_tree_delete_attribute(TREE_ITEM *root_tree, char *path, char *attrib_nam
 int xml_tree_serialize(TREE_ITEM *root_tree, char *outbuf, int outmax, int curr_len) {
 	int i = curr_len;
 	int j;
-	TREE_ITEM *tcurr;
-	PROPERTY *lcurr;
+	TREE_ITEM *tcurr = NULL;
+	PROPERTY *lcurr = NULL;
 	if (!root_tree)
 		return 0;
 	LIST *list = &root_tree->list;

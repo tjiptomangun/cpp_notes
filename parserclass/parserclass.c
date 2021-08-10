@@ -1,3 +1,7 @@
+/**
+ * author : henky <hanky.acbb@telogic.com.sg>
+ */
+
 /* parserclass.c 
  * tool to parse configuration file.
  * current tool have static predefined parameter.
@@ -2384,6 +2388,7 @@ int dlist_delete(PDLIST lst) {
 
 PDLIST  dlist_ctor(PDLIST lst) {
 	if (lst) {
+		lst->head = lst->tail = NULL;
 		lst->push = dlist_push;
 		lst->pop = dlist_pop;
 		lst->delete = dlist_delete;
@@ -2422,7 +2427,25 @@ char *copy_string(char **target, char *in) {
 		}
 		
 	}
-	
+}
+
+char *dlist_serialize(PDLIST dlist, char *out, char *delimiter) {
+	if (dlist) {
+		PDLIST_ITEM curr = dlist->head;
+		while(curr) {
+			if (curr->data){
+				strcat(out, (char *) curr->data);
+				if(curr->next) {
+					strcat(out, delimiter);
+				}
+			}
+			curr = curr->next;
+		}
+		return out;
+	}
+	else {
+		return NULL;
+	}
 }
 #ifdef _PARSER_CLASS_TEST_
 #include <stdio.h>

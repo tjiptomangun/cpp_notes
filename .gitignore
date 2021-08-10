@@ -3,3 +3,5 @@ leptontest
 multifiles
 shredlog_bkp
 /.metadata/
+frama-c/
+test/aes/

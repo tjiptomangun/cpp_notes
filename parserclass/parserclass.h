@@ -1,3 +1,7 @@
+/**
+ * author : henky <hanky.acbb@telogic.com.sg>
+ */
+
 /* parserclass.c 
  * tool to parse configuration file.
  * current tool have static predefined parameter.
@@ -88,7 +92,7 @@ extern void list_resetlist (PLIST plist, char *list_name);
 typedef struct property
 {
 	L_ITEM l_item ;
-	char  value[256]; 
+	char  value[1200]; 
 	int   (*setvalue) (struct property *, char*);
 	int   (*getvalue) (struct property *, char*, size_t);
 	char *(*getvalue_ptr) (struct property *);
@@ -316,11 +320,21 @@ typedef struct priml_item
 	/**
 	 * NAME					: get_data
 	 * DESCRIPTION	: default implementation will return pointer to data.
-	 * RETURNS			: pointer to attached data
+	 * RETURNS			: pointer to attached data, this pointer is previously allocated
+	 * 								by another part of code that is not part of this codes, so
+	 * 								it is up to caller to free or keep this data
 	 * 
 	 */
 	void *(*get_data) (void *);
+	/**
+	 * NAME					: data_remove_fn
+	 * DESCRIPTION	: pointer to routine of data removal. Set this value with set_data_remove_fn
+	 */
 	int (*data_remove_fn) (void *);
+	/**
+	 * NAME					: set_data_remove_fn
+	 * DESCRIPTION	: function to set data_remove_fn
+	 */
 	void (*set_data_remove_fn) (struct priml_item *, int (*) (void *));
 }PRIML_ITEM, *PPRIML_ITEM; 
 extern PPRIML_ITEM newpriml_item ();
@@ -668,5 +682,10 @@ PDLIST_ITEM dlist_item_ctor(PDLIST_ITEM );
 char *copy_string(char **target, char *in);
 
 PPRIMTREE_ITEM primtreeitem_ctor(PPRIMTREE_ITEM pitem);
+/**
+ * NAME					: dlist_serialize
+ * DESCRIPTION 	: serialize dlist with delimited, start from first element
+ */
+char *dlist_serialize(PDLIST dlist, char *out, char *delimiter);
 #endif
 

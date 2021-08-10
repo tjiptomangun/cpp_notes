@@ -1,3 +1,7 @@
+/**
+ * author : henky <hanky.acbb@telogic.com.sg>
+ */
+
 #ifndef _XML_TREE_H_
 #define _XML_TREE_H_
 #include "parserclass.h"
@@ -10,6 +14,17 @@
  * 	root_tree		: storage
  */
 int xml_string_deserialize(char *xml_string, TREE_ITEM *root_tree);
+
+/**
+ * NAME					: xml_string_deserialize_root
+ * DESCRIPTION	: deserialize an xml string to our internal structure, 
+ *                this xml probably have several top level element
+ *                which is non standard
+ * INPUT
+ * 	xml_string	: string to deserialize
+ * 	root_tree		: storage
+ */
+int xml_string_deserialize_multiroot(char *xml_string, TREE_ITEM *root_tree);
 
 /**
  * NAME					: xml_tree_find_element
@@ -33,6 +48,15 @@ TREE_ITEM* xml_tree_find_element(TREE_ITEM *root_tree, char *path_to_find);
  * 	pointer to attribute
  */
 PROPERTY *xml_tree_find_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name);
+
+/**
+ * NAME						: xml_tree_delete_element
+ * DESCRIPTION		: delete tree element
+ * RETURNS
+ * 						1		: found and deleted
+ * 						0		: not found
+ */
+int xml_tree_delete_element(TREE_ITEM *root_tree, char *path) ;
 
 /**
  * NAME						: xml_tree_set_attribute
@@ -60,7 +84,6 @@ int xml_tree_set_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name, 
  * 	0							: element or attribute name does not exists
  */
 int xml_tree_delete_attribute(TREE_ITEM *root_tree, char *path, char *attrib_name);
-
 
 /**
  * NAME					: xml_tree_get_attribute

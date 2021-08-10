@@ -1,8 +1,31 @@
 <?xml version="1.0" encoding="tis-620"?>
 <configuration>
+	        <cold>
+                <HomeDirectory value="/opt/equinox" />
+                <httpd ip="127.0.0.1" port="30100" backlog="256" />
+                <sf group="RCP1" service="0" instance="0" />
+                <AFLibrary name="RCP1.so" function="af_action_process" cold="af_config_verify" warm="af_config_reload" get_version="af_get_version" />
+        </cold>
         <warm>
-                <StatResetInterval value="1440" />
-                <HttpMaxSession value="100" />
+                <Default-USSD-MAPVersion value="0.4.0.0.1.0.19.3"/>
+                <HttpMaxSession value="1440" />
+                <StatInterval value="100" />
+                <ussdSpamEnable value="1"/>
+                <Default-CgPA value="66818600600"/>
+                <ussdAddress value="66923011781"/>
+                <ussdAddress value="66923011781"/>
+                <ussdInbound value="1"/>
+                <ivrInbound value="1"/>
+                <USSDGW-Timeout value="3"/>
+                <USSDGW-Max-Retry value="1"/>
+                <SMSC-Timeout value="3"/>
+                <SMSC-Max-Retry value="1"/>
+                <FDAP2P-Timeout value="3"/>
+                <FDAP2P-Max-Retry value="1"/>
+                <Default-SMS-MAPVersion value="0.4.0.0.1.0.21.3"/>
+                <moReverseEnable value="1"/>
+                <moRoamingEnable value="1"/>
+                <smscAddress value="66812132"/>
                 <ussdSpamBlacklist value="0"/>
                 <ussdSpamBlacklist value="1"/>
                 <ussdSpamBlacklist value="2"/>
@@ -299,6 +322,9 @@
                 <TCAP-DialogID-Rang-End value="10000000"/>
                 <Default-CamelServKey value="1"/>
                 <Default-CamelSCFAddr value="66818600600"/>
+                <sgsnByPass value="0"/>
+                <smsProxyService value="1"/>
+                <exceptionalSmscMoList>491700750000</exceptionalSmscMoList>
                 <!-- END RCP Configuration -->
         </warm>
 </configuration>
