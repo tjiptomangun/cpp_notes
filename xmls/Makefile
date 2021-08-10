@@ -6,6 +6,7 @@ all: yxml.c xml_test.c xmls.c xml_tree.c parserclass.c xml_tree_test.c trie.c on
 	gcc -Wall -ggdb3 -I. -D_PARSER_CLASS_TEST_ yxml.c parserclass.c -o parserclass_test
 	gcc -Wall -ggdb3 -I. yxml.c parserclass.c radixtree.c onepassxml.c -o onepassxml
 	gcc -Wall -ggdb3 -I. yxml.c parserclass.c radixtree.c xmlf.c xmlf_test.c -o xmlf_test
-	gcc -Wall -ggdb3 -I. yxml.c parserclass.c  xmle01.c xmle01_test.c -o xmle01_test
+	gcc -Wall -ggdb3 -I. yxml.c parserclass.c xmle01.c xmle01_test.c -o xmle01_test
+	gcc -Wall -ggdb3 -I. yxml.c parserclass.c xmlmap.c xmlmap_unit_test.c -o xmlmap_unit_test
 clean:
 	rm -f xml_test xml_tree_test trie_test

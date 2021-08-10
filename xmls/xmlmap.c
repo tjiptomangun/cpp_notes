@@ -231,6 +231,85 @@ int xmls_map_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree) {
 	return 0;
 }
 
+int always_add(char *in, char *out) {
+	return 1;
+}
+int xmls_map_unmarshal_multiroot(char *xml_string, PRIMTREE_ITEM *root_tree) {
+	char *doc_p = xml_string;
+	PRIMTREE_ITEM *tree_active= root_tree;
+	PRIMTREE_ITEM *tree_current;
+	PPRIML_ITEM new_item;
+	
+	yxml_t xml_elem;
+	yxml_ret_t xml_ret;
+	char buf[8192] = {0};
+	yxml_init(&xml_elem, buf, 8192);
+	char tmp[1024] = {0};
+	map_struct  *map_active = NULL;
+	char *elem_name = NULL; 
+	int depth = 0;
+	
+	while(*doc_p){
+		xml_ret = yxml_parse(&xml_elem, *doc_p);
+		switch(xml_ret) {
+			case YXML_ELEMSTART:
+				elem_name = NULL;
+				tree_current = newprimtreeitem();
+				copy_string(&elem_name, xml_elem.elem);
+				tree_current->set_data(tree_current, elem_name);
+				tree_active->add_one(tree_active, tree_current, (int (*) (void *, void *))always_add);
+				tree_active = tree_current;
+				map_active = NULL;
+				depth += 1;
+				break;
+
+			case YXML_ELEMEND:
+				elem_name = NULL;
+				//primtreeitem_print(tree_active, 0);
+				tree_active = tree_active->parent;
+				map_active = NULL;
+				depth -= 1;
+				break;
+				
+			case YXML_ATTRSTART:
+				map_active = new_map_struct();
+				map_active = map_set_name(map_active, xml_elem.attr);
+				break;
+				
+			case YXML_ATTRVAL:
+				strcat(tmp, xml_elem.data);
+				break;
+				
+			case YXML_ATTREND:
+				map_set_value(map_active, tmp);
+				memset(tmp, 0, sizeof(tmp));
+				new_item = newpriml_item();
+				new_item->set_data_remove_fn(new_item, (int (*) (void *))map_free);
+				new_item->set_data(new_item, map_active);
+				tree_active->list.add_one(&tree_active->list, new_item, (int (*) (void *, void *))fn_map_value_cmp_by_name_no_sort);
+				map_active = NULL;
+				break;
+			case YXML_ESYN:
+				// 34 is yxml.state YXMLS_le3 , see yxml.c enum yxml_state_t
+				if (depth == 0 && doc_p != xml_string && xml_elem.state == 34) {
+					while(*doc_p != '<') {
+						doc_p -= 1;
+					}
+					yxml_init(&xml_elem, buf, 8192);
+					continue;
+				}
+				else {
+					return -1;
+				}
+				break;
+			default: 
+				
+				break;
+		}
+		doc_p++;
+	}
+	return 0;
+}
 int  xmlmap_marshall(PPRIMTREE_ITEM node, char *output, int outmax, int curr_len) {
 	int i = curr_len;
 	int j = 0;
@@ -438,6 +517,39 @@ map_struct* xmlmap_get_attribute(PPRIMTREE_ITEM node, char *path_to_find, char *
 	else {
 		return NULL;
 	}
+}
+
+char * xmlmap_get_attribute_string(PPRIMTREE_ITEM node, char *path_to_find, char *attribute, char *out, int max_out) {
+	PPRIML_ITEM fattr = NULL;
+	if ((fattr  = xmlmap_find_attribute(node, path_to_find, attribute))) {
+		map_struct* attr = fattr->get_data(fattr);
+		strncpy(out, attr->value, max_out);
+		return out;
+	}
+	else {
+		return NULL;
+	}
+}
+
+XML_MAP_ELEM_ITERATOR *to_xml_map_iterator(PPRIMTREE_ITEM root, char *path, XML_MAP_ELEM_ITERATOR *iter) {
+	XML_MAP_ELEM_ITERATOR * ret = NULL;
+	PPRIMTREE_ITEM ptr;
+	char lastPath[128] = {0};
+	int i = 0;
+	if ((ptr = xmlmap_find_element(root, path))) {
+			ret = iter;
+			ret->ptrs[i++] = ptr;
+			get_last_path(path, strlen(path), lastPath);
+			while(ptr->next) {
+				PPRIMTREE_ITEM next = ptr->next;
+				if (!strcmp_no_sort(next->get_data(next), lastPath)) {
+						ret->ptrs[i++] = next;
+				}
+				ptr = ptr->next;
+			}
+			ret->num = i;
+	}  
+	return ret;
 }
 
 int negate_strcmp(char *a, char *b) {

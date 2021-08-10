@@ -251,32 +251,6 @@ void print_assertion(bool assertion) {
 	}
 		printf("%s\n", KNRM);
 }
-void reverse_string_inplace(char inbuf[], int len) {
-	int tmp;
-	int i;
-	if (len<=1)
-		return;
-	
-	for (i = 0; i < len/2; i++){
-		tmp = inbuf[i];
-		inbuf[i] = inbuf[len - i - 1];
-		inbuf[len - i - 1] = tmp;
-	}
-}
-
-void get_last_path(char *path, int path_len, char *out) {
-	int j = 0;
-	int elem_len = 0;
-	for(int i = path_len - 1; i >= 0; i --){
-		if(path[i] == '/')
-			break;
-		else {
-			out[j++] = path[i];
-		}
-	}
-	elem_len = strlen(out);
-	reverse_string_inplace(out, elem_len);
-}
 
 #define ELEM_ITER_MAX 80
 typedef struct xml_tree_elem_iterator {

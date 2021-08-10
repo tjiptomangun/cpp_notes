@@ -687,5 +687,7 @@ PPRIMTREE_ITEM primtreeitem_ctor(PPRIMTREE_ITEM pitem);
  * DESCRIPTION 	: serialize dlist with delimited, start from first element
  */
 char *dlist_serialize(PDLIST dlist, char *out, char *delimiter);
+
+void get_last_path(char *path, int path_len, char *out);
 #endif
 

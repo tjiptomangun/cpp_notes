@@ -220,23 +220,23 @@ bool test_xml_elem(char *instring) {
 
 bool test_xml_attrib(char *instring) {
 	bool assertion = true;
-	char *findet ;
+	map_struct* findet ;
 	char buff[1024];
-	TREE_ITEM *curr = newtreeitem(NULL, "root");
-	xml_string_deserialize(instring, curr);
-	findet = xml_tree_get_attribute(curr, "SS7AP/SCCP/CDPA/GTITLE", "ret", buff, 1024);
+	PPRIMTREE_ITEM curr = newprimtreeitem();
+	xmls_map_unmarshall(instring, curr);
+	findet = xmlmap_get_attribute(curr, "SS7AP/SCCP/CDPA/GTITLE", "ret");
 	assertion = assertion && (findet == NULL);
-	findet = xml_tree_get_attribute(curr, "SS7AP/SCCP/CDPA/GTITLE", "nai", buff, 1024);
+	findet = xmlmap_get_attribute(curr, "SS7AP/SCCP/CDPA/GTITLE", "nai");
 	assertion = assertion && (findet != NULL);
-	assertion = assertion && (!strcmp(buff, "4"));
-	findet = xml_tree_get_attribute(curr, "SS7AP/SCCP/CDPA/GTITLE", "addr", buff, 1024);
-	assertion = assertion && (!strcmp(buff, "66818110001"));
-	findet = xml_tree_get_attribute(curr, "SS7AP/SCCP/CGPA/GTITLE", "addr", buff, 1024);
-	assertion = assertion && (!strcmp(buff, "66818110002"));
-	assertion = assertion && (strcmp(buff, "66818110001"));
+	assertion = assertion && (!strcmp(findet->value, "4"));
+	findet = xmlmap_get_attribute(curr, "SS7AP/SCCP/CDPA/GTITLE", "addr");
+	assertion = assertion && (!strcmp(findet->value, "66818110001"));
+	findet = xmlmap_get_attribute(curr, "SS7AP/SCCP/CGPA/GTITLE", "addr");
+	assertion = assertion && (!strcmp(findet->value, "66818110002"));
+	assertion = assertion && (strcmp(findet->value, "66818110001"));
 	memset(buff, 0, sizeof(buff));
-	findet = xml_tree_get_attribute(curr, "SS7AP/TCAP/COMPONENT/DATA", "value", buff, 10);
-	assertion = assertion && (!strcmp(buff, "3020040825"));
+	findet = xmlmap_get_attribute(curr, "SS7AP/TCAP/COMPONENT/DATA", "value");
+	assertion = assertion && (strstr(findet->value, "3020040825") == findet->value);
 
 	curr->delete(curr);
 	return assertion;   
@@ -251,88 +251,36 @@ void print_assertion(bool assertion) {
 	}
 		printf("%s\n", KNRM);
 }
-void reverse_string_inplace(char inbuf[], int len) {
-	int tmp;
-	int i;
-	if (len<=1)
-		return;
-	
-	for (i = 0; i < len/2; i++){
-		tmp = inbuf[i];
-		inbuf[i] = inbuf[len - i - 1];
-		inbuf[len - i - 1] = tmp;
-	}
-}
 
-void get_last_path(char *path, int path_len, char *out) {
-	int j = 0;
-	int elem_len = 0;
-	for(int i = path_len - 1; i >= 0; i --){
-		if(path[i] == '/')
-			break;
-		else {
-			out[j++] = path[i];
-		}
-	}
-	elem_len = strlen(out);
-	reverse_string_inplace(out, elem_len);
-}
-
-#define ELEM_ITER_MAX 80
-typedef struct xml_tree_elem_iterator {
-	int num;
-	TREE_ITEM *ptrs[ELEM_ITER_MAX];
-} XML_TREE_ELEM_ITERATOR;
-
-
-XML_TREE_ELEM_ITERATOR *to_xml_tree_iterator(TREE_ITEM *root, char *path, XML_TREE_ELEM_ITERATOR *iter) {
-	XML_TREE_ELEM_ITERATOR * ret = NULL;
-	TREE_ITEM *ptr;
-	char lastPath[128] = {0};
-	int i = 0;
-	if ((ptr = xml_tree_find_element(root, path))) {
-			ret = iter;
-			ret->ptrs[i++] = ptr;
-			get_last_path(path, strlen(path), lastPath);
-			while(ptr->next) {
-				TREE_ITEM *next = ptr->next;
-				if (!strcmp(next->list.l_item.class.name, lastPath)) {
-						ret->ptrs[i++] = next;
-				}
-				ptr = ptr->next;
-			}
-			ret->num = i;
-	}  
-	return ret;
-}
-
+/*
 bool process_multi_elem_modified(char *instring, char *path, int numExpected) {
 	bool assertion = true;
 	char *modstring = (char *) calloc(1, strlen(instring) + 20);
 	char *modpath = (char *) calloc(1, strlen(path) + 10);
 	sprintf(modstring, "<main>%s</main>", instring);
 	sprintf(modpath, "main/%s", path);
-	XML_TREE_ELEM_ITERATOR iter;
-	memset(&iter, 0, sizeof(XML_TREE_ELEM_ITERATOR ));
-	TREE_ITEM *curr = newtreeitem(NULL, "root");
+	XML_MAP_ELEM_ITERATOR iter;
+	memset(&iter, 0, sizeof(XML_MAP_ELEM_ITERATOR ));
+	PPRIMTREE_ITEM curr = newprimtreeitem();
 
-	xml_string_deserialize(modstring, curr);
+	xmls_map_unmarshall(modstring, curr);
 	free(modstring);
 
-	assertion = assertion && (to_xml_tree_iterator(curr, modpath, &iter) != NULL);
+	assertion = assertion && (to_xml_map_iterator(curr, modpath, &iter) != NULL);
 	assertion = assertion && iter.num == numExpected;
 	free(modpath);
 	curr->delete(curr);
 	return assertion;
 }
+*/
 
 bool process_multi_elem(char *instring, char *path, int numExpected) {
 	bool assertion = true;
-	XML_TREE_ELEM_ITERATOR iter;
-	memset(&iter, 0, sizeof(XML_TREE_ELEM_ITERATOR ));
-	TREE_ITEM *curr = newtreeitem(NULL, "root");
-	xml_string_deserialize_multiroot(instring, curr);  
-	assertion = assertion && (to_xml_tree_iterator(curr, path, &iter) != NULL);
+	XML_MAP_ELEM_ITERATOR iter;
+	memset(&iter, 0, sizeof(XML_MAP_ELEM_ITERATOR ));
+	PPRIMTREE_ITEM curr = newprimtreeitem();
+	xmls_map_unmarshal_multiroot (instring, curr);  
+	assertion = assertion && (to_xml_map_iterator(curr, path, &iter) != NULL);
 	assertion = assertion && iter.num == numExpected;
 	curr->delete(curr);
 	return assertion;
@@ -341,8 +289,8 @@ bool process_multi_elem(char *instring, char *path, int numExpected) {
 bool process_multi_elem_inside() {
 	bool assertion = true;
 	char *instring = gup_profile_multi_multi;
-	XML_TREE_ELEM_ITERATOR iter;
-	XML_TREE_ELEM_ITERATOR innerIter;
+	XML_MAP_ELEM_ITERATOR iter;
+	XML_MAP_ELEM_ITERATOR innerIter;
 	char name[100] = {0};
 	char imsi[100] = {0};
 	char msisdn[100] = {0};
@@ -353,32 +301,32 @@ bool process_multi_elem_inside() {
 		int mscAddress;
 	} gupReq;
 	gupReq gupReqs[20];
-	TREE_ITEM *findet ;
+	PPRIMTREE_ITEM findet ;
 	memset (gupReqs, 0, sizeof(gupReqs));
-	memset(&iter, 0, sizeof(XML_TREE_ELEM_ITERATOR));
-	TREE_ITEM *root = newtreeitem(NULL, "root");
-	xml_string_deserialize_multiroot(instring, root);
-	assertion = assertion && (to_xml_tree_iterator(root, "entry", &iter) != NULL);
+	memset(&iter, 0, sizeof(XML_MAP_ELEM_ITERATOR));
+	PPRIMTREE_ITEM root = newprimtreeitem();
+	xmls_map_unmarshal_multiroot(instring, root);
+	assertion = assertion && (to_xml_map_iterator(root, "entry", &iter) != NULL);
 	for(int i = 0; i < iter.num; i++) {
 		imsi[0] = 0;
 		msisdn[0] = 0;
 		mscAddress[0] = 0;
-		memset(&innerIter, 0, sizeof(XML_TREE_ELEM_ITERATOR));
-		assertion = assertion && (to_xml_tree_iterator(iter.ptrs[i], "attr", &innerIter) != NULL);
+		memset(&innerIter, 0, sizeof(XML_MAP_ELEM_ITERATOR));
+		assertion = assertion && (to_xml_map_iterator(iter.ptrs[i], "attr", &innerIter) != NULL);
 		for (int j = 0; j < innerIter.num; j++) {
 			findet = innerIter.ptrs[j];
-			if (xml_tree_get_attribute(findet, "", "name", name, 100) && !strcmp(name, "imsi")) {
-				if (xml_tree_get_attribute(findet, "val", "value", imsi, 100)) {
+			if (xmlmap_get_attribute_string(findet, "", "name", name, 100) && !strcmp(name, "imsi")) {
+				if (xmlmap_get_attribute_string(findet, "val", "value", imsi, 100)) {
 					gupReqs[i].imsi = 1;
 				}
 			}
-			else if (xml_tree_get_attribute(findet, "", "name", name, 100) && !strcmp(name, "msisdn")) {
-				if (xml_tree_get_attribute(findet, "val", "value", msisdn, 100)) {
+			else if (xmlmap_get_attribute_string(findet, "", "name", name, 100) && !strcmp(name, "msisdn")) {
+				if (xmlmap_get_attribute_string(findet, "val", "value", msisdn, 100)) {
 					gupReqs[i].msisdn = 1;
 				}
 			}
-			else if (xml_tree_get_attribute(findet, "", "name", name, 100) && !strcmp(name, "mscAddress")) {
-				if (xml_tree_get_attribute(findet, "val", "value", mscAddress, 100)) {
+			else if (xmlmap_get_attribute_string(findet, "", "name", name, 100) && !strcmp(name, "mscAddress")) {
+				if (xmlmap_get_attribute_string(findet, "val", "value", mscAddress, 100)) {
 					gupReqs[i].mscAddress = 1;
 				}
 			}
@@ -403,7 +351,7 @@ bool process_multi_elem_inside() {
 bool process_single_elem_inside() {
 	bool assertion = true;
 	char *instring = gup_profile_single;
-	XML_TREE_ELEM_ITERATOR iter;
+	XML_MAP_ELEM_ITERATOR iter;
 	char name[100] = {0};
 	char imsi[100] = {0};
 	char msisdn[100] = {0};
@@ -414,29 +362,29 @@ bool process_single_elem_inside() {
 		int mscAddress;
 	} gupReq;
 	gupReq xGupReq;
-	TREE_ITEM *findet ;
+	PPRIMTREE_ITEM findet ;
 	memset (&xGupReq, 0, sizeof(xGupReq));
-	memset(&iter, 0, sizeof(XML_TREE_ELEM_ITERATOR));
-	TREE_ITEM *root = newtreeitem(NULL, "root");
-	xml_string_deserialize_multiroot(instring, root);
-	assertion = assertion && (to_xml_tree_iterator(root, "entry/attr", &iter) != NULL);
+	memset(&iter, 0, sizeof(XML_MAP_ELEM_ITERATOR));
+	PPRIMTREE_ITEM root = newprimtreeitem();
+	xmls_map_unmarshal_multiroot(instring, root);
+	assertion = assertion && (to_xml_map_iterator(root, "entry/attr", &iter) != NULL);
 	for(int i = 0; i < iter.num; i++) {
 		imsi[0] = 0;
 		msisdn[0] = 0;
 		mscAddress[0] = 0;
 		findet = iter.ptrs[i];
-		if (xml_tree_get_attribute(findet, "", "name", name, 100) && !strcmp(name, "imsi")) {
-			if (xml_tree_get_attribute(findet, "val", "value", imsi, 100)) {
+		if (xmlmap_get_attribute_string(findet, "", "name", name, 100) && !strcmp(name, "imsi")) {
+			if (xmlmap_get_attribute_string(findet, "val", "value", imsi, 100)) {
 				xGupReq.imsi = 1;
 			}
 		}
-		else if (xml_tree_get_attribute(findet, "", "name", name, 100) && !strcmp(name, "msisdn")) {
-			if (xml_tree_get_attribute(findet, "val", "value", msisdn, 100)) {
+		else if (xmlmap_get_attribute_string(findet, "", "name", name, 100) && !strcmp(name, "msisdn")) {
+			if (xmlmap_get_attribute_string(findet, "val", "value", msisdn, 100)) {
 				xGupReq.msisdn = 1;
 			}
 		}
-		else if (xml_tree_get_attribute(findet, "", "name", name, 100) && !strcmp(name, "mscAddress")) {
-			if (xml_tree_get_attribute(findet, "val", "value", mscAddress, 100)) {
+		else if (xmlmap_get_attribute_string(findet, "", "name", name, 100) && !strcmp(name, "mscAddress")) {
+			if (xmlmap_get_attribute_string(findet, "val", "value", mscAddress, 100)) {
 				xGupReq.mscAddress = 1;
 			}
 		}
