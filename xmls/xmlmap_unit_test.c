@@ -190,6 +190,8 @@ char *srism_ok = "\
 bool test_xml_elem(char *instring) {
 		PPRIMTREE_ITEM curr = newprimtreeitem();
 		xmls_map_unmarshall(instring, curr);
+		char output[4000] = {0};
+		char dtid[20] = {0};
 		
 		bool assertion = true;
 		PPRIMTREE_ITEM findet ;
@@ -213,6 +215,11 @@ bool test_xml_elem(char *instring) {
 		assertion = assertion && findet != NULL;
 		findet = xmlmap_find_element(curr, " SS7AP/SCCP/ CDPA / GTITLE ");
 		assertion = assertion && findet != NULL;
+		xmlmap_add_attribute(curr, "SS7AP/TCAP", "dtid", "4567");
+		assertion = assertion && xmlmap_get_attribute_string(curr, "SS7AP/TCAP", "dtid", dtid, sizeof(dtid)) != NULL;
+		assertion = assertion && !strcmp(dtid, "4567");
+		xmlmap_marshall(curr->head, output, sizeof(output), 0);
+		fprintf(stdout, "%s\n", output);
 		curr->delete(curr);
 		
 		return assertion;
@@ -295,6 +302,8 @@ bool process_multi_elem_inside() {
 	char imsi[100] = {0};
 	char msisdn[100] = {0};
 	char mscAddress[100] = {0};
+	int i = 0;
+	int j = 0;
 	typedef struct {
 		int imsi;
 		int msisdn;
@@ -307,13 +316,13 @@ bool process_multi_elem_inside() {
 	PPRIMTREE_ITEM root = newprimtreeitem();
 	xmls_map_unmarshal_multiroot(instring, root);
 	assertion = assertion && (to_xml_map_iterator(root, "entry", &iter) != NULL);
-	for(int i = 0; i < iter.num; i++) {
+	for(i = 0; i < iter.num; i++) {
 		imsi[0] = 0;
 		msisdn[0] = 0;
 		mscAddress[0] = 0;
 		memset(&innerIter, 0, sizeof(XML_MAP_ELEM_ITERATOR));
 		assertion = assertion && (to_xml_map_iterator(iter.ptrs[i], "attr", &innerIter) != NULL);
-		for (int j = 0; j < innerIter.num; j++) {
+		for (j = 0; j < innerIter.num; j++) {
 			findet = innerIter.ptrs[j];
 			if (xmlmap_get_attribute_string(findet, "", "name", name, 100) && !strcmp(name, "imsi")) {
 				if (xmlmap_get_attribute_string(findet, "val", "value", imsi, 100)) {
@@ -356,6 +365,7 @@ bool process_single_elem_inside() {
 	char imsi[100] = {0};
 	char msisdn[100] = {0};
 	char mscAddress[100] = {0};
+	int i = 0; 
 	typedef struct {
 		int imsi;
 		int msisdn;
@@ -368,7 +378,7 @@ bool process_single_elem_inside() {
 	PPRIMTREE_ITEM root = newprimtreeitem();
 	xmls_map_unmarshal_multiroot(instring, root);
 	assertion = assertion && (to_xml_map_iterator(root, "entry/attr", &iter) != NULL);
-	for(int i = 0; i < iter.num; i++) {
+	for(i = 0; i < iter.num; i++) {
 		imsi[0] = 0;
 		msisdn[0] = 0;
 		mscAddress[0] = 0;
@@ -447,6 +457,6 @@ int main (int argc, char **argv) {
 		print_assertion(process_single_elem_inside());
 		
 	} while (optlong == 'm');
-
+	return 0;
 }
 

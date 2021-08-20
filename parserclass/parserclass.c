@@ -555,9 +555,11 @@ PSTACK_PTR newstackptr ()
 PMINIPARSER newminiparser (FILE *in, char *tokenlist, int (*f)(PMINIPARSER, PLIST *))
 {
 	PMINIPARSER p = (PMINIPARSER) calloc (1, sizeof (MINIPARSER));
-	p->input = in;
-	p->tokenlist = tokenlist;
-	p->parse = f;	
+	if (p) {
+		p->input = in;
+		p->tokenlist = tokenlist;
+		p->parse = f;
+	}
 	return p;
 }
 /*
@@ -570,11 +572,13 @@ PCHARPARSER newcharparser (char *in, int inlen, char *tokenlist,
 				int (*f)(PCHARPARSER, PLIST *))
 {
 	PCHARPARSER p = (PCHARPARSER) calloc (1, sizeof (CHARPARSER)); 
-	p->input = in;
-	p->currpos = -1;
-	p->charlen = inlen;
-	p->tokenlist = tokenlist;
-	p->parse  = f;	
+	if (p) {
+		p->input = in;
+		p->currpos = -1;
+		p->charlen = inlen;
+		p->tokenlist = tokenlist;
+		p->parse  = f;
+	}
 	return p;
 }
 /**
@@ -2386,6 +2390,14 @@ int dlist_delete(PDLIST lst) {
 	return 0;
 }
 
+int dlist_cleanup(DLIST *stack) {
+	PDLIST_ITEM dlitem = NULL;
+	while ((dlitem = dlist_pop(stack))) {
+		dlitem->delete(dlitem);
+	}
+	return 1;
+}
+
 PDLIST  dlist_ctor(PDLIST lst) {
 	if (lst) {
 		lst->head = lst->tail = NULL;
@@ -2464,7 +2476,8 @@ void reverse_string_inplace(char inbuf[], int len) {
 void get_last_path(char *path, int path_len, char *out) {
 	int j = 0;
 	int elem_len = 0;
-	for(int i = path_len - 1; i >= 0; i --){
+	int i = 0;
+	for(i = path_len - 1; i >= 0; i --){
 		if(path[i] == '/')
 			break;
 		else {

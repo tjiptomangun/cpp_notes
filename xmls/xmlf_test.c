@@ -175,12 +175,14 @@ int xmlf_parseconfig(char *xml_string, PRIMTREE_ITEM *fn_data) {
 				item_path[0] = '\0';
 				break;
 			case YXML_ESYN:
+				dlist_cleanup(&stack);
 				return -1;
 			default: 
 				break;
 		}
 		doc_p ++;
 	}
+	dlist_cleanup(&stack);
 	return 1;
 }
 
@@ -580,4 +582,6 @@ int main (int argc, char **argv) {
 // 		radixtreeitem_deletenode(af_config.exceptionalSmMOTree);
 // 		radixtreeitem_deletenode(af_config.isdCOSTree);
 	}while(argc >= 3 && !strcmp(argv[2], "-m"));
+	
+	return 0;
 }

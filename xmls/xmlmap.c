@@ -179,7 +179,7 @@ int xmls_map_unmarshall(char *xml_string, PRIMTREE_ITEM *root_tree) {
 	yxml_ret_t xml_ret;
 	char buf[8192] = {0};
 	yxml_init(&xml_elem, buf, 8192);
-	char tmp[1024] = {0};
+	char tmp[4192] = {0};
 	map_struct  *map_active = NULL;
 	char *elem_name = NULL; 
 	
@@ -244,7 +244,7 @@ int xmls_map_unmarshal_multiroot(char *xml_string, PRIMTREE_ITEM *root_tree) {
 	yxml_ret_t xml_ret;
 	char buf[8192] = {0};
 	yxml_init(&xml_elem, buf, 8192);
-	char tmp[1024] = {0};
+	char tmp[4192] = {0};
 	map_struct  *map_active = NULL;
 	char *elem_name = NULL; 
 	int depth = 0;
@@ -401,6 +401,9 @@ int  xmlmap_marshall(PPRIMTREE_ITEM node, char *output, int outmax, int curr_len
 PPRIMTREE_ITEM xmlmap_find_element(PPRIMTREE_ITEM node, char *path_to_find){
 	char *p_path = path_to_find;
 	char *start_path = NULL, *end_path = NULL;
+	if (node == NULL) {
+		return node;
+	}
 
 	char elem_name[100] = {0};
 	PPRIMTREE_ITEM next_tree;
@@ -480,17 +483,22 @@ PPRIMTREE_ITEM xmlmap_add_element(PPRIMTREE_ITEM node, char *path_to_find){
 
 map_struct* xmlmap_add_attribute(PPRIMTREE_ITEM node, char *path_to_find, char *attribute, char *value) {
 	PPRIMTREE_ITEM found = NULL;
-	if ((found = xmlmap_find_element(node, path_to_find)) == NULL) {
-		found = xmlmap_add_element(node, path_to_find);
+	if (node == NULL) {
+		return NULL;
 	}
-	PPRIML_ITEM new_item = newpriml_item();
-	map_struct *active_map = new_map_struct();
-	map_set_name(active_map, attribute);
-	map_set_value(active_map, value);
-	new_item->set_data_remove_fn(new_item, (int (*) (void *))map_free);
-	new_item->set_data(new_item, active_map);
-	node->list.add_one(&node->list, new_item, (int (*) (void *, void *))fn_map_value_cmp_by_name_no_sort);
-	return active_map;
+	else {
+		if ((found = xmlmap_find_element(node, path_to_find)) == NULL) {
+			found = xmlmap_add_element(node, path_to_find);
+		}
+		PPRIML_ITEM new_item = newpriml_item();
+		map_struct *active_map = new_map_struct();
+		map_set_name(active_map, attribute);
+		map_set_value(active_map, value);
+		new_item->set_data_remove_fn(new_item, (int (*) (void *))map_free);
+		new_item->set_data(new_item, active_map);
+		found->list.add_one(&found->list, new_item, (int (*) (void *, void *))fn_map_value_cmp_by_name_no_sort);
+		return active_map;
+	}
 }
 
 PPRIML_ITEM xmlmap_find_attribute(PPRIMTREE_ITEM node, char *path_to_find, char *attribute) {

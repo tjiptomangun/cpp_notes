@@ -688,6 +688,29 @@ PPRIMTREE_ITEM primtreeitem_ctor(PPRIMTREE_ITEM pitem);
  */
 char *dlist_serialize(PDLIST dlist, char *out, char *delimiter);
 
+/**
+ * NAME					: dlist_cleanup
+ * DESCRIPTION 	: clean up stack, but do not delete it
+ */
+int dlist_cleanup(DLIST *stack);
+
+/**
+ * NAME        : reverse_string_inplace
+ * DESCRIPTION : reverse this zero terminated string
+ * INPUT
+ *  inbuf      : input output
+ *  len        : length of this string to reverse
+ */
+void reverse_string_inplace(char inbuf[], int len);
+
+/**
+ * NAME           : get_last_item_in_path
+ * DESCRIPTION    : get last item of a path "XML/ELEMENT/TEST" will result  TEST in out
+ * INPUT 
+ *     path       : the path
+ *     path_len   : length of input
+ *     out        : the output
+ */
 void get_last_path(char *path, int path_len, char *out);
 #endif
 

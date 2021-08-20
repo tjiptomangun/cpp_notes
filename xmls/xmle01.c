@@ -239,6 +239,13 @@ xe01_attribute_data * xmle01_add_attribute(PPRIMTREE_ITEM node, char *path_to_fi
 	return data;
 }
 
+typedef struct {
+	char path[500];
+	char attribute[100];
+	int (*update_value) (void *, char*);
+	int ptr_only;
+	int ptr_passed;
+}xmlFn;
 
 int xmle01_parsedata(char *xml_string, PRIMTREE_ITEM *fn_data, void * dest) {
 	char *doc_p = xml_string;
@@ -255,7 +262,6 @@ int xmle01_parsedata(char *xml_string, PRIMTREE_ITEM *fn_data, void * dest) {
 	PDLIST_ITEM dlitem;
 	xe01_attribute_data *attdat = NULL;
 	int ptr_passed = 0;
-	xmle01_unset_ptr_passed(fn_data, "message/data", "value");
 	while(*doc_p){
 		xml_ret = yxml_parse(&xml_elem, *doc_p);
 		switch(xml_ret) {
@@ -313,11 +319,13 @@ int xmle01_parsedata(char *xml_string, PRIMTREE_ITEM *fn_data, void * dest) {
 				break;
 			case YXML_ESYN:
 				return -1;
+				dlist_cleanup(&stack);
 			default: 
 				break;
 		}
 		doc_p ++;
 	}
+	dlist_cleanup(&stack);
 	return 1;
 }
 

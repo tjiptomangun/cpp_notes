@@ -1,12 +1,10 @@
-#include "xmle01.h"
-#include "parserclass.h"
-#include "parserclass_test.h"
-#include "yxml.h"
+#include "xmlfunc.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "af.h"
+#include "parserclass_test.h"
 
-PRIMTREE_ITEM e0ParseFuncionRoot;
 int copy_e01_command(EQX_MSG_E01 *msg_e01, char *in) {
 	if (msg_e01) {
 		strncpy(msg_e01->command , in, 256);
@@ -66,53 +64,40 @@ int store_ptr_e01_value(EQX_MSG_E01 *msg_e01, char *in) {
 	msg_e01->value_ptr = in;
 	return 1;
 }
-int setup_e01_functions() {
-	static int e01ParseFuncLoaded = 0;
-	PPRIMTREE_ITEM root = &e0ParseFuncionRoot;
-	if (!e01ParseFuncLoaded) {
-		primtreeitem_ctor(&e0ParseFuncionRoot);
 
-			xmle01_add_attribute(root, "message", "command", new_xe01_attribute_data("command",(int (*) (void *, char *)) copy_e01_command, 0));
-			xmle01_add_attribute(root, "message", "resultcode", new_xe01_attribute_data("resultcode", (int (*) (void *, char *)) copy_e01_resultcode, 0));
-			xmle01_add_attribute(root, "message", "description", new_xe01_attribute_data("description", (int (*) (void *, char *)) copy_e01_description, 0));
-			xmle01_add_attribute(root, "message", "objecttype", new_xe01_attribute_data("objecttype", (int (*) (void *, char *)) copy_e01_objecttype, 0));
-			xmle01_add_attribute(root, "message", "key0", new_xe01_attribute_data("key0", (int (*) (void *, char *)) copy_e01_key0, 0));
-			xmle01_add_attribute(root, "message", "key1", new_xe01_attribute_data("key1", (int (*) (void *, char *)) copy_e01_key1, 0));
-			xmle01_add_attribute(root, "message", "key2", new_xe01_attribute_data("key2", (int (*) (void *, char *)) copy_e01_key2, 0));
-			xmle01_add_attribute(root, "message", "key3", new_xe01_attribute_data("key3", (int (*) (void *, char *)) copy_e01_key3, 0));
-			xmle01_add_attribute(root, "message", "key4", new_xe01_attribute_data("key4", (int (*) (void *, char *)) copy_e01_key4, 0));
-			xmle01_add_attribute(root, "message/data", "value", new_xe01_attribute_data("value", (int (*) (void *, char *)) store_ptr_e01_value, 1));
-			e01ParseFuncLoaded = 1;
+XMLFUNC funcsE01[11] = {
+		{"message", "command", (int (*) (void *, char *)) copy_e01_command, 0, 0, NULL},
+		{"message", "resultcode", (int (*) (void *, char *)) copy_e01_resultcode, 0, 0, NULL},
+		{"message", "description", (int (*) (void *, char *)) copy_e01_description, 0, 0, NULL},
+		{"message", "objecttype", (int (*) (void *, char *)) copy_e01_objecttype, 0, 0, NULL},
+		{"message", "key0", (int (*) (void *, char *)) copy_e01_key0, 0, 0, NULL},
+		{"message", "key1", (int (*) (void *, char *)) copy_e01_key1, 0, 0, NULL},
+		{"message", "key2", (int (*) (void *, char *)) copy_e01_key2, 0, 0, NULL},
+		{"message", "key3", (int (*) (void *, char *)) copy_e01_key3, 0, 0, NULL},
+		{"message", "key4", (int (*) (void *, char *)) copy_e01_key4, 0, 0, NULL},
+		{"message/data", "value", (int (*) (void *, char *)) store_ptr_e01_value, 1, 0, NULL},
+		
+};
+
+int setupE01Funcs () {
+	int i = 0;
+	int num = sizeof(funcsE01)/sizeof(XMLFUNC);
+	for (i = 0; i < num; i++) {
+		if (funcsE01[i].ptr_only) {
+			funcsE01[i].ptr_passed = 0;
+		}
 	}
-	xmle01_unset_ptr_passed(root, "message/data", "value");
 	return 1;
 }
-
-void printall(PPRIMTREE_ITEM root) {
-	PPRIMTREE_ITEM curr = root;
-	PPRIML_ITEM curitem;
-	while(curr) {
-		curitem = curr->list.get_first_child(&curr->list);
-		while(curitem) {
-			xe01_attribute_data * ad = (xe01_attribute_data *)curitem ->get_data(curitem);
-			fprintf(stdout, "%s\n", ad->name);
-			curitem = curr->list.get_next_child(&curr->list);
-			
-		}
-		curr = curr->head;
-	}
-}
-
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
 	EQX_MSG_E01 *msg_e01 = NULL;
 	msg_e01 = (EQX_MSG_E01 * )calloc(1, sizeof(EQX_MSG_E01));
 	char * holder ;
-	PPRIMTREE_ITEM root = &e0ParseFuncionRoot;
+	int num = sizeof(funcsE01)/sizeof(XMLFUNC);
 	do {
 		holder = read_file("e01small.xml");
-		setup_e01_functions();
-		xmle01_parsedata(holder, root, (void *) msg_e01);
-		printall(root);
+		setupE01Funcs();
+		xmlfunc_parsedata(holder, funcsE01, num, (void *) msg_e01);
 		test_fun("command = search", !strcmp(msg_e01->command, "search"));
 		test_fun("resultcode = 0", !strcmp(msg_e01->resultcode, "0"));
 		test_fun("description = 0", !strcmp(msg_e01->description, "SUCCESS"));
@@ -126,8 +111,8 @@ int main (int argc, char **argv) {
 		free(holder);
 		
 		holder = read_file("e01large.xml");
-		xmle01_parsedata(holder, root, (void *) msg_e01);
-		printall(root);
+		setupE01Funcs();
+		xmlfunc_parsedata(holder, funcsE01, num, (void *) msg_e01);
 		test_fun("command = search", !strcmp(msg_e01->command, "search"));
 		test_fun("resultcode = 0", !strcmp(msg_e01->resultcode, "0"));
 		test_fun("description = 0", !strcmp(msg_e01->description, "SUCCESS"));
@@ -143,4 +128,3 @@ int main (int argc, char **argv) {
 	
 	return 0;
 }
-
