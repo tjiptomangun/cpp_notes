@@ -146,8 +146,9 @@ int do_echo(int fd)  /* doesn't return */
 			write_string(1,"knife child: client connection closed\n");
 			exit(0);
 			}
+		printf("now you see me\n");
 		write(fd,buff,n);
-		}
+	}
 }
 
 

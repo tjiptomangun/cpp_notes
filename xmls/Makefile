@@ -11,4 +11,4 @@ all: yxml.c xml_test.c xmls.c xml_tree.c parserclass.c xml_tree_test.c trie.c on
 	gcc -Wall -ggdb3 -I. yxml.c parserclass.c parserclass_test.c xmlfunc.c xmlfunce01.c -o xmlfunce01
 	gcc -Wall -ggdb3 -I. yxml.c parserclass.c radixtree.c parserclass_test.c xmlfunc.c xmlfuncaf.c -o xmlfuncaf
 clean:
-	rm -f xml_test xml_tree_test trie_test
+	rm -f *.o xml_test xml_tree_test trie_test  xml_tree_unit_test  parserclass_test onepasxml xmlf_test xmle01_test xmlmap_unit_test xmlfunce01 xmlfuncaf onepassxml onemassxml

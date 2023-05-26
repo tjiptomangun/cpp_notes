@@ -5,3 +5,11 @@ shredlog_bkp
 /.metadata/
 frama-c/
 test/aes/
+**/.project
+**/.cproject
+**/.directory
+**/*.o
+**/*.kdev4
+**/*.kdev3
+**/*.swp
+**/*.settings

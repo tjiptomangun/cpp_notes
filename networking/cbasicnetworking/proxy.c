@@ -10,7 +10,7 @@
 /*      15th January 1996               */
 /*                                      */
 /****************************************/
-
+#include <fcntl.h> 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,9 +33,8 @@ int  rem_port;
 int  stop_listening_on_package_number;
 int  package_number;
 
-#define BUFF_LEN 200
+#define BUFF_LEN 120000
 char buff[BUFF_LEN];
-char big_buff[4*BUFF_LEN];
 int buf_len = BUFF_LEN-1;     /*  allow room for terminating '\0'  */
 
 char *progname;
@@ -253,6 +252,7 @@ int do_proxy( int client_sk, int serv_sk )
 			continue;
 			
 		}
+		fprintf(stderr, "**  package_number [%d]\n", package_number);
 			
 		num = select(MAX_FD, &read_copy, &write_copy, &ex_copy, &timeout);
 		if (num < 0 ) {

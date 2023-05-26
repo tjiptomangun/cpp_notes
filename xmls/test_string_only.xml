@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="tis-620"?>
+<configuration>
+	        <cold>
+                <HomeDirectory value="/opt/equinox" />
+                <httpd ip="127.0.0.1" port="30100" backlog="256" />
+                <sf group="RCP1" service="0" instance="0" />
+                <AFLibrary name="RCP1.so" function="af_action_process" cold="af_config_verify" warm="af_config_reload" get_version="af_get_version" />
+        </cold>
+        <warm>
+                <TCAP-DialogID-Rang-Start value="1"/>
+                <TCAP-DialogID-Rang-End value="10000000"/>
+        </warm>
+</configuration>
+

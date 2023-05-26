@@ -1,0 +1,308 @@
+		if (af_config.tidStart[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.tidEnd[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.defaultUSSDMapVersion[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.ussdSpamEnable[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.defaultCgPa[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.ussdAddress[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.ussdInbound[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.ivrInbound[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.e01Timeout[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.d02Timeout[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.ldapRetryRet[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.ldapSearchRetry[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.ldapModifyRetry[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.ussdGWTimeout[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.ussdGWMaxRetry[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.hlrTimeout[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.essRelayMaxRetry[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.mscTimeout[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.smscTimeout[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.smscMaxRetry[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.fdap2pTimeout[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.fda2pMaxRetry[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.regionAuthority[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.authoritySelector[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.defaultSAIMAPVersion[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.cloningKiller[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.droamCdrException[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.updateMultisim[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.serviceEnable[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.deleteSDEnable[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.delayTime[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.isdRequestTimeout[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.isdRequestMaxRetry[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.defaultSMSMAPVersion[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.moReverseEnable[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.smscAddress[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.moRoamingEnable[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.sgsnByPass[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.smsProxyService[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.smsVerifyRomaing[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.defaultLOCUPMAPVersion[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.instance[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.defCamelServKey[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
+		if (af_config.defCamelSCFAddr[0] == 0){
+			SFLOG_DEBUG();
+			return NO_SUCCESS;
+		}
+		else{
+			SFLOG_DEBUG()
+		}
