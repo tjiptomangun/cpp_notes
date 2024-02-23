@@ -14,6 +14,7 @@ void *routine(){
 		mails ++;
 		pthread_mutex_unlock(&mutex);
 	}
+	return NULL;
 }
 
 int main(int argc, char *argv[]){

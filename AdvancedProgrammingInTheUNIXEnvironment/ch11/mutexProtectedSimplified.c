@@ -159,6 +159,7 @@ void* thread_check_hash_empty(){
 		}
 		sleep(1);
 	}
+	return NULL;
 
 }
 int main () {

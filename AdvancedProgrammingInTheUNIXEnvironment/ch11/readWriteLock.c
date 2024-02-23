@@ -97,12 +97,16 @@ void job_remove(struct queue *qp, struct job *jp) {
  */
 
 struct job* job_find(struct queue *qp, pthread_t id) {
-	struct job* jp;
+	struct job* jp = NULL;
 	if (pthread_rwloc_rdlock(&qp->q_lock) != 0) {
 		return NULL;
 	}
-	for(jp = qp->q_head; jp != NULL; jp = jp->j_next)
+	for(jp = qp->q_head; jp != NULL; jp = jp->j_next) {
+		if (pthread_equal(jp->j_id, id)
+			break;
+	}
 	pthread_rwloc_unlock(&qp->q_lock);
 	return jp;
 }
-}
+
+//use bank transfer a to b as an example
