@@ -1,0 +1,158 @@
+Rp=0xFFA27253  DevSt=0xFFA2726F   NdcSt=0xFFA27277
+Reply
+--------
+unMsgType      = 21
+unObjectType   = 2053
+strObjName     = 15300214
+unPointId      = 0
+unMsgStatus    = 0
+
+DevStatus
+------------
+BusinessCycle  = 1951
+nActivation    = 0
+nCommunication = 0
+nServiceMode   = 0
+
+NdcStatus
+------------
+bFullDownload  = 0
+nUNUSED        = 0
+nConfigVer     = 7
+nLanguageIdx   = 0
+LastEchoTimestamp         = 2012-12-10 15:58:03
+LastInactivityTimestamp   = 2012-12-10 15:58:03
+LastKeyReplTimestamp      = 1970-01-01 07:00:00
+nNotesDenomination[0] = 0
+nNotesDenomination[1] = 50000
+nNotesDenomination[2] = 0
+nNotesDenomination[3] = 0
+
+NdcCentralCounters
+------------------
+LastBalancingTimestamp      = 1970-01-01 07:00:00
+nLastBusinessCycle          = 1959
+nLastStan                   = 388377
+nUnused                     = 0
+cLastMsgCoordinationNo      = ?
+nLastTrxSerialNo            = 479
+LastNotesDispensedCassette[0] = 0
+LastNotesDispensedCassette[1] = 0
+LastNotesDispensedCassette[2] = 0
+LastNotesDispensedCassette[3] = 0
+nAccumTrxCount               = 25
+NotesInCassette[0] = 0
+NotesInCassette[1] = 938
+NotesInCassette[2] = 0
+NotesInCassette[3] = 0
+NotesDispensedCassette[0] = 0
+NotesDispensedCassette[1] = 68
+NotesDispensedCassette[2] = 0
+NotesDispensedCassette[3] = 0
+
+HWConfig
+------------------
+nProductClass           = 9217
+nMcrw                   = 0
+nCashRejectBin          = 1
+nDepository             = 0
+nReceiptPrinter         = 65468
+nJournalPrinter         = 128
+nStatementPrinter       = 0
+nNightSafeDepository    = 0
+nEncryptor              = 0
+nCamera                 = 0
+nDoorAccess             = 0
+nFlexDisk               = 0
+nTamperInd              = 0
+nCardholderKb           = 2
+nOperatorKb             = 0
+nCardholderDisplay      = 0
+
+HWFitness
+------------------
+nTimeOfDayClock         = 0
+nHighOrderComm          = 0
+nSystemDisk             = 0
+nCardReader             = 0
+nDispenser              = 0
+nDepository             = 0
+nReceiptPrinter         = 0
+nJournalPrinter         = 0
+nNightSafeDepository    = 0
+nEncryptor              = 0
+nCamera                 = 0
+nDoorAccess             = 0
+nFlexDisk               = 0
+nUNUSED                 = 0
+Cassette[0] = 0
+Cassette[1] = 0
+Cassette[2] = 0
+Cassette[3] = 0
+nStatementPrinter       = 0
+nUNUSED2                = 0
+
+Supplies
+------------------
+nCardCaptureBin         = 0
+nCashRejectBin          = 0
+nDepositBin             = 0
+nReceiptPaper           = 0
+nReceiptRibbon          = 0
+nReceiptPrintHead       = 0
+nReceiptKnife           = 0
+nJournalSpace           = 0
+nNightSafeDepository    = 0
+nUNUSED                 = 0
+Cassette[0] = 0
+Cassette[1] = 0
+Cassette[2] = 0
+Cassette[3] = 0
+nStatementPaper         = 0
+nStatementRibbon        = 0
+nStatementPrintHea      = 0
+nStatementKnife         = 0
+nStatementCaptureBin    = 0
+nCamera                 = 0
+nUNUSED2                = 0
+
+SensorStatus
+------------------
+nSupervisorMode         = 0
+nVibrationHeat          = 0
+nDoorContact            = 0
+nSilentSignal           = 0
+nElectronicsEnclosure   = 0
+nDepositBin             = 0
+nCardCaptureBin         = 0
+nCashRejectBin          = 0
+Cassette[0] = 11
+Cassette[1] = 11
+Cassette[2] = 0
+Cassette[3] = 11
+
+SupplyCounters
+------------------
+LastUpdate              = 2012-12-10 15:55:58
+LastTrxSerialNo         = 0479
+nAccumTrxCount          = 0
+NotesInCassette[0]            = 0
+NotesInCassette[1]            = 938
+NotesInCassette[2]            = 0
+NotesInCassette[3]            = 0
+NotesRejectedCassette[0]      = 0
+NotesRejectedCassette[1]      = 0
+NotesRejectedCassette[2]      = 0
+NotesRejectedCassette[3]      = 0
+NotesDispensedCassette[0]     = 0
+NotesDispensedCassette[1]     = 62
+NotesDispensedCassette[2]     = 0
+NotesDispensedCassette[3]     = 0
+LastNotesDispensedCassette[0] = 0
+LastNotesDispensedCassette[1] = 0
+LastNotesDispensedCassette[2] = 0
+LastNotesDispensedCassette[3] = 0
+nCardsCaptured          = 1
+nEnvelopeDeposited      = 0
+nLastEnvelopeSerialNo   = 0
+nCameraFilm             = 0

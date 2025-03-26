@@ -1,0 +1,1 @@
+valgrind --max-stackframe=3097728  --leak-check=full --show-leak-kinds=all --log-file=valgrind_message ./realloc_test

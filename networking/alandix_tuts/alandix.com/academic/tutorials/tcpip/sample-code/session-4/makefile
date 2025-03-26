@@ -1,8 +1,8 @@
 SDIR=tcp
 CFLAGS=$(CCFLAGS) -I$(SDIR)/include 
 #CC=acc -DANSI
-CC=cc -DANSI
-LINK=cc
+CC=gcc -DANSI
+LINK=gcc
 INF=$(SDIR)/lib/inform.o
 MYLIBS=$(SDIR)/lib/sock.a
 LIBS=

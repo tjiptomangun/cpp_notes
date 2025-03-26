@@ -1,0 +1,8 @@
+static_analyzer: static_analyzer2 static_analyzer_err
+
+static_analyzer2: static_analyzer2.c
+	#gcc -Wall -Werror -ggdb3 -fanalyzer static_analyzer2.c -o static_analyzer2
+
+static_analyzer_err: static_analyzer_err.c
+	gcc -Wall -Werror -ggdb3 -fanalyzer static_analyzer_err.c -o static_analyzer_err
+

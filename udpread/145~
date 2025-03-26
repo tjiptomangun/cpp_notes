@@ -1,0 +1,11 @@
+./udpread    10000 spawn send &
+`ps aux| grep 'udpread' | awk '{print "gdb udpread " $2 " -x gdbtest.gdb"}'`
+
+
+
+./udpread    10000 spawn send &
+`ps aux| grep 'udpread' | sed -e '/grep\|awk/d'|awk '{print "gdb udpread " $2 " -x gdbtest.gdb"}'`
+
+./udpread    10000 spawn send &
+`ps aux| grep 'udpread' | sed -e '/grep\|awk/d'|awk '{print "gdb udpread " $2 " -x gdbtest.gdb"}'`
+

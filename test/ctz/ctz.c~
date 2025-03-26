@@ -1,0 +1,14 @@
+#include <stdio.h>
+int main(int argc, char **argv)
+{
+	int i;
+	FILE *fp;
+	//char stream[]={'E','R','R','O','R',(unsigned char)13};
+	char stream[]={'E','R','R','O','R',13,10};
+	fp = fopen("test.txt","wb");
+	fputs(stream,fp);
+
+        fclose(fp);
+	getchar();
+
+}

@@ -1,0 +1,9 @@
+> $CC xuimsgread.c -Wall -ggdb3 -o xuimsgread
+> sudo cp xuimsgread /usr/bin/.
+
+
+
+xuimsgtest 
+(linux)
+$CC xuimsgtest.c portable.c -Wall -ggdb3 -D_RHEL_AS4_ _LE_ -o xuimsgtest 
+$CC xuimsgtest.c portable.c -Wall -ggdb3 -D_aix_51_ -D_BE_ -o xuimsgtest

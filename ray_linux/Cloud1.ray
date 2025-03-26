@@ -1,0 +1,15 @@
+Antialiasing()
+Resolution(400,400)
+From(0,0,10)
+At(0,0,0)
+Up(0,1,0)
+Background(.047,.38,.84)
+MaxLevel(1)
+DMin(0)
+DMax(3)
+SaveTo(Cloud.Tif) /Don't set to empty/
+Light(Loc(0,10,10),Point(),Color(1,1,1))
+
+Ellipsoid(Loc(0,0,0), V1(4,8,4), V2(50,0,0), Ambient(.9), Diffuse(1), Specular(0),Color(1,1,1), CloudFractal(.4,2,2.3))
+
+

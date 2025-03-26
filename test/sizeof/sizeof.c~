@@ -1,0 +1,12 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(int argc, char *argv[])
+{
+	char * k;
+        k = (char *)malloc(10);        
+        printf("\nsizeof= %d       k = %d\n",sizeof(k),k);
+	k = (char *)realloc(k,20);
+	printf("\nsizeof= %d       k = %d\n",sizeof(k),k);
+}

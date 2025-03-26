@@ -1,0 +1,35 @@
+cat filename | xuimsgread
+
+usually you will run this 
+XCerptLog . XSockW1281MonCyber_1210 15:56:26 1 S | xxd -c32 -g32  | awk '{print $2 " " $3}' > XCerptXSockMonCyber_155626_Awked
+
+XCerptLog . XSockW1281MonCyber_1210 15:56:26 1 S | xxd -c32 -g32  | awk '{print $2 }' > XCerptXSockMonCyber_155626_Awked_2
+
+
+
+marker
+find this in your xui message
+
+0e01
+
+
+usually its form is like
+0e01150005083135333030323134
+
+0e01 is length of this message, the Ip header.
+So you can say that 0e01 is lower sentinel.
+remove the 0e01.
+
+Usually it is ended with things like
+0a31353a353
+. The end sentinel is 0a, the carriage return.
+the 31353a353 in this marker is ascii that
+indicates time of trace par
+
+after cutting message between sentinels, safe it
+as a file and run the xuimsgread
+
+This is some magic
+XCerptLog . XSockW1281MonCyber_1210 14:35:28 1 S|awk '{RS="00272  "; FS="XSockWAck|XSockWrite|XSockRead"}{print $1}' | sed -n '5,$p' | sed -e '$D' | xxd -c32 -g32 | awk '{print $2}' | sed 's/^0e01\|0a$//g' | xuimsg
+
+XCerptLog . XSockW1281MonCyber_1210 14:35:28 1 S|awk '{RS="00272  "; FS="XSockWAck|XSockWrite|XSockRead"}{print $1}' | sed -n '5,$p;$D' | xxd -c32 -g32 | awk '{print $2}' | sed 's/^0e01\|0a$//g' | xuimsg

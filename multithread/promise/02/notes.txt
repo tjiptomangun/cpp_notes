@@ -1,0 +1,8 @@
+require glibc min version 2.28
+https://github.com/glhrmfrts/future.c/blob/master/future.c
+sshfs -o allow_other henky@192.168.100.3:/home/henky/c++/multithread ~/c++/multithread/
+gcc -Wall -ggdb3  -std=c11 -Werror -pedantic future.c  -Dftr_implementation
+https://pubs.opengroup.org/onlinepubs/9799919799.2024edition/basedefs/threads.h.html
+rsync -avzr  ./ telogic@centos8:~/cpp/multithread/promise/02
+
+

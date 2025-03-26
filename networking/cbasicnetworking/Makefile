@@ -6,8 +6,10 @@ echosvr : echo-all.c sock.c
 
 proxysvr: proxy.c sock.c parserclass.c  parsecfg.c 
 	$(CC) proxy.c sock.c parserclass.c  parsecfg.c -o proxysvr
+simpleclient: simpleclient.c 
+	$(CC) simpleclient.c -o simpleclient
 
-all: echosvr proxysvr
+all: echosvr proxysvr simpleclient
 
 clean:
-	rm echosvr proxysvr
+	rm echosvr proxysvr simpleclient

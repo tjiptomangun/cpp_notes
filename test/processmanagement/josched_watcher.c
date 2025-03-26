@@ -1,0 +1,34 @@
+#include <sched.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <errno.h>
+
+int main(int argc, char *argv[])
+{
+	struct sched_param sp;
+	pid_t pid1=10122;
+	pid_t pid2=10123;
+	int ret;
+
+	while(1==1)
+	{
+	ret = sched_getparam (pid1, &sp);
+	if (ret == -1) 
+	{
+		perror ("sched_getparam");
+		return 1;
+	}
+	printf ("%d priority is %d\n", pid1,sp.sched_priority);
+
+	ret = sched_getparam (pid2, &sp);
+	if (ret == -1) 
+	{
+		perror ("sched_getparam");
+		return 1;
+	}
+	printf ("%d priority is %d\n", pid2,sp.sched_priority);
+	usleep(100000);
+	}
+}

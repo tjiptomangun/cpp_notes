@@ -1,0 +1,160 @@
+public:
+	Play();
+
+// Attributes
+public:
+	DWORD m_NumFrames;
+	char *m_PathName;
+// Operations
+protected:
+	DWORD FrameNumber;
+	SHORT ImWd,ImHt;
+	HBITMAP hBitmap[100];
+	HBITMAP hBmpTmp;
+	HDC hDC,MemDC;
+	BOOL First;
+
+	RECT rect;
+public:
+	void See();
+	HWND hWnd;
+protected:
+	afx_msg void OnPaint();
+	afx_msg void OnTimer();
+	afx_msg void OnDestroy();
+	int readImage(char *Filenam,HDC MemDC);
+// Overrides
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(Play)
+	//}}AFX_VIRTUAL
+
+// Implementation
+public:
+	virtual ~Play();
+
+
+Play::Play()
+{
+	FrameNumber=0;
+	First=FALSE;
+}
+
+Play::~Play()
+{
+}
+
+void Play::OnPaint()
+{
+	PAINTSTRUCT ps;
+
+	hDC=::BeginPaint((HWND)this,&ps);
+	char Buffer[80];
+	char CurrentFile[180];
+	::GetClientRect(this->m_hWnd,&rect);
+	MemDC=CreateCompatibleDC(hDC);
+	if(First)
+	{
+	
+		for(DWORD i=0;i<m_NumFrames;i++)
+		{
+		
+			hBitmap[i]=::CreateCompatibleBitmap(hDC,ImWd,ImHt);
+			hBmpTmp=(HBITMAP)SelectObject(MemDC,hBitmap[i]);
+			itoa(i,Buffer,10);
+			strcpy(CurrentFile,m_PathName);
+			strcat(CurrentFile,".");
+			strcat(CurrentFile,Buffer);
+			if(readImage(CurrentFile,hDC)<0)
+			{
+			
+				MessageBox("Failed openning file",NULL,MB_OK);
+				return ;
+			
+			}
+			::BitBlt(MemDC,0,0,ImWd,ImHt,hDC,0,0,SRCCOPY);
+			::SelectObject(MemDC,hBmpTmp);		
+		}
+		First=FALSE;
+		SetTimer(TimerID,25,NULL);	
+	}
+		else
+	{
+	
+		::SelectObject(hDC,hBitmap[FrameNumber]);
+		::BitBlt(hDC,0,0,ImWd,ImHt,MemDC,0,0,SRCCOPY);
+		::DeleteDC(MemDC);		
+	}
+	
+//	EndPaint(&ps);
+
+}
+
+void Play::OnTimer()
+{
+
+		if(!First)
+	{
+		FrameNumber+=1;
+		FrameNumber%=m_NumFrames;
+	}
+	::InvalidateRect(this->m_hWnd,&rect,FALSE);
+	
+
+}
+
+void Play::OnDestroy()
+{
+	DWORD i;
+	::KillTimer(this->m_hWnd,TimerID);
+	for(i=0;i<m_NumFrames;i++)
+		::DeleteObject(&hBitmap[i]);
+	::PostQuitMessage(0);
+}
+
+void Play::See()
+{
+
+	OnPaint();
+
+}
+int Play::readImage(char *Filename,HDC MemDC)
+{
+
+	SHORT T;
+	long x,y;
+	BYTE Red,Green,Blue;
+	unsigned char * Image;
+	
+		if(GetImageInfo(Filename,&ImWd,&ImHt,&T)<=0)
+			return -1;
+		if(T==2)
+			Image=(UCHAR *)malloc((long)ImWd*(long)ImHt*3L);
+		else
+			return -1;
+		if(Image==NULL)
+			return -1;
+		if(!ReadImage(Filename,Image))
+			return -1;
+
+		for(y=0;y<ImHt;y++)
+		{
+			for(x=0;x<ImWd;x++)
+			{
+			
+				if(T==2)
+				{
+				
+					Red=Image[(y*(long)ImWd + x)*3L];
+					Green=Image[(y*(long)ImWd + x)*3L+1];
+					Blue=Image[(y*(long)ImWd + x)*3L+2];
+
+					SetPixel(MemDC,x,y,RGB(Red,Green,Blue));
+				
+				}
+			
+			}
+		}
+
+			free(Image);
+			return 1;
+}	

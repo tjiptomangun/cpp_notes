@@ -1,0 +1,211 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <strings.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sched.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int nSigChild = 0;
+int nPakets=0;
+int init_fd (int fd_count, const int fd_map[ ])
+{
+        int i = 0;
+        int j = 0;
+        int nTempFd = 0;
+        int fd_cpy[fd_count];
+
+        memcpy (fd_cpy, fd_map, fd_count * sizeof (int));
+        while (i < fd_count)
+        {
+                if (i != fd_cpy[i]) {
+                        nTempFd = dup(i);
+                        if (nTempFd != EBADF) {
+                                for (j = i+1; j < fd_count; j++) {
+                                        if (fd_cpy[j] == i) {
+                                                fd_cpy[j] = nTempFd;
+                                        }
+                                }
+                        }
+
+                        if (dup2(fd_map[i], i) < 0) {
+                                perror("_spawn:dup2");
+                                exit (-1);
+                        }
+                }
+                i++;
+        }
+        return -1;
+}
+
+
+pid_t spawn( const char * path,
+        int fd_count,
+        const int fd_map[ ],
+        char * const argv[ ]) {
+
+        pid_t   nPid = -1;
+
+        if (access (path, R_OK | X_OK) != 0)
+        {
+                perror ("access");
+                return (-1);
+        }
+
+        switch ((nPid = fork ()))
+        {
+                case 0:         /* child */
+                        init_fd (fd_count, fd_map);
+                        execv (path, argv);
+                        //TracePar (XL_TRACE_ERROR, "[ER] exec fail", 0, errno);
+                        exit (0);
+
+                case -1:        /* error */
+                        //TracePar (XL_TRACE_ERROR, "[ER] fork fail", 0, errno);
+                        return (-1);
+
+                default:        /* parent */
+                        return (nPid);
+        }
+
+        return -1;
+}
+void SigChild ()
+{
+   int signalled;
+   int n;
+   pid_t nPid;
+   while (1)
+   {
+      switch ((nPid = waitpid (0, NULL, WNOHANG)))
+      {
+            case 0:
+              return;
+            case -1:
+              continue;
+            default:
+              ++nSigChild;
+              return;
+      }
+   }
+}
+sigset_t  SigSet;
+#define MAX_PACKET_LEN 10
+int main(int argc, char* argv[])
+{
+   int nPort=0;
+   int nSkt;
+   int nChildPid;
+   char *tmp;
+   char *pArgv[7];
+   int  pFdMap[5];
+   struct timeval Tv;
+   int nTimeOut=5000;
+   unsigned char PktBuf[MAX_PACKET_LEN];
+   unsigned char *pPktBuf;
+   fd_set nReadFds;
+   int  nRet;
+   int  nRs;
+   struct sockaddr_in   RcvAddr;
+#ifdef _aix_51_
+   socklen_t   nRcvAddrLen;
+#else
+   int   nRcvAddrLen;
+#endif
+   struct sockaddr_in Local;
+   nRcvAddrLen = sizeof (RcvAddr);
+   int  nNumRead;
+   if(argc<2)
+   {
+        printf("argc<2\n");
+        exit(0);
+   }
+   nPort = atoi(argv[1]);
+   if ((nSkt = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
+   {
+      printf("[ER]init socket\n");
+   }
+   Local.sin_family = AF_INET;
+   Local.sin_addr.s_addr = htonl (INADDR_ANY);
+   Local.sin_port = htons (nPort);
+   if (bind (nSkt, (struct sockaddr *) &Local, sizeof Local) < 0)
+   {
+      printf("[ER]binding socket\n");
+   }
+   if(argc>2)
+   {
+     tmp=(char *)argv[2];
+     if(tmp[0]=='s'&&tmp[1]=='p'&&tmp[2]=='a'&&
+        tmp[3]=='w'&&tmp[4]=='n'&&tmp[5]==0 )
+     {
+        if (signal (SIGCHLD, SigChild) == SIG_ERR)
+        {
+            printf("[ER] main signal");
+            exit (250);
+        }
+        sigemptyset (&SigSet);
+        sigaddset (&SigSet, SIGCHLD);
+        pArgv[0]="./udpchild";
+        pArgv[1]=0;
+        if(argc>3)
+        {
+            tmp=(char *)argv[3];
+            if(tmp[0]=='s'&&tmp[1]=='e'&&tmp[2]=='n'&&
+               tmp[3]=='d'&&tmp[4]==0)
+            {
+                pArgv[1]=argv[1];
+                pArgv[2]=0;
+            }
+        }
+        pFdMap[0] = 0;
+        pFdMap[1] = 1;
+        pFdMap[2] = 2;
+        switch ((nChildPid = spawn (pArgv[0],3,pFdMap,pArgv)))
+        {
+            case -1:	/* error */
+                printf("[ER] spawn fail\n");
+                break;
+            default:
+                break;
+        }
+     }
+   }
+   FD_ZERO (&nReadFds);
+   FD_SET (nSkt, &nReadFds);
+   while(1)
+   {
+      Tv.tv_sec  = nTimeOut/1000;
+      Tv.tv_usec = (nTimeOut % 1000) * 1000;
+      if ((nRet = select (nSkt+1, &nReadFds, NULL, NULL, &Tv)) < 0)
+      {
+         perror("get -1");
+         exit(0);
+      }
+      else if(nRet == 0)
+      {
+          perror("timeout");
+      }
+      else
+      {
+         for (nNumRead = 0; nNumRead < MAX_PACKET_LEN;
+            nNumRead += nRs)
+         {
+               nRs = recvfrom (nSkt, &pPktBuf[nNumRead],
+                        MAX_PACKET_LEN - nNumRead,
+                        0, (struct sockaddr *) &RcvAddr, &nRcvAddrLen);
+               if (nRs == -1)
+               {
+                  printf("XIPCUdpRecv header errno =%d\n",errno);
+                  break;
+               }
+         }
+      }
+   }
+}

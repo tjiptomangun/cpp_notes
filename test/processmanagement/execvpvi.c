@@ -1,0 +1,12 @@
+#include <unistd.h>
+void main()
+{
+	int ret;
+        const char * args[]={"vi","/home/henky/Documents/bmsmatchlog2.sql",NULL};
+	
+	ret = execvp("vi",args);	
+	if(ret == -1)
+		perror("execvp");
+	return 0;
+	
+}

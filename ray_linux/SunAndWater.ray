@@ -1,0 +1,7 @@
+Antialiasing()
+Resolution(600,600)
+
+Light(Loc(100,100,100), Color(1,1,1), Cone(), SpreadPower(2), SpreadAngle(.25),LightDir(50,50,50))
+Sphere(Loc(0,0,0), Radius(4), Ambient(.5), Diffuse(.5), Specular(.6), SpecSpread(3), Transparency(0), Color(.4,.4,0), Color2(1,1,1), /*Map(?.tif)*/, /*Checker(1,1)*/, Blend(.25))
+Cylinder(Loc(5,5,-4), Radius(4), V1(0,1,1),Ambient(.5), Diffuse(.5), Specular(.6), SpecSpread(3), Transparency(0), Color(.5,.6,0), Color2(1,1,1),/* Map(?.tif)*/, /*Checker(1,1)*/,Blend(.25))
+Rectangle(Loc(0,0,-1),V1(15,0,0),V2(0,15,0), Ambient(.5), Diffuse(.5), Specular(.6), SpecSpread(3), Transparency(0), Color(1,1,1),Water(.1,.1,12)

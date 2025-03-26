@@ -1,0 +1,17 @@
+Resolution(400,400)
+From(3,35,16)
+At(5,3,16)
+Up(0.0,0.0,1.0)
+Background(.0,.2,.7)
+MaxLevel(1)
+Light(Loc(10,7,50),Point(),Color(1,1,1))
+Light(Loc(60,55,5),Point(),Color(1,1,1))
+/
+include(first.ray)
+include(second.ray)
+include(third.ray)
+/
+include(ellipsoid.ray)
+Rectangle(Loc(-100,-100,8),V1(200,0,0),V2(0,200,0), Ambient(.4), Diffuse(.3), Specular(.9), SpecSpread(6), Color(0,0,.8),Water(.2,.315,13))
+
+

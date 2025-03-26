@@ -1,0 +1,65 @@
+*
+*
+* ----- Define routes for other GTs -----
+*
+*SCCP_GTT_PATTERN <pattern_id> <addr_indicator> <pc>     <ssn> <global_title> [<gtai_pattern>]*
+SCCP_GTT_PATTERN    1            0x12             0x0000   0x08  0x001204      6597664778
+SCCP_GTT_ADDRESS    1            0x13             0x049a   0x08  0x001204       6597664778
+SCCP_GTT            1                                                           K                1
+*
+*  Rule for RDS and MT_FSM to Interops
+*  Catchall rule for other Singapore GT
+*
+* SCCP_GTT_PATTERN <pattern_id> <addr_indicator> <pc>     <ssn> <global_title> [<gtai_pattern>]*
+SCCP_GTT_PATTERN    2            0x10             0x0000   0x00  0x001204      65/+
+SCCP_GTT_ADDRESS    2            0x11             0x0462   0x00  0x001204      65/-
+SCCP_GTT_ADDRESS    3            0x11             0x0461   0x00  0x001204      65/-
+SCCP_GTT            2      R/K       2       3
+*
+*  Rule for SRI-SM, RDS an MT_FSM for foreign numbers
+*
+SCCP_GTT_PATTERN    3            0x10             0x0000   0x00  0x001204      1/+
+SCCP_GTT_ADDRESS    4            0x11             0x0462   0x00  0x001204      1/-
+SCCP_GTT_ADDRESS    5            0x11             0x0461   0x00  0x001204      1/-
+SCCP_GTT            3      R/K       4       5
+
+SCCP_GTT_PATTERN    4            0x10             0x0000   0x00  0x001204      2/+
+SCCP_GTT_ADDRESS    6            0x11             0x0462   0x00  0x001204      2/-
+SCCP_GTT_ADDRESS    7            0x11             0x0461   0x00  0x001204      2/-
+SCCP_GTT            4      R/K       6       7
+
+SCCP_GTT_PATTERN    5            0x10             0x0000   0x00  0x001204      3/+
+SCCP_GTT_ADDRESS    8            0x11             0x0462   0x00  0x001204      3/-
+SCCP_GTT_ADDRESS    9            0x11             0x0461   0x00  0x001204      3/-
+SCCP_GTT            5      R/K       8       9
+
+SCCP_GTT_PATTERN    6            0x10             0x0000   0x00  0x001204      4/+
+SCCP_GTT_ADDRESS    10           0x11             0x0462   0x00  0x001204      4/-
+SCCP_GTT_ADDRESS    11           0x11             0x0461   0x00  0x001204      4/-
+SCCP_GTT            6      R/K       10      11
+
+SCCP_GTT_PATTERN    7            0x10             0x0000   0x00  0x001204      5/+
+SCCP_GTT_ADDRESS    12           0x11             0x0462   0x00  0x001204      5/-
+SCCP_GTT_ADDRESS    13           0x11             0x0461   0x00  0x001204      5/-
+SCCP_GTT            7      R/K       12      13
+
+SCCP_GTT_PATTERN    8            0x10             0x0000   0x00  0x001204      6/+
+SCCP_GTT_ADDRESS    14           0x11             0x0462   0x00  0x001204      6/-
+SCCP_GTT_ADDRESS    15           0x11             0x0461   0x00  0x001204      6/-
+SCCP_GTT            8      R/K       14      15
+
+SCCP_GTT_PATTERN    9            0x10             0x0000   0x00  0x001204      7/+
+SCCP_GTT_ADDRESS    16           0x11             0x0462   0x00  0x001204      7/-
+SCCP_GTT_ADDRESS    17           0x11             0x0461   0x00  0x001204      7/-
+SCCP_GTT            9      R/K       16      17
+
+SCCP_GTT_PATTERN    10           0x10             0x0000   0x00  0x001204      8/+
+SCCP_GTT_ADDRESS    18           0x11             0x0462   0x00  0x001204      8/-
+SCCP_GTT_ADDRESS    19           0x11             0x0461   0x00  0x001204      8/-
+SCCP_GTT            10     R/K       18      19
+
+SCCP_GTT_PATTERN    11           0x10             0x0000   0x00  0x001204      9/+
+SCCP_GTT_ADDRESS    20           0x11             0x0462   0x00  0x001204      9/-
+SCCP_GTT_ADDRESS    21           0x11             0x0461   0x00  0x001204      9/-
+SCCP_GTT            11     R/K       20      21
+

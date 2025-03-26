@@ -1,0 +1,281 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include "xuindc.h"
+
+#define BYTE	unsigned char
+#define STDIN_BUFFSZ	1
+#define CONVERTING_BUFFSZ 4096 
+
+//piping is retrieved from http://bytes.com/topic/c/answers/697819-howto-reading-pipe-dev-stdin
+
+
+BYTE CharHex2Dec (char *sBil)
+{
+	int 	nI;
+
+	for (nI = 0; nI < 2; nI++)
+	{
+		if ((sBil[nI] >= 0x30 && sBil[nI] <= 0x39) ||
+             (sBil[nI] >= 0x41 && sBil[nI] <= 0x46) ||
+		     (sBil[nI] >= 0x61 && sBil[nI] <= 0x66))
+		{
+			if ((sBil[nI] >= 0x41 && sBil[nI] <= 0x46) ||
+				 (sBil[nI] >= 0x61 && sBil[nI] <= 0x66))
+			{
+				sBil[nI] = sBil[nI] + 9;
+			}
+		}
+		else
+		{
+			return (0);
+		}
+	}
+	return ((sBil[1] & 0x0f) + (16 * (sBil[0] & 0x0f)));
+}
+
+int ConvertBuffHex2Dec(char  *inBuff, BYTE *outBuff, int inBuffSz, int outBuffSz)
+{
+	int inIdx = 0, outIdx = 0;
+	if(inBuffSz &1 )
+		return -1;
+	for (inIdx = 0, outIdx =0 ; inIdx < inBuffSz && outIdx < outBuffSz; inIdx+=2,outIdx+=1 )
+	{
+		outBuff[outIdx] = CharHex2Dec(&inBuff[inIdx]);
+	}	
+	return outIdx;
+}
+
+/*
+ * Expected struct will be XUI_REPLY minus object data, plus DevStatus plus NDCStatus
+ *
+ */
+
+int printXuiNdcMessage(BYTE *inBuffer)
+{
+	XUI_REPLY 	*pXuiRp;
+	XL_DEV_STATUS 	*pDevStatus;
+	XL_NDC_STATUS	*pXLNdcStatus;
+	int              nDx=0;
+	struct tm *tmp;
+	char outstr[200];
+
+
+	pXuiRp = (XUI_REPLY *) inBuffer;
+	pDevStatus = (XL_DEV_STATUS *) (pXuiRp->strObjectData);
+	
+	pXLNdcStatus = (XL_NDC_STATUS *) &pDevStatus[1];
+
+	printf("Rp=0x%X  DevSt=0x%X   NdcSt=0x%X\n", (unsigned int) pXuiRp,
+                       (unsigned int) pDevStatus, (unsigned int)pXLNdcStatus);
+
+	printf("Reply\n--------\n");
+	printf("unMsgType      = %d\n",pXuiRp->unMsgType);
+	printf("unObjectType   = %d\n",pXuiRp->unObjectType);
+	printf("strObjName     = %s\n",pXuiRp->strObjectName);
+	printf("unPointId      = %d\n",pXuiRp->unPointId);
+	printf("unMsgStatus    = %d\n",pXuiRp->unMsgStatus);
+	printf("\nDevStatus\n------------\n");
+	printf("BusinessCycle  = %d\n",pDevStatus->nBusinessCycle);
+	printf("nActivation    = %d\n",pDevStatus->nActivation);
+	printf("nCommunication = %d\n",pDevStatus->nCommunication);
+	printf("nServiceMode   = %d\n",pDevStatus->nServiceMode);
+	printf("\nNdcStatus\n------------\n");
+	printf("bFullDownload  = %d\n",pXLNdcStatus->bFullDownload);
+	printf("nUNUSED        = %d\n",pXLNdcStatus->nUNUSED);
+	printf("nConfigVer     = %d\n",pXLNdcStatus->nConfigVer);
+	printf("nLanguageIdx   = %d\n",pXLNdcStatus->nLanguageIdx);
+	tmp = localtime(&pXLNdcStatus->nLastEchoTimestamp);
+	strftime(outstr, sizeof(outstr), "%Y-%m-%d %H:%M:%S", tmp);
+	printf("LastEchoTimestamp         = %s\n",outstr);
+
+	tmp = localtime(&pXLNdcStatus->nLastInactivityTimestamp);
+	strftime(outstr, sizeof(outstr), "%Y-%m-%d %H:%M:%S", tmp);
+	printf("LastInactivityTimestamp   = %s\n",outstr);
+
+	tmp = localtime(&pXLNdcStatus->nLastKeyReplTimestamp);
+	strftime(outstr, sizeof(outstr), "%Y-%m-%d %H:%M:%S", tmp);
+	printf("LastKeyReplTimestamp      = %s\n",outstr);
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("nNotesDenomination[%d] = %d\n",nDx,pXLNdcStatus->nNotesDenomination[nDx]);
+	}
+
+	printf("\nNdcCentralCounters\n------------------\n");
+	tmp = localtime(&pXLNdcStatus->CentralCounters.LastBalancingTimestamp);
+	strftime(outstr, sizeof(outstr), "%Y-%m-%d %H:%M:%S", tmp);
+	printf("LastBalancingTimestamp      = %s\n",outstr);
+	printf("nLastBusinessCycle          = %d\n",pXLNdcStatus->CentralCounters.nLastBusinessCycle);
+	printf("nLastStan                   = %d\n",pXLNdcStatus->CentralCounters.nLastStan);
+	printf("nUnused                     = %d\n",pXLNdcStatus->CentralCounters.nUnused);
+	printf("cLastMsgCoordinationNo      = %c\n",pXLNdcStatus->CentralCounters.cLastMsgCoordinationNo);
+	printf("nLastTrxSerialNo            = %d\n",pXLNdcStatus->CentralCounters.nLastTrxSerialNo);
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("LastNotesDispensedCassette[%d] = %d\n",nDx,pXLNdcStatus->CentralCounters.LastNotesDispensedCassette[nDx]);
+	}
+	printf("nAccumTrxCount               = %d\n",pXLNdcStatus->CentralCounters.nAccumTrxCount);
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("NotesInCassette[%d] = %d\n",nDx,pXLNdcStatus->CentralCounters.NotesInCassette[nDx]);
+	}
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("NotesDispensedCassette[%d] = %d\n",nDx,pXLNdcStatus->CentralCounters.NotesDispensedCassette[nDx]);
+	}
+
+	printf("\nHWConfig\n------------------\n");
+	printf("nProductClass           = %d\n",pXLNdcStatus->HWConfig.nProductClass);
+	printf("nMcrw                   = %d\n",pXLNdcStatus->HWConfig.nMcrw);
+	printf("nCashRejectBin          = %d\n",pXLNdcStatus->HWConfig.nCashRejectBin);
+	printf("nDepository             = %d\n",pXLNdcStatus->HWConfig.nDepository);
+	printf("nReceiptPrinter         = %d\n",pXLNdcStatus->HWConfig.nReceiptPrinter);
+	printf("nJournalPrinter         = %d\n",pXLNdcStatus->HWConfig.nJournalPrinter);
+	printf("nStatementPrinter       = %d\n",pXLNdcStatus->HWConfig.nStatementPrinter);
+	printf("nNightSafeDepository    = %d\n",pXLNdcStatus->HWConfig.nNightSafeDepository);
+	printf("nEncryptor              = %d\n",pXLNdcStatus->HWConfig.nEncryptor);
+	printf("nCamera                 = %d\n",pXLNdcStatus->HWConfig.nCamera);
+	printf("nDoorAccess             = %d\n",pXLNdcStatus->HWConfig.nDoorAccess);
+	printf("nFlexDisk               = %d\n",pXLNdcStatus->HWConfig.nFlexDisk);
+	printf("nTamperInd              = %d\n",pXLNdcStatus->HWConfig.nTamperInd);
+	printf("nCardholderKb           = %d\n",pXLNdcStatus->HWConfig.nCardholderKb);
+	printf("nOperatorKb             = %d\n",pXLNdcStatus->HWConfig.nOperatorKb);
+	printf("nCardholderDisplay      = %d\n",pXLNdcStatus->HWConfig.nCardholderDisplay);
+
+	printf("\nHWFitness\n------------------\n");
+	printf("nTimeOfDayClock         = %d\n",pXLNdcStatus->HWFitness.nTimeOfDayClock);
+	printf("nHighOrderComm          = %d\n",pXLNdcStatus->HWFitness.nHighOrderComm);
+	printf("nSystemDisk             = %d\n",pXLNdcStatus->HWFitness.nSystemDisk);
+	printf("nCardReader             = %d\n",pXLNdcStatus->HWFitness.nCardReader);
+	printf("nDispenser              = %d\n",pXLNdcStatus->HWFitness.nDispenser);
+	printf("nDepository             = %d\n",pXLNdcStatus->HWFitness.nDepository);
+	printf("nReceiptPrinter         = %d\n",pXLNdcStatus->HWFitness.nReceiptPrinter);
+	printf("nJournalPrinter         = %d\n",pXLNdcStatus->HWFitness.nJournalPrinter);
+	printf("nNightSafeDepository    = %d\n",pXLNdcStatus->HWFitness.nNightSafeDepository);
+	printf("nEncryptor              = %d\n",pXLNdcStatus->HWFitness.nEncryptor);
+	printf("nCamera                 = %d\n",pXLNdcStatus->HWFitness.nCamera);
+	printf("nDoorAccess             = %d\n",pXLNdcStatus->HWFitness.nDoorAccess);
+	printf("nFlexDisk               = %d\n",pXLNdcStatus->HWFitness.nFlexDisk);
+	printf("nUNUSED                 = %d\n",pXLNdcStatus->HWFitness.nUNUSED);
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("Cassette[%d] = %d\n",nDx,pXLNdcStatus->HWFitness.Cassette[nDx]);
+	}
+	printf("nStatementPrinter       = %d\n",pXLNdcStatus->HWFitness.nStatementPrinter);
+	printf("nUNUSED2                = %d\n",pXLNdcStatus->HWFitness.nUNUSED2);
+
+	printf("\nSupplies\n------------------\n");
+	printf("nCardCaptureBin         = %d\n",pXLNdcStatus->Supplies.nCardCaptureBin);
+	printf("nCashRejectBin          = %d\n",pXLNdcStatus->Supplies.nCashRejectBin);
+	printf("nDepositBin             = %d\n",pXLNdcStatus->Supplies.nDepositBin);
+	printf("nReceiptPaper           = %d\n",pXLNdcStatus->Supplies.nReceiptPaper);
+	printf("nReceiptRibbon          = %d\n",pXLNdcStatus->Supplies.nReceiptRibbon);
+	printf("nReceiptPrintHead       = %d\n",pXLNdcStatus->Supplies.nReceiptPrintHead);
+	printf("nReceiptKnife           = %d\n",pXLNdcStatus->Supplies.nReceiptKnife);
+	printf("nJournalSpace           = %d\n",pXLNdcStatus->Supplies.nJournalSpace);
+	printf("nNightSafeDepository    = %d\n",pXLNdcStatus->Supplies.nNightSafeDepository);
+	printf("nUNUSED                 = %d\n",pXLNdcStatus->Supplies.nUNUSED);
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("Cassette[%d] = %d\n",nDx,pXLNdcStatus->Supplies.Cassette[nDx]);
+	}
+	printf("nStatementPaper         = %d\n",pXLNdcStatus->Supplies.nStatementPaper);
+	printf("nStatementRibbon        = %d\n",pXLNdcStatus->Supplies.nStatementRibbon);
+	printf("nStatementPrintHea      = %d\n",pXLNdcStatus->Supplies.nStatementPrintHead);
+	printf("nStatementKnife         = %d\n",pXLNdcStatus->Supplies.nStatementKnife);
+	printf("nStatementCaptureBin    = %d\n",pXLNdcStatus->Supplies.nStatementCaptureBin);
+	printf("nCamera                 = %d\n",pXLNdcStatus->Supplies.nCamera);
+	printf("nUNUSED2                = %d\n",pXLNdcStatus->Supplies.nUNUSED2);
+
+	printf("\nSensorStatus\n------------------\n");
+	printf("nSupervisorMode         = %d\n",pXLNdcStatus->SensorStatus.nSupervisorMode);
+	printf("nVibrationHeat          = %d\n",pXLNdcStatus->SensorStatus.nVibrationHeat);
+	printf("nDoorContact            = %d\n",pXLNdcStatus->SensorStatus.nDoorContact);
+	printf("nSilentSignal           = %d\n",pXLNdcStatus->SensorStatus.nSilentSignal);
+	printf("nElectronicsEnclosure   = %d\n",pXLNdcStatus->SensorStatus.nElectronicsEnclosure);
+	printf("nDepositBin             = %d\n",pXLNdcStatus->SensorStatus.nDepositBin);
+	printf("nCardCaptureBin         = %d\n",pXLNdcStatus->SensorStatus.nCardCaptureBin);
+	printf("nCashRejectBin          = %d\n",pXLNdcStatus->SensorStatus.nCashRejectBin);
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("Cassette[%d] = %d\n",nDx,pXLNdcStatus->SensorStatus.CassetteSlot[nDx]);
+	}
+
+	printf("\nSupplyCounters\n------------------\n");
+	tmp = localtime(&pXLNdcStatus->SupplyCounters.LastUpdate);
+	strftime(outstr, sizeof(outstr), "%Y-%m-%d %H:%M:%S", tmp);
+	printf("LastUpdate              = %s\n",outstr);
+	printf("LastTrxSerialNo         = %s\n",pXLNdcStatus->SupplyCounters.LastTrxSerialNo);
+	printf("nAccumTrxCount          = %d\n",pXLNdcStatus->SupplyCounters.nAccumTrxCount);
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("NotesInCassette[%d]            = %d\n",nDx,pXLNdcStatus->SupplyCounters.NotesInCassette[nDx]);
+	}
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("NotesRejectedCassette[%d]      = %d\n",nDx,pXLNdcStatus->SupplyCounters.NotesRejectedCassette[nDx]);
+	}
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("NotesDispensedCassette[%d]     = %d\n",nDx,pXLNdcStatus->SupplyCounters.NotesDispensedCassette[nDx]);
+	}
+	for(nDx = 0; nDx<XL_NDC_MAX_CASSETTE; nDx++)
+	{
+		printf("LastNotesDispensedCassette[%d] = %d\n",nDx,pXLNdcStatus->SupplyCounters.LastNotesDispensedCassette[nDx]);
+	}
+	printf("nAccumTrxCount          = %d\n",pXLNdcStatus->SupplyCounters.nCardsCaptured);
+	printf("nAccumTrxCount          = %d\n",pXLNdcStatus->SupplyCounters.nEnvelopeDeposited);
+	printf("nAccumTrxCount          = %d\n",pXLNdcStatus->SupplyCounters.nLastEnvelopeSerialNo);
+	printf("nAccumTrxCount          = %d\n",pXLNdcStatus->SupplyCounters.nCameraFilm);
+	return 1;
+
+}
+int main (int argc, char *argv[])
+{
+	char 	stdin_buffer[STDIN_BUFFSZ];
+	char	converting_buffer[CONVERTING_BUFFSZ];
+	BYTE	result_buffer[CONVERTING_BUFFSZ];
+	FILE	*instream;
+	int	bytes_read;
+	int	stdin_buffsz=0;
+	int 	converting_idx=0;
+	stdin_buffsz = STDIN_BUFFSZ * sizeof(BYTE);
+	/*openning stdin for reading*/
+	instream = fopen("/dev/stdin","r");
+	/*did it open*/
+	if( instream != NULL )
+	{
+		while(( bytes_read = fread(&stdin_buffer, stdin_buffsz, 1, instream)) == stdin_buffsz)
+		{
+			if( !(stdin_buffer[0] == 0x0d || stdin_buffer[0] == 0x0a) )
+			{
+				converting_buffer[converting_idx++] = stdin_buffer[0];		
+			}
+			if(converting_idx >= CONVERTING_BUFFSZ)
+			{
+				converting_idx=0;
+				ConvertBuffHex2Dec(converting_buffer, result_buffer,
+					CONVERTING_BUFFSZ, CONVERTING_BUFFSZ);
+			}
+		}
+		if(converting_idx & 1)
+		{
+			fprintf(stderr,"error odd size input");
+			exit(0);
+		}
+		if(converting_idx < CONVERTING_BUFFSZ)
+		{
+			
+			ConvertBuffHex2Dec(converting_buffer, result_buffer,
+					converting_idx, CONVERTING_BUFFSZ);
+			printXuiNdcMessage(result_buffer);
+		}
+	}
+	else
+	{
+		fprintf(stderr,"error openning stdin. aborting.\n");
+		exit(0);
+	}
+	return (0);
+}
+

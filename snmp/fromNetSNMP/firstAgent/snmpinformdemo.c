@@ -1,0 +1,265 @@
+//http://www.net-snmp.org/wiki/index.php/TUT:Simple_Application
+#include <net-snmp/net-snmp-config.h>
+#include <net-snmp/net-snmp-includes.h>
+
+#define DEMO_USE_SNMP_VERSION_3
+#ifdef DEMO_USE_SNMP_VERSION_3
+#include "net-snmp/library/transform_oids.h"
+//const char *our_v3_passphrase = "k5hm1dt321";
+const char *our_v3_passphrase = "t3logic123";
+const char *our_v3_privKey = "t3log1c321";
+#endif
+int main(int argc, char **argv) {
+	struct snmp_session session, *ss;
+	struct snmp_pdu *pdu;
+	struct snmp_pdu *response;
+	oid             name[MAX_OID_LEN] = {0};
+    size_t          name_length;
+
+	oid anOID[MAX_OID_LEN];
+	size_t anOID_len = MAX_OID_LEN;
+	struct variable_list *vars;
+	int status;
+	oid     objid_sysuptime[] = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
+	oid     objid_enterprise[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1 };
+	oid     objid_snmptrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
+	oid		objid_netSnmpExampleHeartbeatNotification[] = {1, 3, 6, 1, 4, 1, 8072, 2, 3, 0, 1};
+	oid		objid_netSnmpExampleHeartbeatRate[] = {1, 3, 6, 1, 4, 1, 8072, 2, 3, 2, 1};
+	long    sysuptime;
+	char    csysuptime[20];
+	char    *trap = NULL;
+
+	/** Initialize the SNMP library 
+	 *
+	 */
+	init_snmp("snmpapp");
+
+	/**
+	 * Initialize a "session" that defines who we're going to talk to 
+	 **/	
+	setup_engineID(NULL, NULL);
+	snmp_sess_init(&session);
+	session.peername = "localhost";
+
+#ifdef DEMO_USE_SNMP_VERSION_3
+	/**
+	 * Use SNMPv3 to talk to the experimentak server
+	 */
+	
+	/** Set the SNMP version number*/
+	session.version = SNMP_VERSION_3;
+
+	/** set the SNMP user name */
+	session.securityName = strdup("telogic");
+	session.securityNameLen = strlen(session.securityName);
+
+	/** set the security level to authenticated, but not encrypted*/
+	session.securityLevel = SNMP_SEC_LEVEL_AUTHPRIV;
+
+	/** set the authentication method to MD5 */
+	int auth_type = usm_lookup_auth_type("SHA");
+	if (auth_type > 0) {
+		printf("auth_type match\n");
+                session.securityAuthProto =
+                sc_get_auth_oid(auth_type, &session.securityAuthProtoLen);
+	}
+	/*
+	session.securityAuthProto = usmHMACMD5AuthProtocol;
+	session.securityAuthProtoLen = sizeof(usmHMACMD5AuthProtocol)/sizeof(oid);
+	*/
+	session.securityAuthKeyLen =  USM_AUTH_KU_LEN;
+	if (session.securityAuthProto == NULL) {
+            /*
+             * get .conf set default
+             */
+		const oid      *def = get_default_authtype(&session.securityAuthProtoLen);
+		session.securityAuthProto =
+		snmp_duplicate_objid(def, session.securityAuthProtoLen);
+        }
+	if (session.securityAuthProto == NULL) {
+		session.securityAuthProto =
+		snmp_duplicate_objid(SNMP_DEFAULT_AUTH_PROTO,
+		SNMP_DEFAULT_AUTH_PROTOLEN);
+		session.securityAuthProtoLen = SNMP_DEFAULT_AUTH_PROTOLEN;
+        }
+
+
+	/** set authentication key to MD5 hashed version of our passphrase "The Net-SNMP Demo Password"
+        which will be at leat 8 characters long*/
+	if(generate_Ku(session.securityAuthProto, session.securityAuthProtoLen, 
+		(u_char *) our_v3_passphrase,
+		strlen(our_v3_passphrase),
+		session.securityAuthKey,
+		&session.securityAuthKeyLen) != SNMPERR_SUCCESS) {
+			snmp_perror(argv[0]);
+			snmp_log(LOG_ERR, "Error generating Ku from authentication pass phrase. \n");
+			exit(1);
+
+	}
+	session.securityPrivKeyLen = USM_PRIV_KU_LEN;
+	int priv_type = usm_lookup_priv_type("AES");
+	if (priv_type > 0) {
+		printf("priv_type match\n");
+	        session.securityPrivProto =
+            sc_get_priv_oid(priv_type, &session.securityPrivProtoLen);
+	}
+
+	if (session.securityPrivProto == NULL) {
+            /*
+             * get .conf set default
+             */
+		const oid      *def =
+			get_default_privtype(&session.securityPrivProtoLen);
+		session.securityPrivProto =
+		snmp_duplicate_objid(def, session.securityPrivProtoLen);
+        }
+	if (session.securityPrivProto == NULL) {
+		session.securityPrivProto =
+		snmp_duplicate_objid(SNMP_DEFAULT_PRIV_PROTO,
+		SNMP_DEFAULT_PRIV_PROTOLEN);
+		session.securityPrivProtoLen = SNMP_DEFAULT_PRIV_PROTOLEN;
+        }
+        if (generate_Ku(session.securityAuthProto,
+                        session.securityAuthProtoLen,
+                        (u_char *) our_v3_privKey, strlen(our_v3_privKey),
+                        session.securityPrivKey,
+                        &session.securityPrivKeyLen) != SNMPERR_SUCCESS) {
+            snmp_perror(argv[0]);
+            fprintf(stderr,
+                    "Error generating a key (Ku) from the supplied privacy pass phrase. \n");
+            
+            exit(1);
+        }
+
+
+
+#else /* We'll use the insecure but simpler SNMPv1*/
+		/** set the snmp version number */
+		session.version = SNMP_VERSION_1;
+
+		/** set the snmpv1 community name used for authentication*/
+		session.community = "k5hm1dt321";
+		session.community_len = strlen(session.community);
+#endif 
+
+	/** windows32 specific initialization (is a noop on unix) */
+	SOCK_STARTUP;
+
+	/** Open the session*/
+	//ss = snmp_open(&session);		/*establish the session*/
+	ss = snmp_add(&session,
+                  netsnmp_transport_open_client("snmptrap", session.peername),
+                  NULL, NULL);
+
+	if (!ss) {
+		snmp_perror("ack");
+		snmp_log(LOG_ERR, "something horrible happened !!\n");
+		exit(2);
+	}
+
+	/**
+	 * Create the PDU for the dOAata for our request
+	 * 1) We're going to GET the system.sysDescr.0.node
+	 */
+	pdu = snmp_pdu_create(SNMP_MSG_INFORM);
+    sysuptime = get_uptime();
+    sprintf(csysuptime, "%ld", sysuptime);
+	trap = csysuptime;
+
+	/**
+	 * So, let's fill it with our requested oid. Let's get the system.sysDescr.0 
+	 * variable for this example. There are numerous ways you could create the oid 
+	 * in question. You could put in the numerical unsigned integer values yourself 
+	 * into the anOID array we created above, or you could use one of the following 
+	 * function calls to do it. We recommend the first one (get_node), 
+	 * as it is the most powerful and accepts more types of OIDs. 
+	 */
+        if (snmp_add_var(pdu, objid_sysuptime,
+               sizeof(objid_sysuptime) / sizeof(oid), 't', trap)) {
+			snmp_perror("objid_sysuptime");
+		}
+		const char * oidHartbeatNotifStr = "1.3.6.1.4.1.8072.2.3.0.1";
+		const char * oidHartbeatRateStr = "1.3.6.1.4.1.8072.2.3.2.1";
+
+        snmp_add_var(pdu, objid_snmptrap,
+              sizeof(objid_snmptrap) / sizeof(oid), 'o', (u_char *)oidHartbeatNotifStr);
+
+		name_length = MAX_OID_LEN;
+		if (!snmp_parse_oid(oidHartbeatRateStr, name, &name_length)) {
+                snmp_perror(oidHartbeatRateStr);
+				exit(1);        
+        }
+
+        // snmp_add_var(pdu, objid_netSnmpExampleHeartbeatRate,
+        //        sizeof(objid_netSnmpExampleHeartbeatRate)/ sizeof(oid), 'i', (u_char *) "123456");
+		 snmp_add_var(pdu, name,
+                name_length, 'i', (u_char *) "123456");
+
+#if OTHER_METHODS
+	get_node("sysDescr.0", anOID, &anOID_len);
+	read_objid("system.sysDescr.0", anOID, &anOID_len);
+#endif 
+
+	/**
+	 * So we add this oid, with a NULL value to the PDU using the following statement: 
+	 * (all oids should be paired with a NULL value for outgoing requests for 
+	 * information. For an SNMP-SET pdu, we'd put in the value we wanted to set the oid to). 
+	 */
+
+	/**
+	 * Finally, we can send out the request using the session pointer and the pdu 
+	 * and we get back a status and the response, which is stored in the newly malloced 
+	 * response pdu pointer. 
+	 */
+	
+	/**
+	 * Send the request out
+	 */
+	status = snmp_synch_response(ss, pdu, &response);
+
+	/**
+	 * Process the response
+	 */
+	if (status == STAT_SUCCESS && response->errstat == SNMP_ERR_NOERROR) {
+		/**
+	     * SUCCESS: print the result variables
+		 */
+		for (vars = response->variables; vars; vars = vars->next_variable) {
+			int count = 1;
+			if (vars->type == ASN_OCTET_STR) {
+				char *sp = malloc(1 + vars->val_len);
+				memcpy(sp, vars->val.string, vars->val_len);
+				sp[vars->val_len] = '\0';
+				printf("value #%d is a string: %s\n", count++, sp);
+				free(sp); 
+			} else {
+				printf("value #%d is NOT a string! Ack!\n", count++);
+			}
+		}
+	} else {
+		/**
+		 * FAILURE: print what went wrong!
+		 */
+		if ( status == STAT_SUCCESS ) {
+			fprintf(stderr, "Error in packet\nReason: %s\n", snmp_errstring(response->errstat));
+		} else {
+			snmp_sess_perror("snmpinform", ss);
+		}
+	}
+
+	/**
+	 * Clean up:
+	 * 1) free the response
+	 * 2) close the sesson
+	 */
+	if (response) {
+		snmp_free_pdu(response);
+	}
+	snmp_close(ss);
+
+	/**
+	 * windows32 specific cleanup (is a noop on unix);
+	 */
+	SOCK_CLEANUP;
+	
+}

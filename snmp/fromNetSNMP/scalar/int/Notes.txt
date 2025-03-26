@@ -1,0 +1,3 @@
+sudo semanage fcontext -a -t snmpd_exec_t -s system_u /home/telogic/snmp/scalar/int/nstAgentModules.so
+sudo /sbin/restorecon -v /home/telogic/snmp/scalar/int/nstAgentModules.so
+snmpset -v 3  -a MD5 -A kschmidt123 -x DES -X k5hm1dt321 -l authPriv -u kschmidt localhost  1.3.6.1.4.1.8072.2.4.1.1.1.0 i 5

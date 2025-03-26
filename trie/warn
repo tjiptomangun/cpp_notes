@@ -1,0 +1,1 @@
+gcc -Wall -Werror -ggdb3 -fanalyzer -I . rdxtree.c  parserclass.c rdxtree_test.c -o rdxtree_test

@@ -1,0 +1,138 @@
+In file included from xuimsgtest.c:3:
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h: In function 'pack':
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:86: error: storage class specified for parameter 'memchr'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:87: error: storage class specified for parameter 'memcpy'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:88: error: storage class specified for parameter 'memset'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:89: error: storage class specified for parameter 'strcspn'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:90: error: storage class specified for parameter 'strlen'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:91: error: storage class specified for parameter 'strspn'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:118: error: storage class specified for parameter 'memmove'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:119: error: storage class specified for parameter 'strcpy'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:120: error: storage class specified for parameter 'strncpy'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:121: error: storage class specified for parameter 'strcat'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:122: error: storage class specified for parameter 'strncat'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:123: error: storage class specified for parameter 'memcmp'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:124: error: storage class specified for parameter 'strcmp'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:125: error: storage class specified for parameter 'strncmp'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:126: error: storage class specified for parameter 'strncollen'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:127: error: storage class specified for parameter 'strchr'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:128: error: storage class specified for parameter 'strpbrk'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:129: error: storage class specified for parameter 'strrchr'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:130: error: storage class specified for parameter 'strstr'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:131: error: storage class specified for parameter 'strtok'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:132: error: storage class specified for parameter 'strerror'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:133: error: storage class specified for parameter 'strcoll'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:134: error: storage class specified for parameter 'strxfrm'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:135: error: storage class specified for parameter 'strtok_r'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:149: error: storage class specified for parameter 'memccpy'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:158: error: storage class specified for parameter 'strdup'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:204: error: storage class specified for parameter 'index'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:205: error: storage class specified for parameter 'rindex'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:206: error: storage class specified for parameter 'swab'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:207: error: storage class specified for parameter 'wcscat'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:208: error: storage class specified for parameter 'wcschr'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:209: error: storage class specified for parameter 'wcscmp'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:210: error: storage class specified for parameter 'wcscpy'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:211: error: storage class specified for parameter 'wcscspn'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:212: error: storage class specified for parameter 'wcslen'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:213: error: storage class specified for parameter 'wcsncat'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:214: error: storage class specified for parameter 'wcsncmp'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:215: error: storage class specified for parameter 'wcsncpy'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:216: error: storage class specified for parameter 'wcspbrk'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:217: error: storage class specified for parameter 'wcsrchr'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:218: error: storage class specified for parameter 'wcsspn'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:219: error: storage class specified for parameter 'wcswcs'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:220: error: storage class specified for parameter 'wcswidth'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:221: error: storage class specified for parameter 'wcwidth'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:222: error: storage class specified for parameter 'wcscoll'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:223: error: storage class specified for parameter 'wcsxfrm'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:224: error: storage class specified for parameter '__linux_strerror_r'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:225: error: storage class specified for parameter 'strndup'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:226: error: storage class specified for parameter 'strnlen'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:227: error: storage class specified for parameter 'strsep'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:228: error: storage class specified for parameter 'memmem'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:229: error: storage class specified for parameter 'stpcpy'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:230: error: storage class specified for parameter 'stpncpy'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:231: error: storage class specified for parameter 'strsignal'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:237: error: storage class specified for parameter 'strcasecmp'
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:238: error: storage class specified for parameter 'strncasecmp'
+xuimsgtest.c:6: error: parse error before '{' token
+xuimsgtest.c:6: error: declaration for parameter 'printBytes' but no such parameter
+portable.h:12: error: declaration for parameter 'rvsShort' but no such parameter
+portable.h:11: error: declaration for parameter 'rvsInt' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:238: error: declaration for parameter 'strncasecmp' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:237: error: declaration for parameter 'strcasecmp' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:231: error: declaration for parameter 'strsignal' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:230: error: declaration for parameter 'stpncpy' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:229: error: declaration for parameter 'stpcpy' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:228: error: declaration for parameter 'memmem' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:227: error: declaration for parameter 'strsep' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:226: error: declaration for parameter 'strnlen' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:225: error: declaration for parameter 'strndup' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:224: error: declaration for parameter '__linux_strerror_r' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:223: error: declaration for parameter 'wcsxfrm' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:222: error: declaration for parameter 'wcscoll' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:221: error: declaration for parameter 'wcwidth' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:220: error: declaration for parameter 'wcswidth' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:219: error: declaration for parameter 'wcswcs' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:218: error: declaration for parameter 'wcsspn' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:217: error: declaration for parameter 'wcsrchr' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:216: error: declaration for parameter 'wcspbrk' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:215: error: declaration for parameter 'wcsncpy' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:214: error: declaration for parameter 'wcsncmp' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:213: error: declaration for parameter 'wcsncat' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:212: error: declaration for parameter 'wcslen' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:211: error: declaration for parameter 'wcscspn' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:210: error: declaration for parameter 'wcscpy' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:209: error: declaration for parameter 'wcscmp' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:208: error: declaration for parameter 'wcschr' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:207: error: declaration for parameter 'wcscat' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:206: error: declaration for parameter 'swab' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:205: error: declaration for parameter 'rindex' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:204: error: declaration for parameter 'index' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:158: error: declaration for parameter 'strdup' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:149: error: declaration for parameter 'memccpy' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:135: error: declaration for parameter 'strtok_r' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:134: error: declaration for parameter 'strxfrm' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:133: error: declaration for parameter 'strcoll' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:132: error: declaration for parameter 'strerror' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:131: error: declaration for parameter 'strtok' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:130: error: declaration for parameter 'strstr' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:129: error: declaration for parameter 'strrchr' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:128: error: declaration for parameter 'strpbrk' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:127: error: declaration for parameter 'strchr' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:126: error: declaration for parameter 'strncollen' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:125: error: declaration for parameter 'strncmp' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:124: error: declaration for parameter 'strcmp' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:123: error: declaration for parameter 'memcmp' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:122: error: declaration for parameter 'strncat' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:121: error: declaration for parameter 'strcat' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:120: error: declaration for parameter 'strncpy' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:119: error: declaration for parameter 'strcpy' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:118: error: declaration for parameter 'memmove' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:91: error: declaration for parameter 'strspn' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:90: error: declaration for parameter 'strlen' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:89: error: declaration for parameter 'strcspn' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:88: error: declaration for parameter 'memset' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:87: error: declaration for parameter 'memcpy' but no such parameter
+/usr/local/lib/gcc/powerpc-ibm-aix5.1.0.0/4.0.0/include/string.h:86: error: declaration for parameter 'memchr' but no such parameter
+xuimsgtest.c:9: error: 'nLen' undeclared (first use in this function)
+xuimsgtest.c:9: error: (Each undeclared identifier is reported only once
+xuimsgtest.c:9: error: for each function it appears in.)
+xuimsgtest.c:15: error: 'pData' undeclared (first use in this function)
+xuimsgtest.c:19: warning: control reaches end of non-void function
+xuimsgtest.c: In function 'main':
+xuimsgtest.c:33: warning: implicit declaration of function 'printBytes'
+xuimsgtest.c:44: warning: implicit declaration of function 'memset'
+xuimsgtest.c:44: warning: incompatible implicit declaration of built-in function 'memset'
+xuimsgtest.c:104: warning: format '%x' expects type 'unsigned int', but argument 2 has type 'XL_NDC_HW_FITNESS'
+xuimsgtest.c:128: warning: implicit declaration of function 'rvsInt'
+xuimsgtest.c:132: warning: implicit declaration of function 'rvsShort'
+portable.c:10: warning: return type defaults to 'int'
+portable.c: In function 'pack':
+portable.c:11: error: parse error before '{' token
+portable.c:11: error: declaration for parameter 'rvsInt' but no such parameter
+portable.c:23: error: 'v' undeclared (first use in this function)
+portable.c:23: error: (Each undeclared identifier is reported only once
+portable.c:23: error: for each function it appears in.)
+portable.c:28: warning: control reaches end of non-void function

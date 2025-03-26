@@ -1,0 +1,298 @@
+gcc -Wall -Werror -ggdb3 -fanalyzer -I . rdxtree.c  -o rdxtree_internal -D_RDXTREE_INTERNAL_TEST_ --param analyzer-max-recursion-depth=1
+rdxtree.c: In function ‘rdxtreeitem_findprefix’:
+rdxtree.c:284:14: error: leak of ‘nctx’ [CWE-401] [-Werror=analyzer-malloc-leak]
+  284 |       return curr;
+      |              ^~~~
+  ‘find_prefix_and_print’: events 1-2
+    |
+    |  608 | void find_prefix_and_print(PRDXTREE_ITEM root, char * to_find){
+    |      |      ^~~~~~~~~~~~~~~~~~~~~
+    |      |      |
+    |      |      (1) entry to ‘find_prefix_and_print’
+    |  609 |  fprintf(stdout, "finding prefix %s  ", to_find);
+    |  610 |  PRDXTREE_FIND_CONTEXT ctx= new_rdxtree_find_context();
+    |      |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    |      |                             |
+    |      |                             (2) calling ‘new_rdxtree_find_context’ from ‘find_prefix_and_print’
+    |
+    +--> ‘new_rdxtree_find_context’: events 3-5
+           |
+           |   87 | PRDXTREE_FIND_CONTEXT new_rdxtree_find_context(void) {
+           |      |                       ^~~~~~~~~~~~~~~~~~~~~~~~
+           |      |                       |
+           |      |                       (3) entry to ‘new_rdxtree_find_context’
+           |   88 |  PRDXTREE_FIND_CONTEXT ret = (PRDXTREE_FIND_CONTEXT )calloc(1, sizeof(RDXTREE_FIND_CONTEXT));
+           |   89 |  if (ret) {
+           |      |     ~                  
+           |      |     |
+           |      |     (4) following ‘true’ branch (when ‘ret’ is non-NULL)...
+           |   90 |   return rdxtree_find_context_ctor(ret);
+           |      |          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           |      |          |
+           |      |          (5) ...to here
+           |
+    <------+
+    |
+  ‘find_prefix_and_print’: events 6-7
+    |
+    |  610 |  PRDXTREE_FIND_CONTEXT ctx= new_rdxtree_find_context();
+    |      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~
+    |      |                             |
+    |      |                             (6) returning to ‘find_prefix_and_print’ from ‘new_rdxtree_find_context’
+    |  611 |  PRDXTREE_ITEM curr = rdxtreeitem_findprefix(root, to_find, ctx);
+    |      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    |      |                       |
+    |      |                       (7) calling ‘rdxtreeitem_findprefix’ from ‘find_prefix_and_print’
+    |
+    +--> ‘rdxtreeitem_findprefix’: events 8-15
+           |
+           |  274 | PRDXTREE_ITEM rdxtreeitem_findprefix(PRDXTREE_ITEM parent, char *name, PRDXTREE_FIND_CONTEXT ctx){
+           |      |               ^~~~~~~~~~~~~~~~~~~~~~
+           |      |               |
+           |      |               (8) entry to ‘rdxtreeitem_findprefix’
+           |......
+           |  277 |  while(curr) {
+           |      |       ~        
+           |      |       |
+           |      |       (9) following ‘true’ branch (when ‘curr’ is non-NULL)...
+           |  278 |   if(curr->name[0] == name[0]){
+           |      |     ~~~~~~~~~~~~~~
+           |      |     |          |
+           |      |     |          (10) ...to here
+           |      |     (11) following ‘true’ branch...
+           |  279 |    if(!memcmp(curr->name, name, curr->name_len)){
+           |      |      ~                          ~~~~~~~~~~~~~~
+           |      |      |                              |
+           |      |      |                              (12) ...to here
+           |      |      (13) following ‘true’ branch...
+           |  280 |     nctx = new_rdxtree_context_item(curr);
+           |      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           |      |            |
+           |      |            (14) ...to here
+           |      |            (15) calling ‘new_rdxtree_context_item’ from ‘rdxtreeitem_findprefix’
+           |
+           +--> ‘new_rdxtree_context_item’: events 16-18
+                  |
+                  |   10 | PRDXTREE_CONTEXT_ITEM new_rdxtree_context_item(PRDXTREE_ITEM new_titem) {
+                  |      |                       ^~~~~~~~~~~~~~~~~~~~~~~~
+                  |      |                       |
+                  |      |                       (16) entry to ‘new_rdxtree_context_item’
+                  |   11 |  PRDXTREE_CONTEXT_ITEM new_litem =  (PRDXTREE_CONTEXT_ITEM) calloc(1, sizeof(RDXTREE_CONTEXT_ITEM));
+                  |   12 |  if(new_litem) {
+                  |      |    ~                   
+                  |      |    |
+                  |      |    (17) following ‘true’ branch (when ‘new_litem’ is non-NULL)...
+                  |   13 |   new_litem->item = new_titem;
+                  |      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  |      |                   |
+                  |      |                   (18) ...to here
+                  |
+                ‘new_rdxtree_context_item’: event 19
+                  |
+                  |cc1:
+                  | (19): state of ‘<return-value>’: ‘start’ -> ‘nonnull’ (origin: NULL)
+                  |
+           <------+
+           |
+         ‘rdxtreeitem_findprefix’: events 20-25
+           |
+           |  280 |     nctx = new_rdxtree_context_item(curr);
+           |      |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           |      |            |
+           |      |            (20) returning to ‘rdxtreeitem_findprefix’ from ‘new_rdxtree_context_item’
+           |  281 |     if (nctx){
+           |      |        ~    
+           |      |        |
+           |      |        (21) following ‘true’ branch (when ‘nctx’ is non-NULL)...
+           |  282 |      ctx->add_item(ctx, nctx);
+           |      |      ~~~~~~~~~~~~~
+           |      |         |
+           |      |         (22) ...to here
+           |  283 |      if (curr->is_word){
+           |      |         ~   
+           |      |         |
+           |      |         (23) following ‘true’ branch...
+           |  284 |       return curr;
+           |      |              ~~~~
+           |      |              |
+           |      |              (24) ...to here
+           |      |              (25) ‘nctx’ leaks here
+           |
+rdxtree.c: In function ‘find_prefix_and_print’:
+rdxtree.c:621:1: error: leak of ‘ctx’ [CWE-401] [-Werror=analyzer-malloc-leak]
+  621 | }
+      | ^
+  ‘find_prefix_and_print’: events 1-2
+    |
+    |  608 | void find_prefix_and_print(PRDXTREE_ITEM root, char * to_find){
+    |      |      ^~~~~~~~~~~~~~~~~~~~~
+    |      |      |
+    |      |      (1) entry to ‘find_prefix_and_print’
+    |  609 |  fprintf(stdout, "finding prefix %s  ", to_find);
+    |  610 |  PRDXTREE_FIND_CONTEXT ctx= new_rdxtree_find_context();
+    |      |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    |      |                             |
+    |      |                             (2) calling ‘new_rdxtree_find_context’ from ‘find_prefix_and_print’
+    |
+    +--> ‘new_rdxtree_find_context’: events 3-5
+           |
+           |   87 | PRDXTREE_FIND_CONTEXT new_rdxtree_find_context(void) {
+           |      |                       ^~~~~~~~~~~~~~~~~~~~~~~~
+           |      |                       |
+           |      |                       (3) entry to ‘new_rdxtree_find_context’
+           |   88 |  PRDXTREE_FIND_CONTEXT ret = (PRDXTREE_FIND_CONTEXT )calloc(1, sizeof(RDXTREE_FIND_CONTEXT));
+           |   89 |  if (ret) {
+           |      |     ~                  
+           |      |     |
+           |      |     (4) following ‘true’ branch (when ‘ret’ is non-NULL)...
+           |   90 |   return rdxtree_find_context_ctor(ret);
+           |      |          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           |      |          |
+           |      |          (5) ...to here
+           |
+         ‘new_rdxtree_find_context’: event 6
+           |
+           |cc1:
+           | (6): state of ‘<return-value>’: ‘start’ -> ‘nonnull’ (origin: NULL)
+           |
+    <------+
+    |
+  ‘find_prefix_and_print’: events 7-8
+    |
+    |  610 |  PRDXTREE_FIND_CONTEXT ctx= new_rdxtree_find_context();
+    |      |                             ^~~~~~~~~~~~~~~~~~~~~~~~~~
+    |      |                             |
+    |      |                             (7) returning to ‘find_prefix_and_print’ from ‘new_rdxtree_find_context’
+    |  611 |  PRDXTREE_ITEM curr = rdxtreeitem_findprefix(root, to_find, ctx);
+    |      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    |      |                       |
+    |      |                       (8) calling ‘rdxtreeitem_findprefix’ from ‘find_prefix_and_print’
+    |
+    +--> ‘rdxtreeitem_findprefix’: events 9-16
+           |
+           |  274 | PRDXTREE_ITEM rdxtreeitem_findprefix(PRDXTREE_ITEM parent, char *name, PRDXTREE_FIND_CONTEXT ctx){
+           |      |               ^~~~~~~~~~~~~~~~~~~~~~
+           |      |               |
+           |      |               (9) entry to ‘rdxtreeitem_findprefix’
+           |......
+           |  277 |  while(curr) {
+           |      |       ~        
+           |      |       |
+           |      |       (10) following ‘true’ branch (when ‘curr’ is non-NULL)...
+           |  278 |   if(curr->name[0] == name[0]){
+           |      |     ~~~~~~~~~~~~~~
+           |      |     |          |
+           |      |     |          (11) ...to here
+           |      |     (12) following ‘true’ branch...
+           |  279 |    if(!memcmp(curr->name, name, curr->name_len)){
+           |      |      ~                          ~~~~~~~~~~~~~~
+           |      |      |                              |
+           |      |      |                              (13) ...to here
+           |      |      (14) following ‘true’ branch...
+           |  280 |     nctx = new_rdxtree_context_item(curr);
+           |      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           |      |            |
+           |      |            (15) ...to here
+           |      |            (16) calling ‘new_rdxtree_context_item’ from ‘rdxtreeitem_findprefix’
+           |
+           +--> ‘new_rdxtree_context_item’: events 17-19
+                  |
+                  |   10 | PRDXTREE_CONTEXT_ITEM new_rdxtree_context_item(PRDXTREE_ITEM new_titem) {
+                  |      |                       ^~~~~~~~~~~~~~~~~~~~~~~~
+                  |      |                       |
+                  |      |                       (17) entry to ‘new_rdxtree_context_item’
+                  |   11 |  PRDXTREE_CONTEXT_ITEM new_litem =  (PRDXTREE_CONTEXT_ITEM) calloc(1, sizeof(RDXTREE_CONTEXT_ITEM));
+                  |   12 |  if(new_litem) {
+                  |      |    ~                   
+                  |      |    |
+                  |      |    (18) following ‘true’ branch (when ‘new_litem’ is non-NULL)...
+                  |   13 |   new_litem->item = new_titem;
+                  |      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  |      |                   |
+                  |      |                   (19) ...to here
+                  |
+           <------+
+           |
+         ‘rdxtreeitem_findprefix’: events 20-24
+           |
+           |  280 |     nctx = new_rdxtree_context_item(curr);
+           |      |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           |      |            |
+           |      |            (20) returning to ‘rdxtreeitem_findprefix’ from ‘new_rdxtree_context_item’
+           |  281 |     if (nctx){
+           |      |        ~    
+           |      |        |
+           |      |        (21) following ‘true’ branch (when ‘nctx’ is non-NULL)...
+           |  282 |      ctx->add_item(ctx, nctx);
+           |      |      ~~~~~~~~~~~~~
+           |      |         |
+           |      |         (22) ...to here
+           |  283 |      if (curr->is_word){
+           |      |         ~   
+           |      |         |
+           |      |         (23) following ‘true’ branch...
+           |  284 |       return curr;
+           |      |              ~~~~
+           |      |              |
+           |      |              (24) ...to here
+           |
+    <------+
+    |
+  ‘find_prefix_and_print’: events 25-28
+    |
+    |  611 |  PRDXTREE_ITEM curr = rdxtreeitem_findprefix(root, to_find, ctx);
+    |      |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    |      |                       |
+    |      |                       (25) returning to ‘find_prefix_and_print’ from ‘rdxtreeitem_findprefix’
+    |  612 |  if(curr){
+    |      |    ~                   
+    |      |    |
+    |      |    (26) following ‘true’ branch (when ‘curr’ is non-NULL)...
+    |  613 |   print_reverse(ctx);
+    |      |   ~~~~~~~~~~~~~~~~~~   
+    |      |   |
+    |      |   (27) ...to here
+    |      |   (28) calling ‘print_reverse’ from ‘find_prefix_and_print’
+    |
+    +--> ‘print_reverse’: events 29-33
+           |
+           |  580 | void print_reverse(PRDXTREE_FIND_CONTEXT ctx) {
+           |      |      ^~~~~~~~~~~~~
+           |      |      |
+           |      |      (29) entry to ‘print_reverse’
+           |  581 |  if (ctx) {
+           |      |     ~ 
+           |      |     |
+           |      |     (30) following ‘true’ branch (when ‘ctx’ is non-NULL)...
+           |  582 |   ctx->reverse_once(ctx);
+           |      |   ~~~~~~~~~~~~~~~~~
+           |      |      |
+           |      |      (31) ...to here
+           |......
+           |  585 |  while (curr) {
+           |      |        ~
+           |      |        |
+           |      |        (32) following ‘false’ branch (when ‘curr’ is NULL)...
+           |......
+           |  591 | }
+           |      | ~     
+           |      | |
+           |      | (33) ...to here
+           |
+    <------+
+    |
+  ‘find_prefix_and_print’: events 34-35
+    |
+    |  613 |   print_reverse(ctx);
+    |      |   ^~~~~~~~~~~~~~~~~~
+    |      |   |
+    |      |   (34) returning to ‘find_prefix_and_print’ from ‘print_reverse’
+    |......
+    |  621 | }
+    |      | ~  
+    |      | |
+    |      | (35) ‘ctx’ leaks here
+    |
+cc1: all warnings being treated as errors
+Makefile:13: recipe for target 'rdx_internal' failed
+make: *** [rdx_internal] Error 1

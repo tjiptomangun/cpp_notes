@@ -1,0 +1,15 @@
+Antialiasing()
+Resolution(640,640)
+From(33,5,23)
+At(0,0,1)
+Up(.0,.0,1.0)
+Background(0,0,0)
+SaveTo(Much.Tif)
+
+Light(Loc(33,20,3),Point(),Color(1,1,1))
+Rectangle(Loc(-10,-10,-5),V1(0,20,0),V2(20,0,0),Ambient(.6),Diffuse(.8),Specular(.4),SpecSpread(.4),Transparency(0),Color(.7,.7,.7))
+Cylinder(Loc(0,-6,0),V1(0,0,4),Radius(4),Ambient(.6),Diffuse(1),Specular(.4),SpecSpread(4),Transparency(0),Color(.8,.8,.8))
+Ellipsoid(Loc(0,-3,8),V1(4,4,4),V2(50,0,0),Ambient(.6),Diffuse(1),Specular(4),SpecSpread(4),Transparency(4),Color(.9.9.9))
+Triangle(Loc(0,1,5),V1(0,5,0),V2(0,5,10),Ambient(,8),Diffuse(.6),Specular(.3),SpecSpread(4),Transparency(0),Color(.9,.9,.9))
+Sphere(Loc(0,9,1),Radius(4),Ambient(.6),Diffuse(.5),Specular(.4),SpecSpread(4),Transparency(0),Color(.8,.8,.8))
+

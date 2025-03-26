@@ -1,0 +1,13 @@
+CC=gcc
+LIBDIRS=.
+INCDIR=.
+LIBS=-llogregx -lpcrecpp
+CFLAGS=-c -Wall -Wextra -pedantic -ggdb3 -m64
+OBJECTS=main.o
+
+%.o: %.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $<
+
+all: $(OBJECTS)
+	$(CC) $(OBJECTS) -L$(LIBDIRS) $(LIBS) -o main
+	

@@ -1,0 +1,84 @@
+STDIN(3)                 Linux Programmer's Manual                 STDIN(3)
+
+NNAAMMEE
+       stdin, stdout, stderr - standard I/O streams
+
+SSYYNNOOPPSSIISS
+       ##iinncclluuddee <<ssttddiioo..hh>>
+
+       eexxtteerrnn FFIILLEE **_s_t_d_i_n;;
+       eexxtteerrnn FFIILLEE **_s_t_d_o_u_t;;
+       eexxtteerrnn FFIILLEE **_s_t_d_e_r_r;;
+
+DDEESSCCRRIIPPTTIIOONN
+       Under  normal  circumstances  every  UNIX  program has three streams
+       opened for it when it starts up, one for input, one for output,  and
+       one  for printing diagnostic or error messages.  These are typically
+       attached to the user's terminal (see ttttyy(4)) but might instead refer
+       to  files  or  other  devices,  depending on what the parent process
+       chose to set up.  (See also the "Redirection" section of sshh(1).)
+
+       The input stream is referred to  as  "standard  input";  the  output
+       stream  is referred to as "standard output"; and the error stream is
+       referred to as "standard error".  These  terms  are  abbreviated  to
+       form the symbols used to refer to these files, namely _s_t_d_i_n, _s_t_d_o_u_t,
+       and _s_t_d_e_r_r.
+
+       Each of these symbols is a ssttddiioo(3) macro of type pointer  to  _F_I_L_E,
+       and can be used with functions like ffpprriinnttff(3) or ffrreeaadd(3).
+
+       Since  _F_I_L_Es  are  a buffering wrapper around UNIX file descriptors,
+       the same underlying files may also be accessed using  the  raw  UNIX
+       file interface, that is, the functions like rreeaadd(2) and llsseeeekk(2).
+
+       On program startup, the integer file descriptors associated with the
+       streams _s_t_d_i_n, _s_t_d_o_u_t, and _s_t_d_e_r_r are 0,  1,  and  2,  respectively.
+       The    preprocessor   symbols   SSTTDDIINN__FFIILLEENNOO,   SSTTDDOOUUTT__FFIILLEENNOO,   and
+       SSTTDDEERRRR__FFIILLEENNOO are defined with these values in _<_u_n_i_s_t_d_._h_>.   (Apply‐
+       ing  ffrreeooppeenn(3) to one of these streams can change the file descrip‐
+       tor number associated with the stream.)
+
+       Note that mixing use of _F_I_L_Es and raw file descriptors  can  produce
+       unexpected  results  and  should  generally  be  avoided.   (For the
+       masochistic among you: POSIX.1, section 8.2.3, describes  in  detail
+       how  this  interaction is supposed to work.)  A general rule is that
+       file descriptors are handled in the kernel, while stdio  is  just  a
+       library.   This  means for example, that after an eexxeecc(3), the child
+       inherits all open file descriptors, but all old streams have  become
+       inaccessible.
+
+       Since  the  symbols  _s_t_d_i_n,  _s_t_d_o_u_t,  and _s_t_d_e_r_r are specified to be
+       macros, assigning to them is nonportable.  The standard streams  can
+       be  made  to refer to different files with help of the library func‐
+       tion ffrreeooppeenn(3), specially introduced to make it possible  to  reas‐
+       sign  _s_t_d_i_n, _s_t_d_o_u_t, and _s_t_d_e_r_r.  The standard streams are closed by
+       a call to eexxiitt(3) and by normal program termination.
+
+CCOONNFFOORRMMIINNGG TTOO
+       The _s_t_d_i_n, _s_t_d_o_u_t, and _s_t_d_e_r_r macros conform to C89 and  this  stan‐
+       dard  also stipulates that these three streams shall be open at pro‐
+       gram startup.
+
+NNOOTTEESS
+       The stream _s_t_d_e_r_r is unbuffered.  The stream _s_t_d_o_u_t is line-buffered
+       when  it  points to a terminal.  Partial lines will not appear until
+       fffflluusshh(3) or eexxiitt(3) is called, or a newline is printed.   This  can
+       produce  unexpected  results, especially with debugging output.  The
+       buffering mode of the standard streams (or any other stream) can  be
+       changed  using  the sseettbbuuff(3) or sseettvvbbuuff(3) call.  Note that in case
+       _s_t_d_i_n is associated with a terminal, there may also be input buffer‐
+       ing  in  the terminal driver, entirely unrelated to stdio buffering.
+       (Indeed, normally terminal input is line buffered  in  the  kernel.)
+       This  kernel  input  handling can be modified using calls like ttccssee‐‐
+       ttaattttrr(3); see also ssttttyy(1), and tteerrmmiiooss(3).
+
+SSEEEE AALLSSOO
+       ccsshh(1), sshh(1), ooppeenn(2), ffooppeenn(3), ssttddiioo(3)
+
+CCOOLLOOPPHHOONN
+       This page is part of release 4.15 of the Linux _m_a_n_-_p_a_g_e_s project.  A
+       description  of  the  project, information about reporting bugs, and
+       the   latest   version   of   this   page,   can   be    found    at
+       https://www.kernel.org/doc/man-pages/.
+
+Linux                            2017-09-15                        STDIN(3)

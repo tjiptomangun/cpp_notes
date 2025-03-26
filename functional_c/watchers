@@ -1,0 +1,30 @@
+Hardware watchpoint 6: curried_fun_var_1
+Watchpoint 7: &curried_fun_var_1
+Program not restarted.
+Continuing.
+
+Watchpoint 6 deleted because the program has left the block in
+which its expression is valid.
+
+Watchpoint 7 deleted because the program has left the block in
+which its expression is valid.
+0x0000555555554953 in main (argc=1, argv=0x7fffffffdcb8) at curry1.c:101
+101		fprintf (stdout, "prim1(100)(31.1)) :%s\n" , prim1(100)(31.1)); 
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0x0000555555554d72 in prim1 at curry1.c:83
+	breakpoint already hit 1 time
+5       breakpoint     keep y   0x0000555555554caf in prim2 at curry1.c:86
+
+Breakpoint 5, prim2 (b=31.1000004) at curry1.c:86
+86				fprintf(stdout, "curried_fun_var_1 = %d\n", curried_fun_var_1);
+__fprintf (stream=0x7ffff7dd0760 <_IO_2_1_stdout_>, format=0x555555554e95 "curried_fun_var_1 = %d\n") at fprintf.c:27
+27	fprintf.c: No such file or directory.
+31	in fprintf.c
+32	in fprintf.c
+31	in fprintf.c
+32	in fprintf.c
+Run till exit from #0  __fprintf (stream=0x7ffff7dd0760 <_IO_2_1_stdout_>, format=0x555555554e95 "curried_fun_var_1 = %d\n") at fprintf.c:32
+prim2 (b=31.1000004) at curry1.c:87
+87				float curried_fun_var_2 = b;
+Value returned is $2 = 32
+$3 = -1864106167

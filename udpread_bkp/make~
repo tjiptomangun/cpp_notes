@@ -1,0 +1,2 @@
+$CC udpread.c -ggdb3 -oudpread 
+$CC udpchild.c -ggdb3 -oudpchild

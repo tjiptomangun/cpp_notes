@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include "strtool.h"
+#include <pthread.h>
 enum commonRetCode {
           errorSuccess = 0              /* Error Success */
 };
@@ -218,6 +219,7 @@ std::vector<String> split(String s, String delim) {
     return res;	
 }
 SiteTokens siteTokens;
+#ifdef MAPTEST
 
 // https://www.delftstack.com/howto/cpp/how-to-read-a-file-line-by-line-cpp/
 void *writerThread(void *tmp) {
@@ -243,11 +245,73 @@ void *writerThread(void *tmp) {
 }
 
 void *readerThread(void *tmp) {
+	char fname [200] = {0};
+	const char * strTmp = (char * )tmp;
+	std::strncpy(fname, strTmp, 200);
+	while(1) {
+		std::ifstream input_file(fname);
+		String line;
+		if (! input_file.is_open()) {
+			std::cerr << "Could not open the file - '" << fname << "'" << std::endl;
+			pthread_exit((void *)2);
+		} else {
+			while (getline(input_file, line)) {
+				std::vector<String> kv  = split(line, ":");
+				const String res = siteTokens.getKey(trim_copy(kv[0]));
+				std::cout << "key "  << trim_copy(kv[0]) << " value " << res <<std::endl;
+			}
+		}
+		input_file.close();
+		usleep(2000);
+	}
 	
 	pthread_exit((void *)0);
 
 }
 int main(int argc, char **argv) {
+
+	pthread_t w1, w2, w3;
+	pthread_t r1, r2, r3, r4, r5;
+
+	const char * file1 = "file1.txt";
+	const char * file2 = "file2.txt";
+	const char * file3 = "file3.txt";
+	if (pthread_create(&w1, NULL, writerThread, (void *)file1)) {
+		return 1;
+	} else if (pthread_create(&w2, NULL, writerThread, (void *)file2)) {
+		return 1;
+	} else if (pthread_create(&w3, NULL, writerThread, (void *)file3)) {
+		return 1;
+	} else if (pthread_create(&r1, NULL, readerThread, (void *)file1)) {
+		return 1;
+	} else if (pthread_create(&r2, NULL, readerThread, (void *)file1)) {
+		return 1;
+	} else if (pthread_create(&r3, NULL, readerThread, (void *)file2)) {
+		return 1;
+	} else if (pthread_create(&r4, NULL, readerThread, (void *)file2)) {
+		return 1;
+	} else if (pthread_create(&r5, NULL, readerThread, (void *)file3)) {
+		return 1;
+	} else if (pthread_join(w1, NULL)) {
+		return 1;
+	} else if (pthread_join(w2, NULL)) {
+		return 1;
+	} else if (pthread_join(w3, NULL)) {
+		return 1;
+	} else if (pthread_join(r1, NULL)) {
+		return 1;
+	} else if (pthread_join(r2, NULL)) {
+		return 1;
+	} else if (pthread_join(r3, NULL)) {
+		return 1;
+	} else if (pthread_join(r4, NULL)) {
+		return 1;
+	} else if (pthread_join(r5, NULL)) {
+		return 1;
+	}
+
+	
+	
 	/*
 	 std::map<std::string, BearerToken*> m{{"a", new BearerToken()}};
 	 m["b"] = new BearerToken("xyz");
@@ -261,3 +325,4 @@ int main(int argc, char **argv) {
 	*/
 
 }
+#endif

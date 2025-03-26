@@ -1,0 +1,48 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <strings.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/time.h>
+#include <unistd.h>
+int nPakets=0;
+int main(int argc, char* argv[])
+{
+  int nPort;
+  int nIpAddr=0x0100007F;
+  int nPid;
+  int nSkt;
+  unsigned char pkt[10]={0,'1',1,'h','e','l','l','0',0,0};
+  struct sockaddr_in 	SktAddr;
+  struct sockaddr_in Local;
+  if(argc<2)
+  {
+    while(1)
+    {
+      exit(0);
+    }
+  }
+  nPort = atoi(argv[1]);
+  if ((nSkt = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
+  {
+     printf("[ER]init socket\n");
+  }
+  Local.sin_family = AF_INET;
+  Local.sin_addr.s_addr = htonl (INADDR_ANY);
+  Local.sin_port = htons (0);
+  if (bind (nSkt, (struct sockaddr *) &Local, sizeof Local) < 0)
+  {
+     printf("[ER]binding socket\n");
+  }
+  SktAddr.sin_family  = AF_INET;
+  SktAddr.sin_addr.s_addr = nIpAddr;
+  SktAddr.sin_port  = htons (nPort);
+  while(1)
+  {
+    sendto (nSkt, pkt, 10, 0, (struct sockaddr *) &SktAddr, sizeof (SktAddr));
+  }
+  exit(0);
+}
