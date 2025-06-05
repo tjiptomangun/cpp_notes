@@ -1,0 +1,9 @@
+Why some sequence tag using auto tag 81, 82 etc as below 
+
+https://www.oss.com/asn1/resources/asn1-made-simple/asn1-quick-reference/sequence.html
+
+while others  like tcap component invoke elements use type tag(invokeId, opcode etc)
+
+/home/henky/learnthings/ss7/Q.773-TCAP.pdf
+
+/home/henky/learnthings/ss7/MAP_Specification.pdf

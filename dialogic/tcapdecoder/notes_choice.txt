@@ -1,0 +1,85 @@
+Object Class, and we shall see more of these later.
+If you see names in all upper case, you can be reasonably sure that you are dealing with
+Information Object Classes, but another certain way to tell is the presence of names beginning with
+the & (ampersand) character. In order to avoid confusion with other pieces of ASN.1 notation, the
+names of fields of Information Object Classes are required to begin with an &. Thus the field of
+the OPERATION class that contains the object identifier value for some particular operation is
+called:
+OPERATION.&operationCode
+
+CHOICE:
+https://www.oss.com/asn1/resources/asn1-made-simple/asn1-quick-reference/choice.html
+Choice has no real existence tag
+A value of type CHOICE is encoded according to the type and tag of the alternative that has been
+retained. Example
+famous CHOICE {
+	name VisibleString,
+	nobody NULL
+} ::= name: 'Perec'
+is given by 
+
+Tag [000| 0 | 26(b_10) 
+L [5(b_0)]
+   'P'       'e'          'r'        'e'            'c'
+V [8(b_10)] [10(b_10)] [120(b_10)] [101(b_10)] [99(b_10)]
+
+
+
+                 
+In the next example, type Division is defined as a choice of manufacturing, r-and-d, or unassigned. The alternatives include two SEQUENCEs. Because the first two alternatives are both SEQUENCEs, the standard type's tags are replaced with user-defined context-specific tags. 
+
+Division ::= CHOICE {
+                  manufacturing  [0] IMPLICIT SEQUENCE {
+                                         plantID      INTEGER,
+                                         majorProduct IA5String},
+                  r-and-d        [1] IMPLICIT   SEQUENCE {
+                                         labID          INTEGER,
+                                         currentProject IA5String},
+                 unassigned      [2] IMPLICIT  NULL
+                 }
+                 
+CHOICE encoding example
+Division ::= CHOICE {
+         manufacturing      SEQUENCE {
+                   plantID        INTEGER,
+                   majorProduct   OCTET STRING},
+                   
+         r-and-d            SEQUENCE {
+                   labID          INTEGER,
+                   currentProject OCTET STRING}
+}
+
+currentAssignment Division ::=
+         r-and-d : { labID 48,
+                    currentProject '44582D37'H}
+                    
+In BER, the SEQUENCE defined for r-and-d in the example above is encoded as follows:
+Tag : [10|1|1(b_10)]  (option 1 instead o 0)
+Length: [9(b_10)]
+Tag: [10|0|0]
+Length: [01] [30(b_16)]
+Tag: 81 04 44 58 2D 37
+
+
+SEQUENCE OF 
+https://www.oss.com/asn1/resources/asn1-made-simple/asn1-quick-reference/sequenceof.html
+The SEQUENCE OF type is a variant of the SEQUENCE type. SEQUENCE OF indicates an arbitrary number of values of the same type. 
+
+DailyTemperatures ::= SEQUENCE OF INTEGER
+weeklyHighs DailyTemperatures ::=  {10, 12, -2, 8}
+
+In BER, the SEQUENCE OF type values defined in the example above are encoded as follows:
+Tag:  [00|1|16(b_10)] 
+Length [0C(b_16)]
+   Tag: [00|0|2(b_10)] 
+   Length: 1
+   Value:  [0A(b_16)]
+   Tag: 02 
+   Length: 01
+   Value: 0C
+   Tag: 02 
+   Length: 01
+   Value: FE
+   Tag: 02
+   Length: 01
+   Value: 08

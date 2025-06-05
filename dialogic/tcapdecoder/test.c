@@ -98,7 +98,178 @@ void HtoB2 (unsigned char * pDst, char *pSrcHex, int srcLen)
         currDst ++;
     } while (srcLen);
 }
+unsigned char getTagClass(unsigned char tag) {
+	unsigned char ret = tag & 0xc0 ;
+	return ret >> 6;
+}
 
+unsigned char getTagForm(unsigned char tag) {
+	unsigned char ret = tag & 0x20 ;
+	return ret >> 5;
+}
+
+unsigned char getTagNumber(unsigned char tag) {
+	printf(" %d (%02x", tag, tag);
+	unsigned char ret = tag & 0x1F ;
+	return ret;
+}
+
+char *tagClasses[] = {
+	"Universal",
+	"Application",
+	"Context-Specific",
+	"PRIVATE",
+};
+
+char *tagForms [] = {
+	"Primitive", 
+	"Construct"
+};
+
+//https://en.m.wikipedia.org/wiki/X.690#BER_encoding
+char *tagNumbers [] = {
+	"End Of Content (EOC)", //0
+	"BOOLEAN",
+	"INTEGER",
+	"BIT STRING",
+	"OCTET STRING",
+	"NULL", //5
+	"OBJECT IDENTIFIER",
+	"Object Descriptor",
+	"EXTERNAL",
+	"REAL(float)",
+	"ENUMERATED",//10
+	"EMBEDDED PDV",
+	"UTF8String",
+	"RELATIVE-OID",
+	"TIME",
+	"Reserved",//15
+	"SEQUENCE AND SEQUENCE OF",
+	"SET AND SET OF",
+	"NumericString",
+	"PrintableString",
+	"T61String",//20
+	"VideotexString",
+	"IA5String",
+	"UTCTime",
+	"GeneralizedTime",
+	"GraphicString",//25
+	"VisibleString",
+	"GeneralString",
+	"UniversalString",
+	"CHARACTER STRING",
+	"BMPString",//30
+	"DATE",
+	"TIME-OF-DAY",
+	"DATE-TIME",
+	"DURATION",
+	"OID-IRI",//35
+	"RELATIVE-OID-IRI"
+};
+void printTag(unsigned char tag, int identation) {
+	unsigned char tagNum = getTagNumber(tag);
+	unsigned char tagClass = getTagClass(tag);
+	unsigned char tagForm = getTagForm(tag);
+	if (tagNum < 31) {
+		printf("%*c", identation, ' ');
+		fprintf(stdout, "class = %s | form = %s | type = %s\n", tagClasses[tagClass], tagForms[tagForm], tagNumbers[tagNum]);
+	}
+}
+void parseUpTo(unsigned char *stream, int max_len, int identation, int type, int context) {
+	int currIdx = 0;
+	int nextLen = max_len;
+	unsigned char *pptr  = stream;
+	int paramparamlen = 0;
+	int lenoflen = 0;
+	int i = 0;
+	while (currIdx <= max_len) {
+			unsigned char isConstruct = getTagForm(*pptr);
+			printTag(*pptr, identation);
+			pptr++; currIdx++;
+			lenoflen = getTlvStreamDataLength (pptr, 100,  &paramparamlen);
+			currIdx+= lenoflen;
+			pptr+=lenoflen;
+			nextLen -= lenoflen;
+			if(isConstruct) {
+				parseUpTo(pptr, paramparamlen, identation + 1, type, context);
+				pptr+=paramparamlen;
+				currIdx+=paramparamlen;
+			}
+			else {
+				for(i=0;i< paramparamlen;i++) {
+					printf("%02x",(unsigned char)pptr[i]);
+				
+				}
+				printf("\n");
+				pptr+=paramparamlen;
+				currIdx+=paramparamlen;
+				
+			}
+	}
+	switch(type) {
+		case TCP_MSG_CPT_REQ: //0xc781
+		case TCP_MSG_CPT_IND: //0x8782
+			break;
+		case TCP_MSG_DLG_IND: //0x8784
+		case TCP_MSG_DLG_REQ: //0xc783
+
+	}
+
+}
+
+
+void parseUpToOld(unsigned char *stream, int max_len, int identation) {
+	int currIdx = 0;
+	int nextLen = max_len;
+	unsigned char *pptr  = stream;
+	int paramparamlen = 0;
+	int lenoflen = 0;
+	int i = 0;
+	if (currIdx < max_len) {
+			
+			printTag(*pptr, identation);
+			printf("\n");
+		if (*pptr >= 0x80)  {
+			if (*pptr >= 0xa0) {//tagged or constructed choice
+				printf("%*c", identation, ' ');
+				printf("tagged / constructed choice %d\n", *pptr - 0xa0);
+				pptr++;
+				lenoflen = getTlvStreamDataLength (pptr, 100,  &paramparamlen);
+				pptr+=lenoflen;
+				nextLen -= lenoflen;
+				parseUpTo(pptr, paramparamlen, identation + 1);
+
+			} else {//primitive choice
+				printf("primitive choice %d\n", *pptr - 0x80);
+				pptr++;
+				lenoflen = getTlvStreamDataLength (pptr, 100,  &paramparamlen);
+				pptr+=lenoflen;
+				nextLen -= lenoflen;
+				for(i=0;i< paramparamlen;i++) {
+					printf("%02x",(unsigned char)pptr[i]);
+				
+				}
+			}
+		}
+		else if (*pptr == 0x30)  {//sequence
+		}
+		else if (*pptr == 0x01)  {//boolean
+		}
+		else if (*pptr == 0x05)  {//null
+		}
+		else if (*pptr == 0x02)  {//integer
+
+		}
+		else if (*pptr == 0x04)  {//octet string
+			printf("octet string");
+		}
+		else if (*pptr == 0x03)  {//bit string
+		}
+		else if (*pptr == 0x23)  {//constructed bit string
+		}
+	}
+
+}
 
 void decode(int type, unsigned char *param, int paramlen) {
 	unsigned char  *pptr = param;
@@ -153,6 +324,31 @@ void decode(int type, unsigned char *param, int paramlen) {
 		"TCCPT_TC_U_REJECT",
 		"TCCPT_TC_INVOKE_NL",
 	};
+	typedef struct tag_components {
+		char * name;
+		int isConstruct;
+	} TAG_COMPONENTS;
+
+	TAG_COMPONENTS component_params[] ={
+		{
+			"", 0
+		}, {
+			"TCPPN_COMPONENT", 1
+		},
+		{
+			"TCPPN_LAST_CPT", 0
+		},{
+			"TCPPN_CLASS", 0
+		},{
+			"TCPPN_TIMEOUT", 0
+		},{
+			"TCPPN_INVOKE_ID", 0
+		},{
+			"TCPPN_NC", 0
+		},{
+			"TCPPN_CODESHIFT", 0
+		}
+	} ;
 	char *component_param_names [256] = {
 		"",
 		"TCPPN_COMPONENT",
@@ -169,8 +365,8 @@ void decode(int type, unsigned char *param, int paramlen) {
 
 
 	switch(type) {
-		case TCP_MSG_DLG_IND:
-		case TCP_MSG_DLG_REQ:
+		case TCP_MSG_DLG_IND: //0x8784
+		case TCP_MSG_DLG_REQ: //0xc783
 			if (type == TCP_MSG_DLG_IND ) {
 				printf("TCP_MSG_DLG_IND : 0x%04x  === ", type);
 			} else {
@@ -197,6 +393,7 @@ void decode(int type, unsigned char *param, int paramlen) {
 					printf("%02x",(unsigned char)pptr[i]);
 					
 				}
+				
 
 				pptr+=paramparamlen;
 				param_name = *pptr;			
@@ -205,8 +402,8 @@ void decode(int type, unsigned char *param, int paramlen) {
 			}
 			break;
 
-		case TCP_MSG_CPT_REQ:
-		case TCP_MSG_CPT_IND:
+		case TCP_MSG_CPT_REQ: //0xc781
+		case TCP_MSG_CPT_IND: //0x8782
 			if (type == TCP_MSG_CPT_REQ ) {
 				printf("TCP_MSG_CPT_REQ : 0x%04x  === ", type);
 			} else {
@@ -225,7 +422,7 @@ void decode(int type, unsigned char *param, int paramlen) {
 			param_name = *pptr;
 			while(!(*pptr == 0x00 && *(pptr+1) == 0x00)) {
 				printf("\nComponent Parameter Name %02x ", param_name);
-				printf("%s ", component_param_names[param_name]);
+				printf("%s ", component_params[param_name].name);
 				pptr++;
 				lenoflen = getTlvStreamDataLength (pptr, 100,  &paramparamlen);
 				printf("length %d = ", paramparamlen);
@@ -234,9 +431,13 @@ void decode(int type, unsigned char *param, int paramlen) {
 					printf("%02x",(unsigned char)pptr[i]);
 					
 				}
+				printf("\n");
+				if (component_params[param_name].isConstruct) {
+					parseUpTo(pptr, paramparamlen, 1, type, 0);
+				}
 
 				pptr+=paramparamlen;
-				param_name = *pptr;			
+				param_name = *pptr;
 				printf("\n");
 
 			}
@@ -259,6 +460,7 @@ void usage(char *x) {
 	printf("%s d|g|c|t|m hexstring\n", x);
 	printf("d: dialog_request, g: dialog_indication, c: component_request, t: component_indicator, m: maintenance\n");
 }
+
 int main(int argc, char **argv) {
 	unsigned char dialog_stream[600] = {0};
 	int dialog_stream_len = 0;

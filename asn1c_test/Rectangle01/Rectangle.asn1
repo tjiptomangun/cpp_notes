@@ -1,0 +1,10 @@
+RectangleTest DEFINITIONS ::= BEGIN
+Rectangle ::= SEQUENCE {
+height INTEGER,
+width
+ INTEGER
+}
+-- Height of the rectangle
+-- Width of the rectangle
+END
+

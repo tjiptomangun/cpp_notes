@@ -1,0 +1,6 @@
+sm-RP-UI is signalInfo which is octet string (tag 0x04).
+The length can be 200 according to 3gpp standard.
+And this means asn1 length can be more than 127 bits
+which cause its length of length can occupy 2 octets(bytes) in 
+that case will be 0x81 0xMN
+x

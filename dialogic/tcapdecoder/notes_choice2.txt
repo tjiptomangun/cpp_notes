@@ -1,0 +1,6 @@
+dubuisson-asn1-book.PDF
+18.2.16 
+if  choice is marked as tagged type, the tag (100xxxxx) becomes constructured (101xxxxx)
+that is why tcap component invoke is a1 (10100001) , because it is a tagged choice.
+
+See tcap_component_choices.png and GSMMAP.asn
